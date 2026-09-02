@@ -1,23 +1,27 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>আমাদের স্টোর - সেরা পণ্য</title>
+    <title>Melodex - Musical Instruments & Accessories</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- নেভিগেশন -->
+    <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
-                <i class="fas fa-shopping-bag"></i> আমাদের স্টোর
+                <div class="logo-icon">🎸</div>
+                <span class="logo-text">Melodex</span>
             </div>
             <div class="nav-menu">
-                <a href="#home" class="nav-link active">হোম</a>
-                <a href="#products" class="nav-link">পণ্য</a>
-                <a href="#contact" class="nav-link">যোগাযোগ</a>
+                <a href="#home" class="nav-link active">Home</a>
+                <a href="#guitars" class="nav-link">Guitars</a>
+                <a href="#pedals" class="nav-link">Pedals & Effects</a>
+                <a href="#pedalboards" class="nav-link">Pedalboards</a>
+                <a href="#stands" class="nav-link">Stands</a>
+                <a href="#cables" class="nav-link">Cables & Accessories</a>
             </div>
             <div class="cart-icon">
                 <i class="fas fa-shopping-cart"></i>
@@ -26,58 +30,58 @@
         </div>
     </nav>
 
-    <!-- হিরো সেকশন -->
+    <!-- Hero Section -->
     <section id="home" class="hero">
         <div class="hero-content">
-            <h1>স্বাগতম আমাদের অনলাইন স্টোরে</h1>
-            <p>সর্বোত্তম মানের পণ্য সাশ্রয়ী মূল্যে</p>
-            <a href="#products" class="btn btn-primary">এখনই কেনাকাটা করুন</a>
+            <h1>Welcome to Melodex</h1>
+            <p>Premium Musical Instruments & Accessories</p>
+            <a href="#guitars" class="btn btn-primary">Start Shopping</a>
         </div>
     </section>
 
-    <!-- ক্যাটাগরি সেকশন -->
+    <!-- Category Navigation -->
     <section class="categories">
         <div class="container">
-            <h2>ক্যাটাগরি</h2>
+            <h2>Shop by Category</h2>
             <div class="category-grid">
-                <div class="category-card" data-category="all">
-                    <i class="fas fa-th"></i>
-                    <p>সব পণ্য</p>
+                <div class="category-card" data-category="guitars">
+                    <i class="fas fa-guitar"></i>
+                    <p>Guitars</p>
                 </div>
-                <div class="category-card" data-category="electronics">
-                    <i class="fas fa-mobile-alt"></i>
-                    <p>ইলেকট্রনিক্স</p>
+                <div class="category-card" data-category="pedals">
+                    <i class="fas fa-sliders-h"></i>
+                    <p>Pedals & Effects</p>
                 </div>
-                <div class="category-card" data-category="fashion">
-                    <i class="fas fa-tshirt"></i>
-                    <p>ফ্যাশন</p>
+                <div class="category-card" data-category="pedalboards">
+                    <i class="fas fa-th-large"></i>
+                    <p>Pedalboards</p>
                 </div>
-                <div class="category-card" data-category="beauty">
-                    <i class="fas fa-spa"></i>
-                    <p>সৌন্দর্য</p>
+                <div class="category-card" data-category="stands">
+                    <i class="fas fa-cube"></i>
+                    <p>Stands</p>
                 </div>
-                <div class="category-card" data-category="home">
-                    <i class="fas fa-home"></i>
-                    <p>বাড়ির সাজসজ্জা</p>
+                <div class="category-card" data-category="cables">
+                    <i class="fas fa-grip-horizontal"></i>
+                    <p>Cables & Accessories</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- পণ্য সেকশন -->
+    <!-- Products Section -->
     <section id="products" class="products">
         <div class="container">
-            <h2>আমাদের পণ্য</h2>
+            <h2>Our Products</h2>
             <div class="products-grid" id="productsContainer">
-                <!-- পণ্য এখানে লোড হবে -->
+                <!-- Products will load here -->
             </div>
         </div>
     </section>
 
-    <!-- যোগাযোগ সেকশন -->
+    <!-- Contact Section -->
     <section id="contact" class="contact">
         <div class="container">
-            <h2>আমাদের সাথে যোগাযোগ করুন</h2>
+            <h2>Get in Touch</h2>
             <div class="contact-info">
                 <div class="contact-item">
                     <i class="fas fa-phone"></i>
@@ -85,21 +89,21 @@
                 </div>
                 <div class="contact-item">
                     <i class="fas fa-envelope"></i>
-                    <p>info@store.com</p>
+                    <p>info@melodex.com</p>
                 </div>
                 <div class="contact-item">
                     <i class="fab fa-facebook"></i>
-                    <p><a href="#" target="_blank">আমাদের ফেসবুক পেজ</a></p>
+                    <p><a href="#" target="_blank">Visit Our Facebook</a></p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- ফুটার -->
+    <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
-            <p>&copy; 2024 আমাদের স্টোর। সমস্ত অধিকার সংরক্ষিত।</p>
-            <p>এই ওয়েবসাইট <a href="https://pages.github.com" target="_blank">GitHub Pages</a> দ্বারা হোস্ট করা হয়েছে।</p>
+            <p>&copy; 2024 Melodex. All rights reserved.</p>
+            <p>Hosted on <a href="https://pages.github.com" target="_blank">GitHub Pages</a></p>
         </div>
     </footer>
 

@@ -5,11 +5,12 @@
 }
 
 :root {
-    --primary-color: #FF6B6B;
-    --secondary-color: #4ECDC4;
+    --primary-color: #E63946;
+    --secondary-color: #F77F88;
+    --dark-color: #1D3557;
     --text-dark: #2D3436;
     --text-light: #636E72;
-    --bg-light: #F5F6FA;
+    --bg-light: #F8F9FA;
     --white: #FFFFFF;
     --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
@@ -21,9 +22,9 @@ body {
     background-color: var(--white);
 }
 
-/* নেভিগেশন */
+/* Navigation */
 .navbar {
-    background-color: var(--white);
+    background-color: var(--dark-color);
     box-shadow: var(--shadow);
     position: sticky;
     top: 0;
@@ -40,23 +41,34 @@ body {
 }
 
 .logo {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     font-weight: bold;
     color: var(--primary-color);
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.7rem;
+    cursor: pointer;
+}
+
+.logo-icon {
+    font-size: 2rem;
+}
+
+.logo-text {
+    letter-spacing: 2px;
 }
 
 .nav-menu {
     display: flex;
-    gap: 2rem;
+    gap: 1.5rem;
+    flex-wrap: wrap;
 }
 
 .nav-link {
-    color: var(--text-dark);
+    color: var(--white);
     text-decoration: none;
     font-weight: 500;
+    font-size: 0.95rem;
     transition: color 0.3s ease;
 }
 
@@ -69,7 +81,7 @@ body {
     position: relative;
     cursor: pointer;
     font-size: 1.5rem;
-    color: var(--text-dark);
+    color: var(--white);
 }
 
 .cart-count {
@@ -88,7 +100,7 @@ body {
     font-weight: bold;
 }
 
-/* হিরো সেকশন */
+/* Hero Section */
 .hero {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: var(--white);
@@ -101,37 +113,42 @@ body {
 }
 
 .hero-content h1 {
-    font-size: 3rem;
+    font-size: 3.5rem;
     margin-bottom: 1rem;
     animation: slideDown 0.8s ease;
+    font-weight: 800;
+    letter-spacing: 1px;
 }
 
 .hero-content p {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     margin-bottom: 2rem;
-    opacity: 0.9;
+    opacity: 0.95;
+    font-weight: 300;
 }
 
-/* বাটন */
+/* Buttons */
 .btn {
     display: inline-block;
-    padding: 0.75rem 2rem;
-    border-radius: 5px;
+    padding: 0.85rem 2.5rem;
+    border-radius: 50px;
     text-decoration: none;
     font-weight: 600;
     cursor: pointer;
     border: none;
     transition: all 0.3s ease;
+    font-size: 1rem;
 }
 
 .btn-primary {
     background-color: var(--white);
     color: var(--primary-color);
+    border: 2px solid var(--white);
 }
 
 .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
 .btn-whatsapp {
@@ -139,7 +156,8 @@ body {
     color: var(--white);
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.6rem;
+    border: none;
 }
 
 .btn-whatsapp:hover {
@@ -147,14 +165,30 @@ body {
     transform: translateY(-2px);
 }
 
-/* কন্টেইনার */
+.btn-add-cart {
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.btn-add-cart:hover {
+    background-color: #d62e39;
+}
+
+/* Container */
 .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 2rem;
 }
 
-/* ক্যাটাগরি */
+/* Categories */
 .categories {
     padding: 3rem 0;
     background-color: var(--bg-light);
@@ -162,138 +196,134 @@ body {
 
 .categories h2 {
     text-align: center;
-    margin-bottom: 2rem;
-    font-size: 2rem;
+    margin-bottom: 2.5rem;
+    font-size: 2.2rem;
+    font-weight: 700;
 }
 
 .category-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 2rem;
 }
 
 .category-card {
     background-color: var(--white);
-    padding: 1.5rem;
-    border-radius: 10px;
+    padding: 2rem 1.5rem;
+    border-radius: 12px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: var(--shadow);
+    border: 2px solid transparent;
 }
 
 .category-card:hover {
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transform: translateY(-8px);
     background-color: var(--primary-color);
     color: var(--white);
+    border-color: var(--primary-color);
 }
 
 .category-card i {
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
+    font-size: 3rem;
+    margin-bottom: 1rem;
     display: block;
 }
 
 .category-card p {
     font-weight: 600;
+    font-size: 1rem;
 }
 
-/* পণ্য */
+/* Products */
 .products {
     padding: 3rem 0;
 }
 
 .products h2 {
     text-align: center;
-    margin-bottom: 2rem;
-    font-size: 2rem;
+    margin-bottom: 2.5rem;
+    font-size: 2.2rem;
+    font-weight: 700;
 }
 
 .products-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2.5rem;
 }
 
 .product-card {
     background-color: var(--white);
-    border-radius: 10px;
+    border-radius: 12px;
     overflow: hidden;
     box-shadow: var(--shadow);
     transition: all 0.3s ease;
+    border: 1px solid #eee;
 }
 
 .product-card:hover {
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    transform: translateY(-8px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    transform: translateY(-10px);
 }
 
 .product-image {
     width: 100%;
     height: 250px;
     object-fit: cover;
-    background-color: var(--bg-light);
+    background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
 }
 
 .product-info {
-    padding: 1.5rem;
+    padding: 1.8rem;
 }
 
 .product-category {
     display: inline-block;
-    background-color: var(--secondary-color);
+    background-color: var(--primary-color);
     color: var(--white);
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    margin-bottom: 0.5rem;
+    padding: 0.4rem 0.9rem;
+    border-radius: 25px;
+    font-size: 0.8rem;
+    margin-bottom: 0.8rem;
     font-weight: 600;
 }
 
 .product-name {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 0.6rem;
     color: var(--text-dark);
+    min-height: 2.4rem;
 }
 
 .product-description {
     color: var(--text-light);
     font-size: 0.9rem;
-    margin-bottom: 1rem;
-    line-height: 1.4;
+    margin-bottom: 1.2rem;
+    line-height: 1.5;
 }
 
 .product-price {
-    font-size: 1.5rem;
-    font-weight: bold;
+    font-size: 1.6rem;
+    font-weight: 800;
     color: var(--primary-color);
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .product-actions {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.8rem;
+    flex-direction: column;
 }
 
-.btn-add-cart {
-    flex: 1;
-    background-color: var(--primary-color);
-    color: var(--white);
-    padding: 0.5rem;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.btn-add-cart:hover {
-    background-color: #ff5252;
-}
-
-/* যোগাযোগ */
+/* Contact */
 .contact {
     background-color: var(--bg-light);
     padding: 3rem 0;
@@ -301,21 +331,27 @@ body {
 
 .contact h2 {
     text-align: center;
-    margin-bottom: 2rem;
-    font-size: 2rem;
+    margin-bottom: 2.5rem;
+    font-size: 2.2rem;
+    font-weight: 700;
 }
 
 .contact-info {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 2rem;
     text-align: center;
 }
 
 .contact-item i {
-    font-size: 2.5rem;
+    font-size: 3rem;
     color: var(--primary-color);
     margin-bottom: 1rem;
+}
+
+.contact-item p {
+    font-size: 1.1rem;
+    font-weight: 500;
 }
 
 .contact-item a {
@@ -324,20 +360,24 @@ body {
     font-weight: 600;
 }
 
-/* ফুটার */
+.contact-item a:hover {
+    text-decoration: underline;
+}
+
+/* Footer */
 .footer {
-    background-color: var(--text-dark);
+    background-color: var(--dark-color);
     color: var(--white);
     text-align: center;
-    padding: 2rem;
+    padding: 2.5rem;
 }
 
 .footer-content p {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.7rem;
 }
 
 .footer a {
-    color: var(--secondary-color);
+    color: var(--primary-color);
     text-decoration: none;
 }
 
@@ -345,7 +385,7 @@ body {
     text-decoration: underline;
 }
 
-/* অ্যানিমেশন */
+/* Animations */
 @keyframes slideDown {
     from {
         opacity: 0;
@@ -357,11 +397,11 @@ body {
     }
 }
 
-/* মোবাইল রেসপন্সিভ */
+/* Mobile Responsive */
 @media (max-width: 768px) {
     .nav-menu {
-        gap: 1rem;
-        font-size: 0.9rem;
+        gap: 0.8rem;
+        font-size: 0.85rem;
     }
 
     .hero-content h1 {
@@ -373,31 +413,27 @@ body {
     }
 
     .products-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 1rem;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 1.5rem;
     }
 
     .category-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-
-    .product-actions {
-        flex-direction: column;
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
 @media (max-width: 480px) {
     .nav-container {
-        padding: 1rem;
+        padding: 0.8rem 1rem;
     }
 
     .logo {
-        font-size: 1rem;
+        font-size: 1.3rem;
     }
 
     .nav-menu {
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.3rem;
         font-size: 0.8rem;
     }
 
@@ -410,6 +446,10 @@ body {
     }
 
     .category-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr;
+    }
+
+    .hero {
+        padding: 3rem 1rem;
     }
 }

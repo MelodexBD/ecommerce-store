@@ -8,10 +8,14 @@ Thumbs.db
 *.swp
 *.swo
 
-# Node modules (যদি ভবিষ্যতে ব্যবহার করেন)
+# Node modules
 node_modules/
 npm-debug.log
 
 # Environment
 .env
 .env.local
+
+# Build files
+dist/
+build/
