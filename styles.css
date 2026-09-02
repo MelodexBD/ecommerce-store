@@ -2214,3 +2214,81 @@ img {
 
 
 }
+/* =========================================
+   SOCIAL MEDIA BUTTONS
+========================================= */
+
+.social-btn {
+    width: 100%;
+    min-height: 46px;
+    margin-top: 22px;
+    padding: 0 18px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    border-radius: 8px;
+
+    font-size: 0.85rem;
+    font-weight: 700;
+
+    border: 1px solid #333338;
+
+    transition: 0.25s ease;
+}
+
+
+/* WhatsApp Button */
+
+.whatsapp-social {
+    background: #25d366;
+    color: #ffffff;
+    border-color: #25d366;
+}
+
+.whatsapp-social:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(37, 211, 102, 0.25);
+}
+
+
+/* Email Button */
+
+.email-social {
+    background: #e50914;
+    color: #ffffff;
+    border-color: #e50914;
+}
+
+.email-social:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(229, 9, 20, 0.25);
+}
+
+
+/* Facebook Button */
+
+.facebook-social {
+    background: #1877f2;
+    color: #ffffff;
+    border-color: #1877f2;
+}
+
+.facebook-social:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(24, 119, 242, 0.25);
+}
+
+
+/* Icon Animation */
+
+.social-btn i {
+    font-size: 1rem;
+    transition: 0.25s ease;
+}
+
+.social-btn:hover i {
+    transform: scale(1.15);
+}
