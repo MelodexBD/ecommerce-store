@@ -16,7 +16,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Products array (all dummy products removed; will only hold your admin products)
 let products = [];
 let cart = [];
 
@@ -39,18 +38,25 @@ async function fetchFirebaseProducts() {
         const fbProducts = [];
         querySnapshot.forEach((doc) => {
             const data = doc.data();
+            const imgs = data.images && data.images.length > 0 ? data.images : (data.image ? [data.image] : []);
             fbProducts.push({
                 id: doc.id,
                 name: data.name,
                 category: normalizeCategory(data.category),
                 price: Number(data.price),
-                image: data.image || (data.images && data.images[0]) || '',
-                images: data.images || [data.image],
+                image: imgs[0] || '',
+                images: imgs,
                 description: data.description || ''
             });
         });
 
         products = fbProducts;
+
+        // Update Total Products Count in UI
+        const countEl = document.getElementById('totalProductsCount');
+        if (countEl) {
+            countEl.textContent = products.length > 0 ? `${products.length}+` : '0';
+        }
     } catch (error) {
         console.error("Firebase fetch failed:", error);
     }
@@ -72,9 +78,27 @@ function displayProductsByCategory() {
             }
             
             categoryProducts.forEach(product => {
+                // Generate gallery thumbnails if multiple images exist
+                let thumbsHtml = '';
+                if (product.images && product.images.length > 1) {
+                    thumbsHtml = '<div class="product-gallery-thumbs" style="display: flex; gap: 6px; margin: 8px 0; justify-content: center;">';
+                    product.images.forEach((imgUrl) => {
+                        thumbsHtml += `
+                            <img src="${imgUrl}" 
+                                 onclick="switchProductImage('${product.id}', '${imgUrl}')" 
+                                 style="width: 38px; height: 38px; object-fit: cover; border-radius: 4px; border: 1px solid #334155; cursor: pointer; transition: 0.2s;"
+                                 onmouseover="this.style.borderColor='#38bdf8'"
+                                 onmouseout="this.style.borderColor='#334155'"
+                                 alt="">
+                        `;
+                    });
+                    thumbsHtml += '</div>';
+                }
+
                 const productHTML = `
                     <div class="product-card">
-                        <img src="${product.image}" alt="${product.name}" class="product-image">
+                        <img src="${product.image}" id="main-img-${product.id}" alt="${product.name}" class="product-image">
+                        ${thumbsHtml}
                         <div class="product-info">
                             <span class="product-category">${getCategoryName(product.category)}</span>
                             <h3 class="product-name">${product.name}</h3>
@@ -94,6 +118,14 @@ function displayProductsByCategory() {
         }
     });
 }
+
+// Function to switch main image on thumbnail click
+window.switchProductImage = function(productId, targetSrc) {
+    const mainImg = document.getElementById(`main-img-${productId}`);
+    if (mainImg) {
+        mainImg.src = targetSrc;
+    }
+};
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async function() {
