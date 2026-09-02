@@ -1,5 +1,23 @@
-// Products Database with Real Images and Categories
-const products = [
+// Import Firebase SDK modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+// Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyBTVoMKlJeRWsgIL5gCdWCHYdx3w8brWHQ",
+    authDomain: "melodex-store.firebaseapp.com",
+    projectId: "melodex-store",
+    storageBucket: "melodex-store.firebasestorage.app",
+    messagingSenderId: "563447283369",
+    appId: "1:563447283369:web:a999e89adf7380ec4733b8",
+    measurementId: "G-G133358KKB"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Default Seed Products
+let products = [
     // Guitars
     {
         id: 1,
@@ -205,6 +223,45 @@ const products = [
 
 let cart = [];
 
+// Helper to normalize category slugs
+function normalizeCategory(cat) {
+    if (!cat) return 'guitars';
+    const c = cat.toLowerCase();
+    if (c.includes('guitar')) return 'guitars';
+    if (c.includes('pedalboard')) return 'pedalboards';
+    if (c.includes('pedal')) return 'pedals';
+    if (c.includes('stand')) return 'stands';
+    if (c.includes('cable') || c.includes('accessories')) return 'cables';
+    return c;
+}
+
+// Fetch products from Firebase Firestore
+async function fetchFirebaseProducts() {
+    try {
+        const querySnapshot = await getDocs(collection(db, "products"));
+        const fbProducts = [];
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            fbProducts.push({
+                id: doc.id,
+                name: data.name,
+                category: normalizeCategory(data.category),
+                price: Number(data.price),
+                image: data.image || (data.images && data.images[0]) || '',
+                images: data.images || [data.image],
+                description: data.description || ''
+            });
+        });
+
+        // Add Firebase products to the front of list
+        if (fbProducts.length > 0) {
+            products = [...fbProducts, ...products];
+        }
+    } catch (error) {
+        console.error("Firebase fetch failed:", error);
+    }
+}
+
 // Display products by category
 function displayProductsByCategory() {
     const categories = ['guitars', 'pedals', 'pedalboards', 'stands', 'cables'];
@@ -225,7 +282,7 @@ function displayProductsByCategory() {
                             <p class="product-description">${product.description}</p>
                             <div class="product-price">৳ ${product.price.toLocaleString('en-BD')}</div>
                             <div class="product-actions">
-                                <button class="btn-add-cart" onclick="addToCart(${product.id})">Add to Cart</button>
+                                <button class="btn-add-cart" onclick="addToCart('${product.id}')">Add to Cart</button>
                                 <a href="https://wa.me/+8801310863206?text=Hi%20Melodex,%20I'm%20interested%20in%20${encodeURIComponent(product.name)}%20for%20%E0%A7%B3${product.price}" target="_blank" class="btn btn-whatsapp">
                                     <i class="fab fa-whatsapp"></i> Order Now
                                 </a>
@@ -240,7 +297,8 @@ function displayProductsByCategory() {
 }
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    await fetchFirebaseProducts();
     displayProductsByCategory();
     
     // Smooth scroll for navigation links
@@ -258,16 +316,21 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Add to Cart
-function addToCart(productId) {
-    const product = products.find(p => p.id === productId);
-    cart.push(product);
-    updateCartCount();
-    showNotification(`${product.name} added to cart!`);
-}
+window.addToCart = function(productId) {
+    const product = products.find(p => String(p.id) === String(productId));
+    if (product) {
+        cart.push(product);
+        updateCartCount();
+        showNotification(`${product.name} added to cart!`);
+    }
+};
 
 // Update Cart Count
 function updateCartCount() {
-    document.querySelector('.cart-count').textContent = cart.length;
+    const cartEl = document.querySelector('.cart-count');
+    if (cartEl) {
+        cartEl.textContent = cart.length;
+    }
 }
 
 // Notification
