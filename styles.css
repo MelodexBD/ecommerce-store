@@ -5,37 +5,36 @@
 }
 
 :root {
-    --primary-color: #0F172A;
-    --secondary-color: #1E293B;
-    --accent-color: #3B82F6;
-    --accent-light: #60A5FA;
-    --gold-color: #D4AF37;
-    --text-dark: #0F172A;
-    --text-light: #64748B;
-    --text-muted: #94A3B8;
-    --bg-light: #F8FAFC;
-    --bg-white: #FFFFFF;
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    --primary-color: #DC143C;
+    --primary-dark: #B22222;
+    --secondary-color: #1a1a1a;
+    --text-white: #FFFFFF;
+    --text-light: #E0E0E0;
+    --text-muted: #B0B0B0;
+    --bg-dark: #0D0D0D;
+    --bg-darker: #000000;
+    --accent-gold: #FFD700;
+    --shadow-sm: 0 1px 3px 0 rgba(220, 20, 60, 0.2);
+    --shadow-md: 0 4px 6px -1px rgba(220, 20, 60, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(220, 20, 60, 0.4);
+    --shadow-xl: 0 20px 25px -5px rgba(220, 20, 60, 0.5);
 }
 
 body {
     font-family: 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
     line-height: 1.6;
-    color: var(--text-dark);
-    background-color: var(--bg-white);
+    color: var(--text-white);
+    background-color: var(--bg-darker);
 }
 
 /* Navigation */
 .navbar {
-    background-color: var(--bg-white);
-    box-shadow: var(--shadow-md);
+    background: linear-gradient(135deg, var(--bg-darker) 0%, var(--secondary-color) 100%);
+    box-shadow: var(--shadow-lg);
     position: sticky;
     top: 0;
     z-index: 1000;
-    border-bottom: 2px solid var(--accent-color);
+    border-bottom: 3px solid var(--primary-color);
 }
 
 .nav-container {
@@ -48,9 +47,9 @@ body {
 }
 
 .logo {
-    font-size: 1.8rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, var(--accent-color), var(--gold-color));
+    font-size: 2rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-gold));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -58,30 +57,36 @@ body {
     align-items: center;
     gap: 0.8rem;
     cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 3px;
 }
 
 .logo-icon {
-    font-size: 2.2rem;
+    font-size: 2.5rem;
+    filter: drop-shadow(0 0 10px rgba(220, 20, 60, 0.6));
 }
 
 .logo-text {
-    letter-spacing: 2px;
+    letter-spacing: 3px;
+    font-weight: 900;
 }
 
 .nav-menu {
     display: flex;
-    gap: 2rem;
+    gap: 2.5rem;
     flex-wrap: wrap;
 }
 
 .nav-link {
-    color: var(--text-dark);
+    color: var(--text-white);
     text-decoration: none;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.95rem;
     transition: all 0.3s ease;
     position: relative;
-    padding-bottom: 0.3rem;
+    padding-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .nav-link::after {
@@ -90,8 +95,8 @@ body {
     bottom: 0;
     left: 0;
     width: 0;
-    height: 2px;
-    background: var(--accent-color);
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-gold));
     transition: width 0.3s ease;
 }
 
@@ -102,45 +107,49 @@ body {
 
 .nav-link:hover,
 .nav-link.active {
-    color: var(--accent-color);
+    color: var(--primary-color);
+    text-shadow: 0 0 10px rgba(220, 20, 60, 0.5);
 }
 
 .cart-icon {
     position: relative;
     cursor: pointer;
-    font-size: 1.5rem;
-    color: var(--accent-color);
-    transition: transform 0.3s ease;
+    font-size: 1.8rem;
+    color: var(--primary-color);
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 0 5px rgba(220, 20, 60, 0.5));
 }
 
 .cart-icon:hover {
-    transform: scale(1.1);
+    transform: scale(1.15);
+    filter: drop-shadow(0 0 10px rgba(220, 20, 60, 0.8));
 }
 
 .cart-count {
     position: absolute;
-    top: -8px;
-    right: -8px;
-    background: linear-gradient(135deg, var(--accent-color), var(--gold-color));
-    color: var(--bg-white);
+    top: -10px;
+    right: -10px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: var(--text-white);
     border-radius: 50%;
-    width: 22px;
-    height: 22px;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     font-weight: bold;
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-lg);
+    border: 2px solid var(--accent-gold);
 }
 
 /* Hero Section */
 .hero {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-    color: var(--bg-white);
-    padding: 7rem 2rem;
+    background: linear-gradient(135deg, var(--bg-darker) 0%, var(--secondary-color) 50%, var(--primary-dark) 100%);
+    color: var(--text-white);
+    padding: 8rem 2rem;
     text-align: center;
-    min-height: 500px;
+    min-height: 550px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -155,8 +164,19 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(212, 175, 55, 0.1) 0%, transparent 50%);
+    background: radial-gradient(circle at 20% 50%, rgba(220, 20, 60, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 215, 0, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.hero::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="%23DC143C" stroke-width="0.5" opacity="0.1"/></svg>');
     pointer-events: none;
 }
 
@@ -166,67 +186,96 @@ body {
 }
 
 .hero-content h1 {
-    font-size: 4rem;
+    font-size: 4.5rem;
     margin-bottom: 1rem;
     animation: slideDown 0.8s ease;
-    font-weight: 800;
-    letter-spacing: 1px;
-    line-height: 1.2;
+    font-weight: 900;
+    letter-spacing: 2px;
+    line-height: 1.1;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, var(--text-white) 0%, var(--accent-gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 30px rgba(220, 20, 60, 0.3);
 }
 
 .hero-content p {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     margin-bottom: 2.5rem;
     opacity: 0.95;
     font-weight: 300;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--accent-gold);
 }
 
 /* Products Section */
 .products-section {
-    padding: 4rem 0;
-    background-color: var(--bg-white);
+    padding: 5rem 0;
+    background-color: var(--bg-dark);
+    border-top: 2px solid var(--primary-color);
 }
 
-.products-section:nth-child(even) {
-    background-color: var(--bg-light);
+.products-section:nth-child(odd) {
+    background: linear-gradient(135deg, var(--bg-dark) 0%, var(--secondary-color) 100%);
 }
 
 .products-section h2 {
     text-align: center;
-    margin-bottom: 3rem;
-    font-size: 2.5rem;
-    font-weight: 800;
-    color: var(--text-dark);
+    margin-bottom: 3.5rem;
+    font-size: 2.8rem;
+    font-weight: 900;
+    color: var(--text-white);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    position: relative;
+    padding-bottom: 1.5rem;
+}
+
+.products-section h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-gold));
+    border-radius: 2px;
 }
 
 /* Buttons */
 .btn {
     display: inline-block;
-    padding: 0.95rem 2.8rem;
-    border-radius: 8px;
+    padding: 1rem 2.8rem;
+    border-radius: 4px;
     text-decoration: none;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     border: none;
     transition: all 0.3s ease;
     font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
-    color: var(--bg-white);
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: var(--text-white);
     box-shadow: var(--shadow-md);
+    border: 2px solid var(--accent-gold);
 }
 
 .btn-primary:hover {
     transform: translateY(-3px);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-xl);
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
 }
 
 .btn-whatsapp {
     background-color: #25D366;
-    color: var(--bg-white);
+    color: var(--text-white);
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
@@ -241,21 +290,24 @@ body {
 }
 
 .btn-add-cart {
-    background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
-    color: var(--bg-white);
-    padding: 0.7rem 1.2rem;
-    border: none;
-    border-radius: 6px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: var(--text-white);
+    padding: 0.8rem 1.5rem;
+    border: 2px solid var(--accent-gold);
+    border-radius: 4px;
     cursor: pointer;
-    font-weight: 600;
+    font-weight: 700;
     transition: all 0.3s ease;
     width: 100%;
     box-shadow: var(--shadow-sm);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .btn-add-cart:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
 }
 
 /* Container */
@@ -273,33 +325,51 @@ body {
 }
 
 .product-card {
-    background-color: var(--bg-white);
-    border-radius: 12px;
+    background: linear-gradient(135deg, var(--secondary-color), var(--bg-dark));
+    border-radius: 8px;
     overflow: hidden;
     box-shadow: var(--shadow-md);
     transition: all 0.3s ease;
-    border: 1px solid #E2E8F0;
+    border: 2px solid rgba(220, 20, 60, 0.3);
 }
 
 .product-card:hover {
     box-shadow: var(--shadow-xl);
-    transform: translateY(-12px);
+    transform: translateY(-15px);
+    border-color: var(--primary-color);
 }
 
 .product-image {
     width: 100%;
     height: 280px;
     object-fit: cover;
-    background: linear-gradient(135deg, #E2E8F0, #CBD5E1);
+    background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 4rem;
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.product-image::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(220, 20, 60, 0.1);
+    transition: all 0.3s ease;
 }
 
 .product-card:hover .product-image {
-    transform: scale(1.05);
+    transform: scale(1.08);
+}
+
+.product-card:hover .product-image::after {
+    background: rgba(220, 20, 60, 0.2);
 }
 
 .product-info {
@@ -308,40 +378,46 @@ body {
 
 .product-category {
     display: inline-block;
-    background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
-    color: var(--bg-white);
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: var(--text-white);
+    padding: 0.6rem 1.2rem;
+    border-radius: 4px;
     font-size: 0.8rem;
     margin-bottom: 1rem;
     font-weight: 700;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border: 1px solid var(--accent-gold);
 }
 
 .product-name {
-    font-size: 1.2rem;
+    font-size: 1.25rem;
     font-weight: 700;
     margin-bottom: 0.8rem;
-    color: var(--text-dark);
+    color: var(--text-white);
     min-height: 2.8rem;
     line-height: 1.4;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .product-description {
-    color: var(--text-light);
+    color: var(--text-muted);
     font-size: 0.9rem;
     margin-bottom: 1.5rem;
     line-height: 1.6;
 }
 
 .product-price {
-    font-size: 1.8rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, var(--accent-color), var(--gold-color));
+    font-size: 2rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-gold));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .product-actions {
@@ -352,16 +428,33 @@ body {
 
 /* Contact */
 .contact {
-    background: linear-gradient(to bottom, var(--bg-light), var(--bg-white));
-    padding: 4rem 0;
+    background: linear-gradient(135deg, var(--bg-dark) 0%, var(--secondary-color) 100%);
+    padding: 5rem 0;
+    border-top: 2px solid var(--primary-color);
 }
 
 .contact h2 {
     text-align: center;
-    margin-bottom: 3rem;
-    font-size: 2.5rem;
-    font-weight: 800;
-    color: var(--text-dark);
+    margin-bottom: 3.5rem;
+    font-size: 2.8rem;
+    font-weight: 900;
+    color: var(--text-white);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    position: relative;
+    padding-bottom: 1.5rem;
+}
+
+.contact h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-gold));
+    border-radius: 2px;
 }
 
 .contact-info {
@@ -372,68 +465,76 @@ body {
 }
 
 .contact-item {
-    background: var(--bg-white);
-    padding: 2rem;
-    border-radius: 12px;
+    background: linear-gradient(135deg, var(--secondary-color), var(--bg-dark));
+    padding: 2.5rem;
+    border-radius: 8px;
     box-shadow: var(--shadow-md);
     transition: all 0.3s ease;
+    border: 2px solid rgba(220, 20, 60, 0.3);
 }
 
 .contact-item:hover {
     box-shadow: var(--shadow-lg);
-    transform: translateY(-5px);
+    transform: translateY(-8px);
+    border-color: var(--primary-color);
 }
 
 .contact-item i {
-    font-size: 3rem;
-    color: var(--accent-color);
+    font-size: 3.5rem;
+    color: var(--primary-color);
     margin-bottom: 1rem;
+    filter: drop-shadow(0 0 10px rgba(220, 20, 60, 0.4));
 }
 
 .contact-item p {
     font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text-dark);
+    font-weight: 700;
+    color: var(--text-white);
+    margin-bottom: 0.5rem;
 }
 
 .contact-item a {
-    color: var(--accent-color);
+    color: var(--accent-gold);
     text-decoration: none;
     font-weight: 700;
+    transition: all 0.3s ease;
 }
 
 .contact-item a:hover {
-    text-decoration: underline;
+    color: var(--primary-color);
+    text-shadow: 0 0 10px rgba(220, 20, 60, 0.5);
 }
 
 /* Footer */
 .footer {
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    color: var(--bg-white);
+    background: linear-gradient(135deg, var(--bg-darker) 0%, var(--secondary-color) 100%);
+    color: var(--text-white);
     text-align: center;
     padding: 3rem;
+    border-top: 3px solid var(--primary-color);
 }
 
 .footer-content p {
     margin-bottom: 0.8rem;
-    font-weight: 500;
+    font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
 .footer a {
-    color: var(--gold-color);
+    color: var(--accent-gold);
     text-decoration: none;
     font-weight: 700;
 }
 
 .footer a:hover {
-    text-decoration: underline;
+    text-shadow: 0 0 10px rgba(220, 20, 60, 0.5);
 }
 
 /* Animations */
 @keyframes slideDown {
     from {
         opacity: 0;
-        transform: translateY(-30px);
+        transform: translateY(-40px);
     }
     to {
         opacity: 1;
@@ -445,11 +546,11 @@ body {
 @media (max-width: 768px) {
     .nav-menu {
         gap: 1rem;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
     }
 
     .hero-content h1 {
-        font-size: 2.2rem;
+        font-size: 2.5rem;
     }
 
     .hero-content p {
@@ -474,7 +575,7 @@ body {
     .nav-menu {
         flex-direction: column;
         gap: 0.5rem;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
     }
 
     .hero-content h1 {
