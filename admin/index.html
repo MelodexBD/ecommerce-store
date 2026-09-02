@@ -22,9 +22,11 @@
     .logout-btn { background: #ef4444; width: auto; padding: 6px 15px; }
     .logout-btn:hover { background: #dc2626; }
     .product-item { display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
-    .product-item img { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; }
+    .product-img-group { display: flex; gap: 6px; }
+    .product-item img { width: 45px; height: 45px; object-fit: cover; border-radius: 6px; border: 1px solid #334155; }
     .product-details { flex-grow: 1; margin-left: 15px; }
     .delete-btn { background: #dc2626; width: auto; padding: 5px 12px; font-size: 12px; }
+    .hint { font-size: 12px; color: #64748b; margin-top: 4px; display: block; }
   </style>
 
   <script type="module">
@@ -53,7 +55,7 @@
     const addProductBtn = document.getElementById("add-product-btn");
     const productList = document.getElementById("product-list");
 
-    // Login state watcher
+    // Auth state
     onAuthStateChanged(auth, (user) => {
       if (user) {
         loginSection.classList.add("hidden");
@@ -65,7 +67,7 @@
       }
     });
 
-    // Login logic
+    // Login
     loginBtn.addEventListener("click", async () => {
       const email = document.getElementById("login-email").value;
       const pass = document.getElementById("login-pass").value;
@@ -76,11 +78,11 @@
       }
     });
 
-    // Logout logic
+    // Logout
     logoutBtn.addEventListener("click", () => signOut(auth));
 
-    // Upload image to ImgBB (Free, Instant)
-    async function uploadImage(file) {
+    // Upload single image helper
+    async function uploadSingleImage(file) {
       const formData = new FormData();
       formData.append("image", file);
       const res = await fetch("https://api.imgbb.com/1/upload?key=8cf6eaef999bbd7c67fa17e33554b7ae", {
@@ -92,37 +94,53 @@
       return data.data.url;
     }
 
-    // Add Product
+    // Add Product with multiple images
     addProductBtn.addEventListener("click", async () => {
       const name = document.getElementById("prod-name").value;
       const price = document.getElementById("prod-price").value;
       const category = document.getElementById("prod-category").value;
       const desc = document.getElementById("prod-desc").value;
-      const file = document.getElementById("prod-img").files[0];
+      const fileInput = document.getElementById("prod-imgs");
+      const files = fileInput.files;
 
-      if (!name || !price || !file) {
-        alert("দয়া করে নাম, দাম এবং একটি ছবি সিলেক্ট করুন!");
+      if (!name || !price || files.length === 0) {
+        alert("দয়া করে নাম, দাম এবং কমপক্ষে একটি ছবি সিলেক্ট করুন!");
         return;
       }
 
-      addProductBtn.innerText = "আপলোড হচ্ছে...";
+      if (files.length > 4) {
+        alert("সর্বোচ্চ ৪টি ছবি নির্বাচন করতে পারবেন!");
+        return;
+      }
+
+      addProductBtn.innerText = `ছবি আপলোড হচ্ছে (০/${files.length})...`;
       addProductBtn.disabled = true;
 
       try {
-        const imageUrl = await uploadImage(file);
+        const imageUrls = [];
+        for (let i = 0; i < files.length; i++) {
+          addProductBtn.innerText = `ছবি আপলোড হচ্ছে (${i + 1}/${files.length})...`;
+          const url = await uploadSingleImage(files[i]);
+          imageUrls.push(url);
+        }
+
+        addProductBtn.innerText = "ডাটাবেজে সেভ হচ্ছে...";
+
         await addDoc(collection(db, "products"), {
           name: name,
           price: Number(price),
           category: category,
           description: desc,
-          image: imageUrl,
+          image: imageUrls[0], // Primary image
+          images: imageUrls,   // List of all images (1-4)
           createdAt: serverTimestamp()
         });
+
         alert("প্রোডাক্ট সফলভাবে যোগ হয়েছে!");
         document.getElementById("prod-name").value = "";
         document.getElementById("prod-price").value = "";
         document.getElementById("prod-desc").value = "";
-        document.getElementById("prod-img").value = "";
+        fileInput.value = "";
         loadProducts();
       } catch (err) {
         alert("ত্রুটি: " + err.message);
@@ -132,20 +150,29 @@
       }
     });
 
-    // Load and Display Products
+    // Load Products
     async function loadProducts() {
       productList.innerHTML = "<p style='color:#94a3b8;'>লোড হচ্ছে...</p>";
       const snapshot = await getDocs(collection(db, "products"));
       productList.innerHTML = "";
+      
       snapshot.forEach((item) => {
         const p = item.data();
+        const imgs = p.images && p.images.length > 0 ? p.images : [p.image];
+        
+        let imgHtml = '<div class="product-img-group">';
+        imgs.slice(0, 4).forEach(url => {
+          imgHtml += `<img src="${url}" alt="">`;
+        });
+        imgHtml += '</div>';
+
         const div = document.createElement("div");
         div.className = "product-item";
         div.innerHTML = `
-          <img src="${p.image}" alt="">
+          ${imgHtml}
           <div class="product-details">
             <h4>${p.name}</h4>
-            <p style="font-size: 13px; color: #38bdf8;">৳${p.price} | ${p.category}</p>
+            <p style="font-size: 13px; color: #38bdf8;">৳${p.price} | ${p.category} (${imgs.length}টি ছবি)</p>
           </div>
           <button class="delete-btn" data-id="${item.id}">Delete</button>
         `;
@@ -165,7 +192,7 @@
 </head>
 <body>
   <div class="container">
-    <!-- Login Card -->
+    <!-- Login Section -->
     <div id="login-section" class="card">
       <h2>Admin Login</h2>
       <div class="form-group">
@@ -179,7 +206,7 @@
       <button id="login-btn">Login</button>
     </div>
 
-    <!-- Admin Panel -->
+    <!-- Admin Dashboard -->
     <div id="admin-panel" class="hidden">
       <div class="header-bar">
         <h2>Melodex Admin Dashboard</h2>
@@ -211,8 +238,9 @@
           <textarea id="prod-desc" rows="2" placeholder="প্রোডাক্টের বিবরণ..."></textarea>
         </div>
         <div class="form-group">
-          <label>Product Image</label>
-          <input type="file" id="prod-img" accept="image/*">
+          <label>Product Images (১ থেকে ৪টি নির্বাচন করতে পারবে)</label>
+          <input type="file" id="prod-imgs" accept="image/*" multiple>
+          <span class="hint">ছবি সিলেক্ট করার সময় কিবোর্ডের `Ctrl` বা মোবাইল গ্যালারিতে লং-প্রেস করে একসাথে ১ থেকে ৪টি ছবি বাছাই করো।</span>
         </div>
         <button id="add-product-btn">Add Product</button>
       </div>
