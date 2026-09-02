@@ -73,7 +73,7 @@ function displayProductsByCategory() {
             container.innerHTML = '';
             
             if (categoryProducts.length === 0) {
-                container.innerHTML = '<p style="color: #94a3b8; font-size: 14px; grid-column: 1/-1; text-align: center; padding: 20px;">এই ক্যাটাগরিতে এখনো কোনো প্রোডাক্ট যুক্ত করা হয়নি।</p>';
+                container.innerHTML = '<p style="color: #94a3b8; font-size: 14px; grid-column: 1/-1; text-align: center; padding: 20px;">No products have been added to this category yet.</p>';
                 return;
             }
             
