@@ -39,7 +39,7 @@ ecommerce-store/
 
 Once deployed, visit:
 ```
-https://Saidul2004.github.io/ecommerce-store
+https://MelodexBD.github.io/ecommerce-store
 ```
 
 ## 🎨 Product Categories
@@ -60,7 +60,7 @@ https://Saidul2004.github.io/ecommerce-store
 - Electric Pedal Board — Aluminium Velcro — ৳4,500
 - Ultra Lightweight EVA Pedal Board — ৳2,800
 - Irin 8-Way 9V Power Supply — ৳3,500
-- Ghostfire T-Series Effector Cases
+- Ghostfire T-Series Effector Cases (T-EC6 & T-EC8)
 - Rockhouse Patch Cables — 6 pcs — ৳1,300
 
 ### Stands
@@ -146,21 +146,21 @@ The website is fully responsive with breakpoints at:
 
 Use this link in your Facebook ads:
 ```
-https://Saidul2004.github.io/ecommerce-store
+https://MelodexBD.github.io/ecommerce-store
 ```
 
 All traffic from Facebook ads will land on your store with full product catalog and WhatsApp ordering.
 
-## 📊 Current Color Scheme
+## 🎨 Current Color Scheme
 
 - **Primary Red**: #E63946 (Main brand color)
 - **Secondary Red**: #F77F88 (Gradients)
 - **Dark Blue**: #1D3557 (Navbar/Footer)
 - **Light Background**: #F8F9FA
 
-## 🎯 Future Enhancements
+## 🔮 Future Enhancements
 
-- [ ] Add product images from database
+- [ ] Add high-quality product images
 - [ ] Implement payment gateway integration
 - [ ] Add order tracking system
 - [ ] Create admin dashboard
@@ -180,6 +180,6 @@ For issues or feature requests:
 
 ---
 
-**Happy Selling!** 🎸🎹🥁
+**Happy Selling!** 🎸🎹🎹
 
 *Melodex - Your Musical Journey Starts Here*

@@ -174,7 +174,7 @@ const products = [
         name: 'Silver Sipai Inspire Guitar Cable - Noise Reduction',
         category: 'cables',
         price: 1800,
-        icon: '🔌',
+        icon: '🔗',
         description: 'Premium cable with noise reduction technology'
     },
     {
@@ -182,7 +182,7 @@ const products = [
         name: 'Yongwei Guitar/Keyboard Cable',
         category: 'cables',
         price: 1200,
-        icon: '🔌',
+        icon: '🔗',
         description: 'Universal cable for guitars and keyboards'
     },
     {
@@ -190,7 +190,7 @@ const products = [
         name: 'HK Guitar/Keyboard Cable - Metal Head',
         category: 'cables',
         price: 1500,
-        icon: '🔌',
+        icon: '🔗',
         description: 'Durable cable with metal connectors'
     },
     {
@@ -198,7 +198,7 @@ const products = [
         name: 'Gold-Plated 6.35mm Mono Audio Cable',
         category: 'cables',
         price: 2000,
-        icon: '🔌',
+        icon: '🔗',
         description: 'Premium oxygen-free copper cable with shielding'
     }
 ];
@@ -224,7 +224,7 @@ function displayProducts(filter = 'all') {
                     <div class="product-price">৳${product.price.toLocaleString('en-BD')}</div>
                     <div class="product-actions">
                         <button class="btn-add-cart" onclick="addToCart(${product.id})">Add to Cart</button>
-                        <a href="https://wa.me/8801XXXXXXXXX?text=Hi%20Melodex,%20I'm%20interested%20in%20${encodeURIComponent(product.name)}%20for%20৳${product.price}" target="_blank" class="btn btn-whatsapp">
+                        <a href="https://wa.me/8801XXXXXXXXX?text=Hi%20Melodex,%20I'm%20interested%20in%20${encodeURIComponent(product.name)}%20for%20%E0%A7%B3${product.price}" target="_blank" class="btn btn-whatsapp">
                             <i class="fab fa-whatsapp"></i> Order Now
                         </a>
                     </div>
