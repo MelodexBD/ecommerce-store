@@ -2292,3 +2292,92 @@ img {
 .social-btn:hover i {
     transform: scale(1.15);
 }
+/* =========================================
+   SOCIAL MEDIA BUTTONS - FIX
+========================================= */
+
+.contact-item .social-btn {
+    width: 100%;
+    min-height: 48px;
+    margin-top: 22px;
+    padding: 12px 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    border-radius: 8px;
+
+    font-size: 0.9rem;
+    font-weight: 700;
+
+    text-decoration: none;
+
+    transition: all 0.25s ease;
+}
+
+
+/* WhatsApp Button */
+
+.contact-item .whatsapp-social {
+    background: #25d366 !important;
+    color: #ffffff !important;
+    border: 1px solid #25d366 !important;
+}
+
+.contact-item .whatsapp-social:hover {
+    background: #1ebe5d !important;
+
+    color: #ffffff !important;
+
+    transform: translateY(-3px);
+
+    box-shadow: 0 10px 25px rgba(37, 211, 102, 0.25);
+}
+
+
+/* Email Button */
+
+.contact-item .email-social {
+    background: #e50914 !important;
+    color: #ffffff !important;
+    border: 1px solid #e50914 !important;
+}
+
+.contact-item .email-social:hover {
+    background: #ff1a24 !important;
+
+    color: #ffffff !important;
+
+    transform: translateY(-3px);
+
+    box-shadow: 0 10px 25px rgba(229, 9, 20, 0.25);
+}
+
+
+/* Facebook Button */
+
+.contact-item .facebook-social {
+    background: #1877f2 !important;
+    color: #ffffff !important;
+    border: 1px solid #1877f2 !important;
+}
+
+.contact-item .facebook-social:hover {
+    background: #0d65d9 !important;
+
+    color: #ffffff !important;
+
+    transform: translateY(-3px);
+
+    box-shadow: 0 10px 25px rgba(24, 119, 242, 0.25);
+}
+
+
+/* Button Icons */
+
+.contact-item .social-btn i {
+    font-size: 1rem;
+    color: #ffffff !important;
+}
