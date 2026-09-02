@@ -1,862 +1,156 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Melodex | Musical Instruments & Accessories</title>
-
-    <meta name="description"
-        content="Premium musical instruments and accessories for musicians, creators and performers.">
-
-    <!-- CSS -->
-    <link rel="stylesheet" href="styles.css">
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-
 <body>
-
-    <!-- =========================
-         NAVIGATION
-    ========================== -->
-
-    <nav class="navbar">
-
-        <div class="nav-container">
-
-            <!-- Logo -->
-
-            <a href="#home" class="logo">
-
-                <span class="logo-white">MELO</span><span class="logo-red">DEX</span>
-
+    <!-- Navigation Bar -->
+    <header class="header">
+        <div class="header-container">
+            <a href="#" class="logo">
+                <span class="logo-text">MELODEX</span>
+                <span class="logo-dot">.</span>
             </a>
 
+            <nav class="nav-menu">
+                <a href="#guitars" class="nav-link">Guitars</a>
+                <a href="#pedals" class="nav-link">Pedals</a>
+                <a href="#pedalboards" class="nav-link">Pedalboards</a>
+                <a href="#stands" class="nav-link">Stands</a>
+                <a href="#cables" class="nav-link">Cables</a>
+                <a href="#about" class="nav-link">About</a>
+            </nav>
 
-            <!-- Navigation Menu -->
-
-            <div class="nav-menu">
-
-                <a href="#guitars" class="nav-link">
-                    Shop
+            <div class="nav-actions">
+                <button class="cart-btn" onclick="alert('Cart items: ' + cart.length)">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-count">0</span>
+                </button>
+                <a href="https://wa.me/+8801310863206" target="_blank" class="btn btn-whatsapp-nav">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
                 </a>
-
-                <a href="#categories" class="nav-link">
-                    Categories
-                </a>
-
-                <a href="#about" class="nav-link">
-                    About
-                </a>
-
-                <a href="#contact" class="nav-link">
-                    Contact
-                </a>
-
             </div>
-
-
-            <!-- Cart -->
-
-            <div class="cart-icon" title="Shopping Cart">
-
-                <i class="fas fa-shopping-cart"></i>
-
-                <span class="cart-count">0</span>
-
-            </div>
-
         </div>
+    </header>
 
-    </nav>
-
-
-    <!-- =========================
-         HERO SECTION
-    ========================== -->
-
-    <section id="home" class="hero">
-
-        <!-- Background Effects -->
-
-        <div class="hero-glow"></div>
-
-
-        <div class="hero-container">
-
-
-            <!-- LEFT CONTENT -->
-
-            <div class="hero-content">
-
-                <div class="hero-tag">
-
-                    MUSICAL INSTRUMENTS & ACCESSORIES
-
-                </div>
-
-
-                <h1>
-
-                    <span class="title-white">
-                        Play better.
-                    </span>
-
-                    <span class="title-red">
-                        Sound greater.
-                    </span>
-
-                </h1>
-
-
-                <p class="hero-description">
-
-                    Premium musical gear, carefully selected for musicians,
-                    creators and performers. Quality products, genuine imports
-                    and service you can count on.
-
-                </p>
-
-
-                <!-- Buttons -->
-
-                <div class="hero-buttons">
-
-
-                    <a href="#guitars" class="btn explore-btn">
-
-                        Explore Products
-
-                        <i class="fas fa-arrow-right"></i>
-
-                    </a>
-
-
-                    <a href="https://wa.me/8801310863206"
-                        target="_blank"
-                        class="btn whatsapp-hero-btn">
-
-                        <i class="fab fa-whatsapp"></i>
-
-                        WhatsApp Us
-
-                    </a>
-
-
-                </div>
-
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <span class="hero-badge">Curated Gear for Musicians</span>
+            <h1 class="hero-title">Elevate Your Sound with Premium Instruments</h1>
+            <p class="hero-subtitle">Discover handcrafted guitars, tone-shaping effects, heavy-duty pedalboards, and pristine audio cables designed for creators.</p>
+            <div class="hero-buttons">
+                <a href="#guitars" class="btn btn-primary">Explore Products</a>
+                <a href="https://wa.me/+8801310863206" target="_blank" class="btn btn-secondary">Direct Order</a>
             </div>
-
-
-
-            <!-- RIGHT VISUAL -->
-
-            <div class="hero-visual">
-
-
-                <div class="visual-card">
-
-
-                    <div class="visual-logo">
-
-                        <span class="visual-white">
-                            MELO
-                        </span>
-
-                        <span class="visual-red">
-                            DEX
-                        </span>
-
-                    </div>
-
-
-                    <div class="visual-subtitle">
-
-                        GEAR FOR CREATORS
-
-                    </div>
-
-
-                    <div class="music-symbol">
-
-                        <i class="fas fa-music"></i>
-
-                    </div>
-
-
-                    <!-- Decorative Lines -->
-
-                    <div class="card-line line-one"></div>
-
-                    <div class="card-line line-two"></div>
-
-
-                </div>
-
-
-            </div>
-
-
         </div>
-
     </section>
 
-
-
-    <!-- =========================
-         CATEGORIES
-    ========================== -->
-
-    <section id="categories" class="categories-section">
-
-        <div class="container">
-
-
-            <div class="section-heading">
-
-                <span class="section-tag">
-                    EXPLORE OUR COLLECTION
-                </span>
-
-                <h2>
-
-                    Shop by
-
-                    <span>
-                        Category
-                    </span>
-
-                </h2>
-
-                <p>
-
-                    Find the gear that helps you create your perfect sound.
-
-                </p>
-
+    <!-- Main Store Catalog -->
+    <main class="store-container">
+        <!-- Guitars Section -->
+        <section id="guitars" class="category-section">
+            <div class="section-header">
+                <h2>Electric & Acoustic Guitars</h2>
+                <p>Precision-crafted instruments with tone and comfort in mind</p>
             </div>
-
-
-            <div class="categories-grid">
-
-
-                <a href="#guitars" class="category-card">
-
-                    <div class="category-icon">
-
-                        <i class="fas fa-guitar"></i>
-
-                    </div>
-
-                    <h3>Guitars</h3>
-
-                    <p>Electric & Acoustic</p>
-
-                </a>
-
-
-
-                <a href="#pedals" class="category-card">
-
-                    <div class="category-icon">
-
-                        <i class="fas fa-sliders"></i>
-
-                    </div>
-
-                    <h3>Pedals</h3>
-
-                    <p>Effects & Sound</p>
-
-                </a>
-
-
-
-                <a href="#pedalboards" class="category-card">
-
-                    <div class="category-icon">
-
-                        <i class="fas fa-plug"></i>
-
-                    </div>
-
-                    <h3>Pedalboards</h3>
-
-                    <p>Boards & Power</p>
-
-                </a>
-
-
-
-                <a href="#stands" class="category-card">
-
-                    <div class="category-icon">
-
-                        <i class="fas fa-music"></i>
-
-                    </div>
-
-                    <h3>Stands</h3>
-
-                    <p>Stable & Reliable</p>
-
-                </a>
-
-
-
-                <a href="#cables" class="category-card">
-
-                    <div class="category-icon">
-
-                        <i class="fas fa-headphones"></i>
-
-                    </div>
-
-                    <h3>Accessories</h3>
-
-                    <p>Cables & More</p>
-
-                </a>
-
-
-            </div>
-
-
-        </div>
-
-    </section>
-
-
-
-    <!-- =========================
-         GUITARS
-    ========================== -->
-
-    <section id="guitars" class="products-section">
-
-        <div class="container">
-
-            <div class="product-section-header">
-
-                <div>
-
-                    <span class="section-tag">
-                        SHOP COLLECTION
-                    </span>
-
-                    <h2>
-
-                        Guitars
-
-                    </h2>
-
-                </div>
-
-                <p>
-
-                    Discover instruments designed to inspire your next sound.
-
-                </p>
-
-            </div>
-
-
             <div class="products-grid" id="guitarsContainer">
-
-                <!-- Products load from script.js -->
-
+                <p style="color: #94a3b8; text-align: center; grid-column: 1/-1;">লোড হচ্ছে...</p>
             </div>
+        </section>
 
-        </div>
-
-    </section>
-
-
-
-    <!-- =========================
-         PEDALS
-    ========================== -->
-
-    <section id="pedals" class="products-section alternate-section">
-
-        <div class="container">
-
-            <div class="product-section-header">
-
-                <div>
-
-                    <span class="section-tag">
-                        SHAPE YOUR SOUND
-                    </span>
-
-                    <h2>
-
-                        Pedals & Effects
-
-                    </h2>
-
-                </div>
-
-                <p>
-
-                    Take control of your tone and creativity.
-
-                </p>
-
+        <!-- Pedals Section -->
+        <section id="pedals" class="category-section">
+            <div class="section-header">
+                <h2>Pedals & Effects</h2>
+                <p>Unleash your sonic potential with rich modulation and distortion</p>
             </div>
-
-
             <div class="products-grid" id="pedalsContainer">
-
-                <!-- Products load from script.js -->
-
+                <p style="color: #94a3b8; text-align: center; grid-column: 1/-1;">লোড হচ্ছে...</p>
             </div>
+        </section>
 
-        </div>
-
-    </section>
-
-
-
-    <!-- =========================
-         PEDALBOARDS
-    ========================== -->
-
-    <section id="pedalboards" class="products-section">
-
-        <div class="container">
-
-            <div class="product-section-header">
-
-                <div>
-
-                    <span class="section-tag">
-                        BUILD YOUR RIG
-                    </span>
-
-                    <h2>
-
-                        Pedalboards & Power
-
-                    </h2>
-
-                </div>
-
-                <p>
-
-                    Keep your pedals organized, powered and ready.
-
-                </p>
-
+        <!-- Pedalboards Section -->
+        <section id="pedalboards" class="category-section">
+            <div class="section-header">
+                <h2>Pedalboards & Power</h2>
+                <p>Road-ready boards, robust flight cases, and isolated clean power</p>
             </div>
-
-
             <div class="products-grid" id="pedalboardsContainer">
-
-                <!-- Products load from script.js -->
-
+                <p style="color: #94a3b8; text-align: center; grid-column: 1/-1;">লোড হচ্ছে...</p>
             </div>
+        </section>
 
-        </div>
-
-    </section>
-
-
-
-    <!-- =========================
-         STANDS
-    ========================== -->
-
-    <section id="stands" class="products-section alternate-section">
-
-        <div class="container">
-
-            <div class="product-section-header">
-
-                <div>
-
-                    <span class="section-tag">
-                        KEEP IT SAFE
-                    </span>
-
-                    <h2>
-
-                        Stands
-
-                    </h2>
-
-                </div>
-
-                <p>
-
-                    Strong and reliable support for your instruments.
-
-                </p>
-
+        <!-- Stands Section -->
+        <section id="stands" class="category-section">
+            <div class="section-header">
+                <h2>Stands & Mounts</h2>
+                <p>Rock-solid support for stage setups, studios, and home displays</p>
             </div>
-
-
             <div class="products-grid" id="standsContainer">
-
-                <!-- Products load from script.js -->
-
+                <p style="color: #94a3b8; text-align: center; grid-column: 1/-1;">লোড হচ্ছে...</p>
             </div>
+        </section>
 
-        </div>
-
-    </section>
-
-
-
-    <!-- =========================
-         CABLES
-    ========================== -->
-
-    <section id="cables" class="products-section">
-
-        <div class="container">
-
-            <div class="product-section-header">
-
-                <div>
-
-                    <span class="section-tag">
-                        COMPLETE YOUR SETUP
-                    </span>
-
-                    <h2>
-
-                        Cables & Accessories
-
-                    </h2>
-
-                </div>
-
-                <p>
-
-                    Essential accessories for a clean and reliable setup.
-
-                </p>
-
+        <!-- Cables Section -->
+        <section id="cables" class="category-section">
+            <div class="section-header">
+                <h2>Cables & Accessories</h2>
+                <p>Shielded low-noise audio connections ensuring crystal clarity</p>
             </div>
-
-
             <div class="products-grid" id="cablesContainer">
-
-                <!-- Products load from script.js -->
-
+                <p style="color: #94a3b8; text-align: center; grid-column: 1/-1;">লোড হচ্ছে...</p>
             </div>
+        </section>
+    </main>
 
-        </div>
-
-    </section>
-
-
-
-    <!-- =========================
-         ABOUT
-    ========================== -->
-
+    <!-- About Section with Dynamic Product Stats -->
     <section id="about" class="about-section">
-
-        <div class="container">
-
-            <div class="about-content">
-
-
-                <div class="about-left">
-
-                    <span class="section-tag">
-
-                        ABOUT MELODEX
-
-                    </span>
-
-
-                    <h2>
-
-                        Gear for
-
-                        <span>
-                            creators.
-                        </span>
-
-                    </h2>
-
-
-                    <p>
-
-                        Melodex is focused on bringing quality musical
-                        instruments and accessories to musicians, creators
-                        and performers.
-
-                    </p>
-
-
-                    <p>
-
-                        From guitars and pedals to cables, stands and essential
-                        accessories, we carefully select products that help you
-                        build your perfect setup.
-
-                    </p>
-
-
-                    <a href="#contact" class="about-button">
-
-                        Contact Melodex
-
-                        <i class="fas fa-arrow-right"></i>
-
-                    </a>
-
-
-                </div>
-
-
-
-                <div class="about-stats">
-
-
-                    <div class="stat-card">
-
-                        <strong>5+</strong>
-
-                        <span>Product Categories</span>
-
-                    </div>
-
-
-                    <div class="stat-card">
-
-                        <strong>24+</strong>
-
-                        <span>Products Available</span>
-
-                    </div>
-
-
-                    <div class="stat-card">
-
-                        <strong>BD</strong>
-
-                        <span>Based Business</span>
-
-                    </div>
-
-
-                    <div class="stat-card">
-
-                        <strong>24/7</strong>
-
-                        <span>WhatsApp Orders</span>
-
-                    </div>
-
-
-                </div>
-
-
+        <div class="about-container">
+            <div class="about-text">
+                <span class="about-badge">ABOUT MELODEX</span>
+                <h2>Gear for creators.</h2>
+                <p>Melodex is focused on bringing quality musical instruments and accessories to musicians, creators and performers.</p>
+                <p>From guitars and pedals to cables, stands and essential accessories, we carefully select products that help you build your perfect setup.</p>
+                <a href="https://wa.me/+8801310863206" target="_blank" class="about-contact-link">Contact Melodex &rarr;</a>
             </div>
 
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number">5+</span>
+                    <span class="stat-label">Product Categories</span>
+                </div>
+                <div class="stat-card">
+                    <!-- Dynamic Product Count from Firebase -->
+                    <span class="stat-number" id="totalProductsCount">0</span>
+                    <span class="stat-label">Products Available</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">BD</span>
+                    <span class="stat-label">Based Business</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">24/7</span>
+                    <span class="stat-label">WhatsApp Orders</span>
+                </div>
+            </div>
         </div>
-
     </section>
 
-
-
-    <!-- =========================
-         CONTACT
-    ========================== -->
-<section id="contact" class="contact">
-
-    <div class="container">
-
-        <div class="section-heading">
-
-            <span class="section-tag">
-                GET IN TOUCH
-            </span>
-
-            <h2>
-                Let's make
-                <span>music.</span>
-            </h2>
-
-            <p>
-                Contact us for product information, orders and support.
-            </p>
-
-        </div>
-
-
-        <div class="contact-info">
-
-
-            <!-- WHATSAPP -->
-
-            <div class="contact-item">
-
-                <div class="contact-icon">
-                    <i class="fab fa-whatsapp"></i>
-                </div>
-
-                <h3>
-                    WhatsApp
-                </h3>
-
-                <p>
-                    <a href="https://wa.me/8801310863206" target="_blank">
-                        +88 01310863206
-                    </a>
-                </p>
-
-                <a href="https://wa.me/8801310863206"
-                   target="_blank"
-                   class="social-btn whatsapp-social">
-
-                    <i class="fab fa-whatsapp"></i>
-                    Message on WhatsApp
-
-                </a>
-
-            </div>
-
-
-
-            <!-- EMAIL -->
-
-            <div class="contact-item">
-
-                <div class="contact-icon">
-                    <i class="fas fa-envelope"></i>
-                </div>
-
-                <h3>
-                    Email Support
-                </h3>
-
-                <p>
-                    <a href="mailto:melodex5656@gmail.com">
-                        melodex5656@gmail.com
-                    </a>
-                </p>
-
-                <a href="mailto:melodex5656@gmail.com"
-                   class="social-btn email-social">
-
-                    <i class="fas fa-envelope"></i>
-                    Send Email
-
-                </a>
-
-            </div>
-
-
-
-            <!-- FACEBOOK -->
-
-            <div class="contact-item">
-
-                <div class="contact-icon">
-                    <i class="fab fa-facebook-f"></i>
-                </div>
-
-                <h3>
-                    Facebook
-                </h3>
-
-                <p>
-                    <a href="https://web.facebook.com/profile.php?id=100085225722623"
-                       target="_blank">
-
-                        Visit Our Facebook
-
-                    </a>
-                </p>
-
-                <a href="https://web.facebook.com/profile.php?id=100085225722623"
-                   target="_blank"
-                   class="social-btn facebook-social">
-
-                    <i class="fab fa-facebook-f"></i>
-                    Visit Facebook
-
-                </a>
-
-            </div>
-
-
-        </div>
-
-    </div>
-
-</section>
-
-    <!-- =========================
-         FOOTER
-    ========================== -->
-
+    <!-- Footer -->
     <footer class="footer">
-
-
-        <div class="footer-content">
-
-
-            <div class="footer-logo">
-
-                <span>MELO</span><span>DEX</span>
-
-            </div>
-
-
-            <p class="footer-text">
-
-                Premium musical instruments & accessories for creators.
-
-            </p>
-
-
-            <div class="footer-links">
-
-                <a href="#home">Home</a>
-
-                <a href="#categories">Categories</a>
-
-                <a href="#about">About</a>
-
-                <a href="#contact">Contact</a>
-
-            </div>
-
-
-            <div class="footer-bottom">
-
-                <p>
-
-                    © 2026 Melodex. All rights reserved.
-
-                </p>
-
-            </div>
-
-
+        <div class="footer-container">
+            <p>&copy; 2026 Melodex. All rights reserved.</p>
+            <p>Designed for passionate musicians.</p>
         </div>
-
-
     </footer>
 
-
-
-    <!-- JavaScript -->
-
+    <!-- Main Module Script (Connected to Firebase & Admin Panel) -->
     <script type="module" src="script.js"></script>
-
 </body>
-
 </html>
