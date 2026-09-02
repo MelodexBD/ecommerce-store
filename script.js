@@ -1,4 +1,4 @@
-// Products Database with Categories
+// Products Database with Real Images and Categories
 const products = [
     // Guitars
     {
@@ -6,32 +6,32 @@ const products = [
         name: 'Luxurs SG62 Headless Electric Guitar',
         category: 'guitars',
         price: 29990,
-        icon: '🎸',
-        description: 'Premium headless electric guitar with superior sound quality'
+        image: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=300&fit=crop',
+        description: 'Premium headless electric guitar with superior sound quality and ergonomic design'
     },
     {
         id: 2,
         name: 'Yifenli Stratocaster Electric Guitar',
         category: 'guitars',
         price: 15000,
-        icon: '🎸',
-        description: 'Classic stratocaster design with excellent tone'
+        image: 'https://images.unsplash.com/photo-1516924962622-2b52b27e7519?w=400&h=300&fit=crop',
+        description: 'Classic stratocaster design with excellent tone and versatile sound'
     },
     {
         id: 3,
         name: 'LETTU Veneer Wooden Acoustic Guitar',
         category: 'guitars',
         price: 13500,
-        icon: '🎸',
-        description: 'Beautiful wooden acoustic guitar with rich sound'
+        image: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=300&fit=crop',
+        description: 'Beautiful wooden acoustic guitar with rich, warm resonance and perfect action'
     },
     {
         id: 4,
         name: 'Crafty Acoustic Guitar + Free Accessories',
         category: 'guitars',
         price: 4600,
-        icon: '🎸',
-        description: 'Complete beginner package with accessories included'
+        image: 'https://images.unsplash.com/photo-1559329007-40790c9c71f7?w=400&h=300&fit=crop',
+        description: 'Complete beginner package with accessories, stand, and tuner included'
     },
 
     // Pedals & Effects
@@ -40,32 +40,32 @@ const products = [
         name: 'Harmonize Pedal - Aroma Ahar-3',
         category: 'pedals',
         price: 5500,
-        icon: '🎛️',
-        description: 'Professional harmonic pedal for rich sound effects'
+        image: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=400&h=300&fit=crop',
+        description: 'Professional harmonic pedal for rich, layered sound effects and ambience'
     },
     {
         id: 6,
         name: 'Caline CP31P Volume Pedal',
         category: 'pedals',
         price: 6500,
-        icon: '🎛️',
-        description: 'Precision volume control pedal for live performance'
+        image: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=400&h=300&fit=crop',
+        description: 'Precision volume control pedal for live performance and studio use'
     },
     {
         id: 7,
         name: 'DF1511A Stereo Volume Pedal',
         category: 'pedals',
         price: 4550,
-        icon: '🎛️',
-        description: 'Stereo-enabled volume pedal for advanced setup'
+        image: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=400&h=300&fit=crop',
+        description: 'Stereo-enabled volume pedal for advanced multi-track setup and routing'
     },
     {
         id: 8,
         name: 'Universal Sustain Pedal',
         category: 'pedals',
         price: 1500,
-        icon: '🎛️',
-        description: 'Affordable sustain pedal for keyboard instruments'
+        image: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=400&h=300&fit=crop',
+        description: 'Affordable sustain pedal for keyboard and digital instruments'
     },
 
     // Pedalboards & Power
@@ -74,48 +74,48 @@ const products = [
         name: 'Electric Pedal Board - Aluminium Velcro',
         category: 'pedalboards',
         price: 4500,
-        icon: '🔌',
-        description: 'Durable aluminium pedalboard with velcro strips'
+        image: 'https://images.unsplash.com/photo-1556821552-5eb066afbf3f?w=400&h=300&fit=crop',
+        description: 'Durable aluminium pedalboard with strong velcro strips for secure mounting'
     },
     {
         id: 10,
         name: 'Ultra Lightweight EVA Pedal Board',
         category: 'pedalboards',
         price: 2800,
-        icon: '🔌',
-        description: 'Portable and lightweight pedalboard for gigging'
+        image: 'https://images.unsplash.com/photo-1556821552-5eb066afbf3f?w=400&h=300&fit=crop',
+        description: 'Portable and lightweight pedalboard perfect for touring and gigs'
     },
     {
         id: 11,
         name: 'Irin 8-Way 9V Power Supply',
         category: 'pedalboards',
         price: 3500,
-        icon: '🔌',
-        description: '8-way power supply for multiple pedals'
+        image: 'https://images.unsplash.com/photo-1556821552-5eb066afbf3f?w=400&h=300&fit=crop',
+        description: '8-way power supply for powering multiple pedals simultaneously'
     },
     {
         id: 12,
         name: 'Ghostfire T-Series Effector Case T-EC6',
         category: 'pedalboards',
         price: 8200,
-        icon: '🔌',
-        description: 'Professional protective case for 6 pedals'
+        image: 'https://images.unsplash.com/photo-1556821552-5eb066afbf3f?w=400&h=300&fit=crop',
+        description: 'Professional protective case designed for 6 pedals with padding'
     },
     {
         id: 13,
         name: 'Ghostfire T-Series Effector Case T-EC8',
         category: 'pedalboards',
         price: 11000,
-        icon: '🔌',
-        description: 'Professional protective case for 8 pedals'
+        image: 'https://images.unsplash.com/photo-1556821552-5eb066afbf3f?w=400&h=300&fit=crop',
+        description: 'Professional protective case designed for 8 pedals with superior protection'
     },
     {
         id: 14,
         name: 'Rockhouse Patch Cables - 6 pcs',
         category: 'pedalboards',
         price: 1300,
-        icon: '🔌',
-        description: 'Set of 6 high-quality patch cables'
+        image: 'https://images.unsplash.com/photo-1556821552-5eb066afbf3f?w=400&h=300&fit=crop',
+        description: 'Set of 6 high-quality patch cables for connecting pedals'
     },
 
     // Stands
@@ -124,48 +124,48 @@ const products = [
         name: 'Portable Double-Layer Keyboard Stand 1.2m',
         category: 'stands',
         price: 16000,
-        icon: '🎹',
-        description: 'Adjustable keyboard stand with double layer support'
+        image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=300&fit=crop',
+        description: 'Adjustable keyboard stand with double layer support for stability'
     },
     {
         id: 16,
         name: 'Portable Double-Layer Keyboard Stand 1.4m',
         category: 'stands',
         price: 17300,
-        icon: '🎹',
-        description: 'Extended keyboard stand for larger instruments'
+        image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=300&fit=crop',
+        description: 'Extended keyboard stand for larger instruments with sturdy base'
     },
     {
         id: 17,
         name: 'Keyboard Stand Extension',
         category: 'stands',
         price: 3000,
-        icon: '🎹',
-        description: 'Extra extension for keyboard stands'
+        image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=300&fit=crop',
+        description: 'Extra extension kit for keyboard stands to increase height'
     },
     {
         id: 18,
         name: 'Smiger Guitar Stand',
         category: 'stands',
         price: 2500,
-        icon: '🎸',
-        description: 'Sturdy guitar stand for safe storage'
+        image: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=300&fit=crop',
+        description: 'Sturdy guitar stand for safe storage and display of instruments'
     },
     {
         id: 19,
         name: 'Winerten Guitar Stand - Thick Model',
         category: 'stands',
         price: 3200,
-        icon: '🎸',
-        description: 'Heavy-duty guitar stand with thick design'
+        image: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=300&fit=crop',
+        description: 'Heavy-duty guitar stand with thick design for maximum stability'
     },
     {
         id: 20,
         name: 'Winerten Guitar Stand - Foldable Model',
         category: 'stands',
         price: 2800,
-        icon: '🎸',
-        description: 'Portable foldable guitar stand'
+        image: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=300&fit=crop',
+        description: 'Portable foldable guitar stand perfect for travel and storage'
     },
 
     // Cables & Accessories
@@ -174,32 +174,32 @@ const products = [
         name: 'Silver Sipai Inspire Guitar Cable - Noise Reduction',
         category: 'cables',
         price: 1800,
-        icon: '🔗',
-        description: 'Premium cable with noise reduction technology'
+        image: 'https://images.unsplash.com/photo-1599043513691-9134dc9ef29f?w=400&h=300&fit=crop',
+        description: 'Premium cable with noise reduction technology for clean signal transmission'
     },
     {
         id: 22,
         name: 'Yongwei Guitar/Keyboard Cable',
         category: 'cables',
         price: 1200,
-        icon: '🔗',
-        description: 'Universal cable for guitars and keyboards'
+        image: 'https://images.unsplash.com/photo-1599043513691-9134dc9ef29f?w=400&h=300&fit=crop',
+        description: 'Universal cable compatible with guitars and keyboards'
     },
     {
         id: 23,
         name: 'HK Guitar/Keyboard Cable - Metal Head',
         category: 'cables',
         price: 1500,
-        icon: '🔗',
-        description: 'Durable cable with metal connectors'
+        image: 'https://images.unsplash.com/photo-1599043513691-9134dc9ef29f?w=400&h=300&fit=crop',
+        description: 'Durable cable with premium metal connectors and shielding'
     },
     {
         id: 24,
         name: 'Gold-Plated 6.35mm Mono Audio Cable',
         category: 'cables',
         price: 2000,
-        icon: '🔗',
-        description: 'Premium oxygen-free copper cable with shielding'
+        image: 'https://images.unsplash.com/photo-1599043513691-9134dc9ef29f?w=400&h=300&fit=crop',
+        description: 'Premium oxygen-free copper cable with gold plating and shielding'
     }
 ];
 
@@ -216,12 +216,12 @@ function displayProducts(filter = 'all') {
     filteredProducts.forEach(product => {
         const productHTML = `
             <div class="product-card">
-                <div class="product-image">${product.icon}</div>
+                <img src="${product.image}" alt="${product.name}" class="product-image">
                 <div class="product-info">
                     <span class="product-category">${getCategoryName(product.category)}</span>
                     <h3 class="product-name">${product.name}</h3>
                     <p class="product-description">${product.description}</p>
-                    <div class="product-price">৳${product.price.toLocaleString('en-BD')}</div>
+                    <div class="product-price">৳ ${product.price.toLocaleString('en-BD')}</div>
                     <div class="product-actions">
                         <button class="btn-add-cart" onclick="addToCart(${product.id})">Add to Cart</button>
                         <a href="https://wa.me/8801XXXXXXXXX?text=Hi%20Melodex,%20I'm%20interested%20in%20${encodeURIComponent(product.name)}%20for%20%E0%A7%B3${product.price}" target="_blank" class="btn btn-whatsapp">
@@ -246,21 +246,27 @@ document.addEventListener('DOMContentLoaded', function() {
             currentCategory = category;
             displayProducts(category);
             
-            // Highlight active category
-            document.querySelectorAll('.category-card').forEach(c => {
-                c.style.backgroundColor = '';
-                c.style.color = '';
-            });
-            this.style.backgroundColor = 'var(--primary-color)';
-            this.style.color = 'var(--white)';
+            // Scroll to products section
+            document.getElementById('products').scrollIntoView({ behavior: 'smooth' });
         });
     });
 
-    // Navigation Links
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.addEventListener('click', function() {
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            this.classList.add('active');
+    // Navigation Links - Smooth Scroll
+    document.querySelectorAll('a[href^="#"]').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const target = document.querySelector(targetId);
+            
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                // Update active nav link
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                if (this.classList.contains('nav-link')) {
+                    this.classList.add('active');
+                }
+            }
         });
     });
 });
@@ -285,13 +291,14 @@ function showNotification(message) {
         position: fixed;
         top: 20px;
         right: 20px;
-        background-color: var(--primary-color);
+        background: linear-gradient(135deg, #3B82F6, #60A5FA);
         color: white;
-        padding: 1rem 1.5rem;
+        padding: 1.2rem 1.8rem;
         border-radius: 8px;
         z-index: 10000;
         animation: slideDown 0.3s ease;
         font-weight: 600;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     `;
     notification.textContent = message;
     document.body.appendChild(notification);
@@ -312,14 +319,3 @@ function getCategoryName(category) {
     };
     return names[category] || category;
 }
-
-// Smooth Scroll
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({ behavior: 'smooth' });
-        }
-    });
-});
