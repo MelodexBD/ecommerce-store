@@ -226,7 +226,7 @@ function displayProductsByCategory() {
                             <div class="product-price">৳ ${product.price.toLocaleString('en-BD')}</div>
                             <div class="product-actions">
                                 <button class="btn-add-cart" onclick="addToCart(${product.id})">Add to Cart</button>
-                                <a href="https://wa.me/8801XXXXXXXXX?text=Hi%20Melodex,%20I'm%20interested%20in%20${encodeURIComponent(product.name)}%20for%20%E0%A7%B3${product.price}" target="_blank" class="btn btn-whatsapp">
+                                <a href="https://wa.me/+8801310863206?text=Hi%20Melodex,%20I'm%20interested%20in%20${encodeURIComponent(product.name)}%20for%20%E0%A7%B3${product.price}" target="_blank" class="btn btn-whatsapp">
                                     <i class="fab fa-whatsapp"></i> Order Now
                                 </a>
                             </div>
