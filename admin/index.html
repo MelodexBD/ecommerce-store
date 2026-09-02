@@ -15,24 +15,31 @@
     label { display: block; margin-bottom: 5px; font-size: 14px; color: #94a3b8; }
     input, select, textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 14px; }
     input:focus, select:focus, textarea:focus { border-color: #38bdf8; outline: none; }
-    button { background: #0284c7; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; width: 100%; }
+    button { background: #0284c7; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
     button:hover { background: #0369a1; }
+    .w-full { width: 100%; }
     .hidden { display: none; }
     .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .logout-btn { background: #ef4444; width: auto; padding: 6px 15px; }
     .logout-btn:hover { background: #dc2626; }
-    .product-item { display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
-    .product-img-group { display: flex; gap: 6px; }
+    .product-item { display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #1e293b; }
+    .product-img-group { display: flex; gap: 6px; flex-shrink: 0; }
     .product-item img { width: 45px; height: 45px; object-fit: cover; border-radius: 6px; border: 1px solid #334155; }
-    .product-details { flex-grow: 1; margin-left: 15px; }
-    .delete-btn { background: #dc2626; width: auto; padding: 5px 12px; font-size: 12px; }
+    .product-details { flex-grow: 1; margin: 0 15px; }
+    .actions { display: flex; gap: 8px; }
+    .edit-btn { background: #eab308; color: #000; padding: 6px 12px; font-size: 13px; font-weight: bold; }
+    .edit-btn:hover { background: #ca8a04; }
+    .delete-btn { background: #dc2626; padding: 6px 12px; font-size: 13px; }
+    .delete-btn:hover { background: #b91c1c; }
+    .cancel-btn { background: #475569; margin-top: 8px; }
+    .cancel-btn:hover { background: #334155; }
     .hint { font-size: 12px; color: #64748b; margin-top: 4px; display: block; }
   </style>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBTVoMKlJeRWsgIL5gCdWCHYdx3w8brWHQ",
@@ -48,14 +55,18 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
+    let editDocId = null;
+    let cachedProducts = {};
+
     const loginSection = document.getElementById("login-section");
     const adminPanel = document.getElementById("admin-panel");
     const loginBtn = document.getElementById("login-btn");
     const logoutBtn = document.getElementById("logout-btn");
-    const addProductBtn = document.getElementById("add-product-btn");
+    const saveProductBtn = document.getElementById("save-product-btn");
+    const cancelEditBtn = document.getElementById("cancel-edit-btn");
     const productList = document.getElementById("product-list");
+    const formTitle = document.getElementById("form-title");
 
-    // Auth state
     onAuthStateChanged(auth, (user) => {
       if (user) {
         loginSection.classList.add("hidden");
@@ -67,7 +78,6 @@
       }
     });
 
-    // Login
     loginBtn.addEventListener("click", async () => {
       const email = document.getElementById("login-email").value;
       const pass = document.getElementById("login-pass").value;
@@ -78,10 +88,8 @@
       }
     });
 
-    // Logout
     logoutBtn.addEventListener("click", () => signOut(auth));
 
-    // Upload single image helper
     async function uploadSingleImage(file) {
       const formData = new FormData();
       formData.append("image", file);
@@ -94,17 +102,21 @@
       return data.data.url;
     }
 
-    // Add Product with multiple images
-    addProductBtn.addEventListener("click", async () => {
-      const name = document.getElementById("prod-name").value;
+    saveProductBtn.addEventListener("click", async () => {
+      const name = document.getElementById("prod-name").value.trim();
       const price = document.getElementById("prod-price").value;
       const category = document.getElementById("prod-category").value;
-      const desc = document.getElementById("prod-desc").value;
+      const desc = document.getElementById("prod-desc").value.trim();
       const fileInput = document.getElementById("prod-imgs");
       const files = fileInput.files;
 
-      if (!name || !price || files.length === 0) {
-        alert("দয়া করে নাম, দাম এবং কমপক্ষে একটি ছবি সিলেক্ট করুন!");
+      if (!name || !price) {
+        alert("দয়া করে নাম এবং দাম প্রদান করুন!");
+        return;
+      }
+
+      if (!editDocId && files.length === 0) {
+        alert("নতুন প্রোডাক্টে অন্তত ১টি ছবি নির্বাচন করুন!");
         return;
       }
 
@@ -113,52 +125,85 @@
         return;
       }
 
-      addProductBtn.innerText = `ছবি আপলোড হচ্ছে (০/${files.length})...`;
-      addProductBtn.disabled = true;
+      saveProductBtn.disabled = true;
 
       try {
-        const imageUrls = [];
-        for (let i = 0; i < files.length; i++) {
-          addProductBtn.innerText = `ছবি আপলোড হচ্ছে (${i + 1}/${files.length})...`;
-          const url = await uploadSingleImage(files[i]);
-          imageUrls.push(url);
+        let imageUrls = [];
+        if (files.length > 0) {
+          saveProductBtn.innerText = `ছবি আপলোড হচ্ছে...`;
+          for (let i = 0; i < files.length; i++) {
+            const url = await uploadSingleImage(files[i]);
+            imageUrls.push(url);
+          }
         }
 
-        addProductBtn.innerText = "ডাটাবেজে সেভ হচ্ছে...";
+        saveProductBtn.innerText = "ডাটাবেজে সেভ হচ্ছে...";
 
-        await addDoc(collection(db, "products"), {
-          name: name,
-          price: Number(price),
-          category: category,
-          description: desc,
-          image: imageUrls[0], // Primary image
-          images: imageUrls,   // List of all images (1-4)
-          createdAt: serverTimestamp()
-        });
-
-        alert("প্রোডাক্ট সফলভাবে যোগ হয়েছে!");
-        document.getElementById("prod-name").value = "";
-        document.getElementById("prod-price").value = "";
-        document.getElementById("prod-desc").value = "";
-        fileInput.value = "";
+        if (editDocId) {
+          // Edit Mode
+          const updateData = {
+            name: name,
+            price: Number(price),
+            category: category,
+            description: desc
+          };
+          if (imageUrls.length > 0) {
+            updateData.image = imageUrls[0];
+            updateData.images = imageUrls;
+          }
+          await updateDoc(doc(db, "products", editDocId), updateData);
+          alert("প্রোডাক্ট আপডেট সম্পন্ন!");
+          resetForm();
+        } else {
+          // Create Mode
+          await addDoc(collection(db, "products"), {
+            name: name,
+            price: Number(price),
+            category: category,
+            description: desc,
+            image: imageUrls[0],
+            images: imageUrls,
+            createdAt: serverTimestamp()
+          });
+          alert("প্রোডাক্ট সফলভাবে যোগ হয়েছে!");
+          resetForm();
+        }
         loadProducts();
       } catch (err) {
         alert("ত্রুটি: " + err.message);
       } finally {
-        addProductBtn.innerText = "Add Product";
-        addProductBtn.disabled = false;
+        saveProductBtn.disabled = false;
       }
     });
 
-    // Load Products
+    function resetForm() {
+      editDocId = null;
+      document.getElementById("prod-name").value = "";
+      document.getElementById("prod-price").value = "";
+      document.getElementById("prod-desc").value = "";
+      document.getElementById("prod-imgs").value = "";
+      formTitle.innerText = "Add New Product";
+      saveProductBtn.innerText = "Add Product";
+      cancelEditBtn.classList.add("hidden");
+    }
+
+    cancelEditBtn.addEventListener("click", resetForm);
+
     async function loadProducts() {
       productList.innerHTML = "<p style='color:#94a3b8;'>লোড হচ্ছে...</p>";
       const snapshot = await getDocs(collection(db, "products"));
       productList.innerHTML = "";
-      
+      cachedProducts = {};
+
+      if (snapshot.empty) {
+        productList.innerHTML = "<p style='color:#64748b;'>কোনো প্রোডাক্ট যুক্ত করা নেই।</p>";
+        return;
+      }
+
       snapshot.forEach((item) => {
         const p = item.data();
-        const imgs = p.images && p.images.length > 0 ? p.images : [p.image];
+        cachedProducts[item.id] = p;
+        const imgs = p.images && p.images.length > 0 ? p.images : (p.image ? [p.image] : []);
         
         let imgHtml = '<div class="product-img-group">';
         imgs.slice(0, 4).forEach(url => {
@@ -174,11 +219,35 @@
             <h4>${p.name}</h4>
             <p style="font-size: 13px; color: #38bdf8;">৳${p.price} | ${p.category} (${imgs.length}টি ছবি)</p>
           </div>
-          <button class="delete-btn" data-id="${item.id}">Delete</button>
+          <div class="actions">
+            <button class="edit-btn" data-id="${item.id}">Edit</button>
+            <button class="delete-btn" data-id="${item.id}">Delete</button>
+          </div>
         `;
         productList.appendChild(div);
       });
 
+      // Bind Edit
+      document.querySelectorAll(".edit-btn").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const id = e.target.dataset.id;
+          const p = cachedProducts[id];
+          if (!p) return;
+
+          editDocId = id;
+          document.getElementById("prod-name").value = p.name || "";
+          document.getElementById("prod-price").value = p.price || "";
+          document.getElementById("prod-category").value = p.category || "Guitars";
+          document.getElementById("prod-desc").value = p.description || "";
+          
+          formTitle.innerText = "Edit Product: " + p.name;
+          saveProductBtn.innerText = "Update Product";
+          cancelEditBtn.classList.remove("hidden");
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      });
+
+      // Bind Delete
       document.querySelectorAll(".delete-btn").forEach((btn) => {
         btn.addEventListener("click", async (e) => {
           if (confirm("আপনি কি নিশ্চিত এই প্রোডাক্টটি ডিলিট করতে চান?")) {
@@ -192,7 +261,6 @@
 </head>
 <body>
   <div class="container">
-    <!-- Login Section -->
     <div id="login-section" class="card">
       <h2>Admin Login</h2>
       <div class="form-group">
@@ -203,10 +271,9 @@
         <label>Password</label>
         <input type="password" id="login-pass" placeholder="••••••••">
       </div>
-      <button id="login-btn">Login</button>
+      <button id="login-btn" class="w-full">Login</button>
     </div>
 
-    <!-- Admin Dashboard -->
     <div id="admin-panel" class="hidden">
       <div class="header-bar">
         <h2>Melodex Admin Dashboard</h2>
@@ -214,7 +281,7 @@
       </div>
 
       <div class="card">
-        <h2>Add New Product</h2>
+        <h2 id="form-title">Add New Product</h2>
         <div class="form-group">
           <label>Product Name</label>
           <input type="text" id="prod-name" placeholder="যেমন: Boss DS-1 Distortion">
@@ -240,9 +307,10 @@
         <div class="form-group">
           <label>Product Images (১ থেকে ৪টি নির্বাচন করতে পারবে)</label>
           <input type="file" id="prod-imgs" accept="image/*" multiple>
-          <span class="hint">ছবি সিলেক্ট করার সময় কিবোর্ডের `Ctrl` বা মোবাইল গ্যালারিতে লং-প্রেস করে একসাথে ১ থেকে ৪টি ছবি বাছাই করো।</span>
+          <span class="hint">এডিট করার সময় নতুন ছবি না দিলে আগের ছবিগুলোই বহাল থাকবে।</span>
         </div>
-        <button id="add-product-btn">Add Product</button>
+        <button id="save-product-btn" class="w-full">Add Product</button>
+        <button id="cancel-edit-btn" class="w-full cancel-btn hidden">Cancel Edit</button>
       </div>
 
       <div class="card">
