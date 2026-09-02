@@ -204,68 +204,54 @@ const products = [
 ];
 
 let cart = [];
-let currentCategory = 'all';
 
-// Display Products
-function displayProducts(filter = 'all') {
-    const container = document.getElementById('productsContainer');
-    container.innerHTML = '';
-
-    const filteredProducts = filter === 'all' ? products : products.filter(p => p.category === filter);
-
-    filteredProducts.forEach(product => {
-        const productHTML = `
-            <div class="product-card">
-                <img src="${product.image}" alt="${product.name}" class="product-image">
-                <div class="product-info">
-                    <span class="product-category">${getCategoryName(product.category)}</span>
-                    <h3 class="product-name">${product.name}</h3>
-                    <p class="product-description">${product.description}</p>
-                    <div class="product-price">৳ ${product.price.toLocaleString('en-BD')}</div>
-                    <div class="product-actions">
-                        <button class="btn-add-cart" onclick="addToCart(${product.id})">Add to Cart</button>
-                        <a href="https://wa.me/8801XXXXXXXXX?text=Hi%20Melodex,%20I'm%20interested%20in%20${encodeURIComponent(product.name)}%20for%20%E0%A7%B3${product.price}" target="_blank" class="btn btn-whatsapp">
-                            <i class="fab fa-whatsapp"></i> Order Now
-                        </a>
+// Display products by category
+function displayProductsByCategory() {
+    const categories = ['guitars', 'pedals', 'pedalboards', 'stands', 'cables'];
+    
+    categories.forEach(category => {
+        const container = document.getElementById(category + 'Container');
+        if (container) {
+            const categoryProducts = products.filter(p => p.category === category);
+            container.innerHTML = '';
+            
+            categoryProducts.forEach(product => {
+                const productHTML = `
+                    <div class="product-card">
+                        <img src="${product.image}" alt="${product.name}" class="product-image">
+                        <div class="product-info">
+                            <span class="product-category">${getCategoryName(product.category)}</span>
+                            <h3 class="product-name">${product.name}</h3>
+                            <p class="product-description">${product.description}</p>
+                            <div class="product-price">৳ ${product.price.toLocaleString('en-BD')}</div>
+                            <div class="product-actions">
+                                <button class="btn-add-cart" onclick="addToCart(${product.id})">Add to Cart</button>
+                                <a href="https://wa.me/8801XXXXXXXXX?text=Hi%20Melodex,%20I'm%20interested%20in%20${encodeURIComponent(product.name)}%20for%20%E0%A7%B3${product.price}" target="_blank" class="btn btn-whatsapp">
+                                    <i class="fab fa-whatsapp"></i> Order Now
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-        `;
-        container.innerHTML += productHTML;
+                `;
+                container.innerHTML += productHTML;
+            });
+        }
     });
 }
 
-// Category Click Handler
+// Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
-    displayProducts();
-
-    // Category Filter
-    document.querySelectorAll('.category-card').forEach(card => {
-        card.addEventListener('click', function() {
-            const category = this.getAttribute('data-category');
-            currentCategory = category;
-            displayProducts(category);
-            
-            // Scroll to products section
-            document.getElementById('products').scrollIntoView({ behavior: 'smooth' });
-        });
-    });
-
-    // Navigation Links - Smooth Scroll
+    displayProductsByCategory();
+    
+    // Smooth scroll for navigation links
     document.querySelectorAll('a[href^="#"]').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
-            const targetId = this.getAttribute('href');
-            const target = document.querySelector(targetId);
+            const targetId = this.getAttribute('href').substring(1);
+            const target = document.getElementById(targetId);
             
             if (target) {
-                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                
-                // Update active nav link
-                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-                if (this.classList.contains('nav-link')) {
-                    this.classList.add('active');
-                }
+                target.scrollIntoView({ behavior: 'smooth' });
             }
         });
     });
