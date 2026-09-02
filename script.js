@@ -16,217 +16,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Default Seed Products
-let products = [
-    // Guitars
-    {
-        id: 1,
-        name: 'Luxurs SG62 Headless Electric Guitar',
-        category: 'guitars',
-        price: 29990,
-        image: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=300&fit=crop',
-        description: 'Premium headless electric guitar with superior sound quality and ergonomic design'
-    },
-    {
-        id: 2,
-        name: 'Yifenli Stratocaster Electric Guitar',
-        category: 'guitars',
-        price: 15000,
-        image: 'https://images.unsplash.com/photo-1516924962622-2b52b27e7519?w=400&h=300&fit=crop',
-        description: 'Classic stratocaster design with excellent tone and versatile sound'
-    },
-    {
-        id: 3,
-        name: 'LETTU Veneer Wooden Acoustic Guitar',
-        category: 'guitars',
-        price: 13500,
-        image: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=300&fit=crop',
-        description: 'Beautiful wooden acoustic guitar with rich, warm resonance and perfect action'
-    },
-    {
-        id: 4,
-        name: 'Crafty Acoustic Guitar + Free Accessories',
-        category: 'guitars',
-        price: 4600,
-        image: 'https://images.unsplash.com/photo-1559329007-40790c9c71f7?w=400&h=300&fit=crop',
-        description: 'Complete beginner package with accessories, stand, and tuner included'
-    },
-
-    // Pedals & Effects
-    {
-        id: 5,
-        name: 'Harmonize Pedal - Aroma Ahar-3',
-        category: 'pedals',
-        price: 5500,
-        image: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=400&h=300&fit=crop',
-        description: 'Professional harmonic pedal for rich, layered sound effects and ambience'
-    },
-    {
-        id: 6,
-        name: 'Caline CP31P Volume Pedal',
-        category: 'pedals',
-        price: 6500,
-        image: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=400&h=300&fit=crop',
-        description: 'Precision volume control pedal for live performance and studio use'
-    },
-    {
-        id: 7,
-        name: 'DF1511A Stereo Volume Pedal',
-        category: 'pedals',
-        price: 4550,
-        image: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=400&h=300&fit=crop',
-        description: 'Stereo-enabled volume pedal for advanced multi-track setup and routing'
-    },
-    {
-        id: 8,
-        name: 'Universal Sustain Pedal',
-        category: 'pedals',
-        price: 1500,
-        image: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=400&h=300&fit=crop',
-        description: 'Affordable sustain pedal for keyboard and digital instruments'
-    },
-
-    // Pedalboards & Power
-    {
-        id: 9,
-        name: 'Electric Pedal Board - Aluminium Velcro',
-        category: 'pedalboards',
-        price: 4500,
-        image: 'https://images.unsplash.com/photo-1556821552-5eb066afbf3f?w=400&h=300&fit=crop',
-        description: 'Durable aluminium pedalboard with strong velcro strips for secure mounting'
-    },
-    {
-        id: 10,
-        name: 'Ultra Lightweight EVA Pedal Board',
-        category: 'pedalboards',
-        price: 2800,
-        image: 'https://images.unsplash.com/photo-1556821552-5eb066afbf3f?w=400&h=300&fit=crop',
-        description: 'Portable and lightweight pedalboard perfect for touring and gigs'
-    },
-    {
-        id: 11,
-        name: 'Irin 8-Way 9V Power Supply',
-        category: 'pedalboards',
-        price: 3500,
-        image: 'https://images.unsplash.com/photo-1556821552-5eb066afbf3f?w=400&h=300&fit=crop',
-        description: '8-way power supply for powering multiple pedals simultaneously'
-    },
-    {
-        id: 12,
-        name: 'Ghostfire T-Series Effector Case T-EC6',
-        category: 'pedalboards',
-        price: 8200,
-        image: 'https://images.unsplash.com/photo-1556821552-5eb066afbf3f?w=400&h=300&fit=crop',
-        description: 'Professional protective case designed for 6 pedals with padding'
-    },
-    {
-        id: 13,
-        name: 'Ghostfire T-Series Effector Case T-EC8',
-        category: 'pedalboards',
-        price: 11000,
-        image: 'https://images.unsplash.com/photo-1556821552-5eb066afbf3f?w=400&h=300&fit=crop',
-        description: 'Professional protective case designed for 8 pedals with superior protection'
-    },
-    {
-        id: 14,
-        name: 'Rockhouse Patch Cables - 6 pcs',
-        category: 'pedalboards',
-        price: 1300,
-        image: 'https://images.unsplash.com/photo-1556821552-5eb066afbf3f?w=400&h=300&fit=crop',
-        description: 'Set of 6 high-quality patch cables for connecting pedals'
-    },
-
-    // Stands
-    {
-        id: 15,
-        name: 'Portable Double-Layer Keyboard Stand 1.2m',
-        category: 'stands',
-        price: 16000,
-        image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=300&fit=crop',
-        description: 'Adjustable keyboard stand with double layer support for stability'
-    },
-    {
-        id: 16,
-        name: 'Portable Double-Layer Keyboard Stand 1.4m',
-        category: 'stands',
-        price: 17300,
-        image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=300&fit=crop',
-        description: 'Extended keyboard stand for larger instruments with sturdy base'
-    },
-    {
-        id: 17,
-        name: 'Keyboard Stand Extension',
-        category: 'stands',
-        price: 3000,
-        image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=300&fit=crop',
-        description: 'Extra extension kit for keyboard stands to increase height'
-    },
-    {
-        id: 18,
-        name: 'Smiger Guitar Stand',
-        category: 'stands',
-        price: 2500,
-        image: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=300&fit=crop',
-        description: 'Sturdy guitar stand for safe storage and display of instruments'
-    },
-    {
-        id: 19,
-        name: 'Winerten Guitar Stand - Thick Model',
-        category: 'stands',
-        price: 3200,
-        image: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=300&fit=crop',
-        description: 'Heavy-duty guitar stand with thick design for maximum stability'
-    },
-    {
-        id: 20,
-        name: 'Winerten Guitar Stand - Foldable Model',
-        category: 'stands',
-        price: 2800,
-        image: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=300&fit=crop',
-        description: 'Portable foldable guitar stand perfect for travel and storage'
-    },
-
-    // Cables & Accessories
-    {
-        id: 21,
-        name: 'Silver Sipai Inspire Guitar Cable - Noise Reduction',
-        category: 'cables',
-        price: 1800,
-        image: 'https://images.unsplash.com/photo-1599043513691-9134dc9ef29f?w=400&h=300&fit=crop',
-        description: 'Premium cable with noise reduction technology for clean signal transmission'
-    },
-    {
-        id: 22,
-        name: 'Yongwei Guitar/Keyboard Cable',
-        category: 'cables',
-        price: 1200,
-        image: 'https://images.unsplash.com/photo-1599043513691-9134dc9ef29f?w=400&h=300&fit=crop',
-        description: 'Universal cable compatible with guitars and keyboards'
-    },
-    {
-        id: 23,
-        name: 'HK Guitar/Keyboard Cable - Metal Head',
-        category: 'cables',
-        price: 1500,
-        image: 'https://images.unsplash.com/photo-1599043513691-9134dc9ef29f?w=400&h=300&fit=crop',
-        description: 'Durable cable with premium metal connectors and shielding'
-    },
-    {
-        id: 24,
-        name: 'Gold-Plated 6.35mm Mono Audio Cable',
-        category: 'cables',
-        price: 2000,
-        image: 'https://images.unsplash.com/photo-1599043513691-9134dc9ef29f?w=400&h=300&fit=crop',
-        description: 'Premium oxygen-free copper cable with gold plating and shielding'
-    }
-];
-
+let products = [];
 let cart = [];
 
 // Helper to normalize category slugs
 function normalizeCategory(cat) {
     if (!cat) return 'guitars';
-    const c = cat.toLowerCase();
+    const c = cat.toLowerCase().trim();
     if (c.includes('guitar')) return 'guitars';
     if (c.includes('pedalboard')) return 'pedalboards';
     if (c.includes('pedal')) return 'pedals';
@@ -240,29 +36,54 @@ async function fetchFirebaseProducts() {
     try {
         const querySnapshot = await getDocs(collection(db, "products"));
         const fbProducts = [];
+        
         querySnapshot.forEach((doc) => {
             const data = doc.data();
+            // ইমেজ কালেকশন নিশ্চিত করা
+            let imgList = [];
+            if (Array.isArray(data.images) && data.images.length > 0) {
+                imgList = data.images;
+            } else if (data.image) {
+                imgList = [data.image];
+            }
+
             fbProducts.push({
                 id: doc.id,
-                name: data.name,
+                name: data.name || 'Unnamed Product',
                 category: normalizeCategory(data.category),
-                price: Number(data.price),
-                image: data.image || (data.images && data.images[0]) || '',
-                images: data.images || [data.image],
+                price: Number(data.price) || 0,
+                image: imgList[0] || '',
+                images: imgList,
                 description: data.description || ''
             });
         });
 
-        // Add Firebase products to the front of list
-        if (fbProducts.length > 0) {
-            products = [...fbProducts, ...products];
+        products = fbProducts;
+
+        // Update live product count in About section
+        const countEl = document.getElementById('total-products-count');
+        if (countEl) {
+            countEl.textContent = products.length > 0 ? `${products.length}+` : '0';
         }
     } catch (error) {
         console.error("Firebase fetch failed:", error);
     }
 }
 
-// Display products by category
+// Global Image switcher function (window অবজেক্টে রেজিস্টার করা যাতে এইচটিএমএল ক্লিক ধরতে পারে)
+window.changeProductImage = function(productId, newUrl, thumbElement) {
+    const mainImg = document.getElementById(`main-img-${productId}`);
+    if (mainImg) {
+        mainImg.src = newUrl;
+    }
+    const parent = thumbElement.parentElement;
+    if (parent) {
+        parent.querySelectorAll('.thumb-img').forEach(t => t.classList.remove('active'));
+        thumbElement.classList.add('active');
+    }
+};
+
+// Display products by category with thumbnail gallery
 function displayProductsByCategory() {
     const categories = ['guitars', 'pedals', 'pedalboards', 'stands', 'cables'];
     
@@ -272,10 +93,31 @@ function displayProductsByCategory() {
             const categoryProducts = products.filter(p => p.category === category);
             container.innerHTML = '';
             
+            if (categoryProducts.length === 0) {
+                container.innerHTML = '<p style="color: #94a3b8; font-size: 14px; grid-column: 1/-1; text-align: center; padding: 20px;">এই ক্যাটাগরিতে এখনো কোনো প্রোডাক্ট যুক্ত করা হয়নি।</p>';
+                return;
+            }
+            
             categoryProducts.forEach(product => {
+                // মাল্টিপল ছবির থাম্বনেইল তৈরি (যদি একের অধিক ছবি থাকে)
+                let thumbsHTML = '';
+                if (product.images && product.images.length > 1) {
+                    thumbsHTML = '<div class="product-thumbnails">';
+                    product.images.forEach((imgUrl, index) => {
+                        thumbsHTML += `
+                            <img src="${imgUrl}" 
+                                 class="thumb-img ${index === 0 ? 'active' : ''}" 
+                                 onclick="window.changeProductImage('${product.id}', '${imgUrl}', this)" 
+                                 alt="thumb">
+                        `;
+                    });
+                    thumbsHTML += '</div>';
+                }
+
                 const productHTML = `
-                    <div class="product-card">
-                        <img src="${product.image}" alt="${product.name}" class="product-image">
+                    <div class="product-card" id="card-${product.id}">
+                        <img src="${product.image}" alt="${product.name}" class="product-image" id="main-img-${product.id}">
+                        ${thumbsHTML}
                         <div class="product-info">
                             <span class="product-category">${getCategoryName(product.category)}</span>
                             <h3 class="product-name">${product.name}</h3>
@@ -296,26 +138,30 @@ function displayProductsByCategory() {
     });
 }
 
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', async function() {
+// App execution
+async function initApp() {
     await fetchFirebaseProducts();
     displayProductsByCategory();
     
-    // Smooth scroll for navigation links
     document.querySelectorAll('a[href^="#"]').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const targetId = this.getAttribute('href').substring(1);
             const target = document.getElementById(targetId);
-            
             if (target) {
                 target.scrollIntoView({ behavior: 'smooth' });
             }
         });
     });
-});
+}
 
-// Add to Cart
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}
+
+// Cart Logic
 window.addToCart = function(productId) {
     const product = products.find(p => String(p.id) === String(productId));
     if (product) {
@@ -325,7 +171,6 @@ window.addToCart = function(productId) {
     }
 };
 
-// Update Cart Count
 function updateCartCount() {
     const cartEl = document.querySelector('.cart-count');
     if (cartEl) {
@@ -333,7 +178,6 @@ function updateCartCount() {
     }
 }
 
-// Notification
 function showNotification(message) {
     const notification = document.createElement('div');
     notification.style.cssText = `
@@ -357,7 +201,6 @@ function showNotification(message) {
     }, 2000);
 }
 
-// Category Names
 function getCategoryName(category) {
     const names = {
         'guitars': 'Guitars',
