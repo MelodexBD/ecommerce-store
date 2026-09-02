@@ -1,0 +1,17 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node modules (যদি ভবিষ্যতে ব্যবহার করেন)
+node_modules/
+npm-debug.log
+
+# Environment
+.env
+.env.local

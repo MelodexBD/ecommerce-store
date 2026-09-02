@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>আমাদের স্টোর - সেরা পণ্য</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- নেভিগেশন -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-shopping-bag"></i> আমাদের স্টোর
+            </div>
+            <div class="nav-menu">
+                <a href="#home" class="nav-link active">হোম</a>
+                <a href="#products" class="nav-link">পণ্য</a>
+                <a href="#contact" class="nav-link">যোগাযোগ</a>
+            </div>
+            <div class="cart-icon">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count">0</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- হিরো সেকশন -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>স্বাগতম আমাদের অনলাইন স্টোরে</h1>
+            <p>সর্বোত্তম মানের পণ্য সাশ্রয়ী মূল্যে</p>
+            <a href="#products" class="btn btn-primary">এখনই কেনাকাটা করুন</a>
+        </div>
+    </section>
+
+    <!-- ক্যাটাগরি সেকশন -->
+    <section class="categories">
+        <div class="container">
+            <h2>ক্যাটাগরি</h2>
+            <div class="category-grid">
+                <div class="category-card" data-category="all">
+                    <i class="fas fa-th"></i>
+                    <p>সব পণ্য</p>
+                </div>
+                <div class="category-card" data-category="electronics">
+                    <i class="fas fa-mobile-alt"></i>
+                    <p>ইলেকট্রনিক্স</p>
+                </div>
+                <div class="category-card" data-category="fashion">
+                    <i class="fas fa-tshirt"></i>
+                    <p>ফ্যাশন</p>
+                </div>
+                <div class="category-card" data-category="beauty">
+                    <i class="fas fa-spa"></i>
+                    <p>সৌন্দর্য</p>
+                </div>
+                <div class="category-card" data-category="home">
+                    <i class="fas fa-home"></i>
+                    <p>বাড়ির সাজসজ্জা</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- পণ্য সেকশন -->
+    <section id="products" class="products">
+        <div class="container">
+            <h2>আমাদের পণ্য</h2>
+            <div class="products-grid" id="productsContainer">
+                <!-- পণ্য এখানে লোড হবে -->
+            </div>
+        </div>
+    </section>
+
+    <!-- যোগাযোগ সেকশন -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2>আমাদের সাথে যোগাযোগ করুন</h2>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <i class="fas fa-phone"></i>
+                    <p>+88 01XXXXXXXXX</p>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <p>info@store.com</p>
+                </div>
+                <div class="contact-item">
+                    <i class="fab fa-facebook"></i>
+                    <p><a href="#" target="_blank">আমাদের ফেসবুক পেজ</a></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ফুটার -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2024 আমাদের স্টোর। সমস্ত অধিকার সংরক্ষিত।</p>
+            <p>এই ওয়েবসাইট <a href="https://pages.github.com" target="_blank">GitHub Pages</a> দ্বারা হোস্ট করা হয়েছে।</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
