@@ -1,5 +1,5 @@
 // =========================================
-// MELODEX STORE - FINAL BULLETPROOF SCRIPT
+// MELODEX STORE - INSTANT FIRST-VISIT SCRIPT
 // =========================================
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
@@ -17,7 +17,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// Anti-timeout connection lock (Fixes 10s Backend Unreachable Bug)
+// Ultra-fast HTTP Polling without stream overhead
 const db = initializeFirestore(app, {
     experimentalForceLongPolling: true,
     useFetchStreams: false
@@ -27,12 +27,33 @@ let products = [];
 let cart = [];
 const WHATSAPP_NUMBER = "8801310863206";
 
+// 0-second skeleton display on very first visit
+function renderInitialSkeletons() {
+    const categories = ["guitars", "pedals", "pedalboards", "stands", "cables"];
+    const skeletonHTML = `
+        <div class="skeleton-card">
+            <div class="skeleton-img"></div>
+            <div class="skeleton-body">
+                <div class="skeleton-line short"></div>
+                <div class="skeleton-line mid"></div>
+                <div class="skeleton-line btn"></div>
+            </div>
+        </div>
+    `.repeat(2);
+
+    categories.forEach((cat) => {
+        const el = document.getElementById(`${cat}Container`);
+        if (el && el.innerHTML.trim() === "") {
+            el.innerHTML = skeletonHTML;
+        }
+    });
+}
+
 function loadCart() {
     try {
         const savedCart = localStorage.getItem("melodexCart");
         cart = savedCart ? JSON.parse(savedCart) : [];
     } catch (error) {
-        console.error("Cart load error:", error);
         cart = [];
     }
 }
@@ -73,7 +94,7 @@ async function fetchFirebaseProducts() {
             let imageList = [];
 
             if (Array.isArray(data.images) && data.images.length > 0) {
-                imageList = data.images.filter(image => image && image.trim() !== "");
+                imageList = data.images.filter(img => img && img.trim() !== "");
             }
 
             if (imageList.length === 0 && data.image) {
@@ -92,11 +113,11 @@ async function fetchFirebaseProducts() {
         });
 
         products = firebaseProducts;
+        localStorage.setItem("melodex_cached_products", JSON.stringify(products));
         updateProductCount();
         displayProductsByCategory();
     } catch (error) {
-        console.error("Firebase product fetch failed:", error);
-        showNotification("Products could not be loaded.", "error");
+        console.error("Firebase fetch error:", error);
     }
 }
 
@@ -114,7 +135,7 @@ function displayProductsByCategory() {
         const container = document.getElementById(`${category}Container`);
         if (!container) return;
 
-        const categoryProducts = products.filter(product => product.category === category);
+        const categoryProducts = products.filter(p => p.category === category);
         container.innerHTML = "";
 
         if (categoryProducts.length === 0) {
@@ -134,6 +155,7 @@ function displayProductsByCategory() {
                             class="thumb-img ${index === 0 ? "active" : ""}"
                             data-product-id="${escapeHTML(product.id)}"
                             data-image="${escapeHTML(imageUrl)}"
+                            loading="lazy"
                         >
                     `;
                 });
@@ -149,6 +171,7 @@ function displayProductsByCategory() {
                             class="product-image"
                             id="main-img-${escapeHTML(product.id)}"
                             data-product-id="${escapeHTML(product.id)}"
+                            loading="lazy"
                         >
                         <button
                             class="image-zoom-btn"
@@ -165,26 +188,14 @@ function displayProductsByCategory() {
                         <span class="product-category">
                             ${escapeHTML(getCategoryName(product.category))}
                         </span>
-                        <h3 class="product-name">
-                            ${escapeHTML(product.name)}
-                        </h3>
-                        <p class="product-description">
-                            ${escapeHTML(product.description)}
-                        </p>
-                        <div class="product-price">
-                            ৳ ${formatPrice(product.price)}
-                        </div>
+                        <h3 class="product-name">${escapeHTML(product.name)}</h3>
+                        <p class="product-description">${escapeHTML(product.description)}</p>
+                        <div class="product-price">৳ ${formatPrice(product.price)}</div>
                         <div class="product-actions">
-                            <button
-                                class="btn-add-cart"
-                                data-product-id="${escapeHTML(product.id)}"
-                            >
+                            <button class="btn-add-cart" data-product-id="${escapeHTML(product.id)}">
                                 <i class="fas fa-shopping-cart"></i> Add to Cart
                             </button>
-                            <button
-                                class="btn btn-whatsapp"
-                                data-order-product="${escapeHTML(product.id)}"
-                            >
+                            <button class="btn btn-whatsapp" data-order-product="${escapeHTML(product.id)}">
                                 <i class="fab fa-whatsapp"></i> Order Now
                             </button>
                         </div>
@@ -199,39 +210,37 @@ function displayProductsByCategory() {
 }
 
 function attachProductEvents() {
-    document.querySelectorAll(".btn-add-cart").forEach((button) => {
-        button.addEventListener("click", () => addToCart(button.dataset.productId));
+    document.querySelectorAll(".btn-add-cart").forEach((btn) => {
+        btn.addEventListener("click", () => addToCart(btn.dataset.productId));
     });
 
-    document.querySelectorAll("[data-order-product]").forEach((button) => {
-        button.addEventListener("click", () => orderSingleProduct(button.dataset.orderProduct));
+    document.querySelectorAll("[data-order-product]").forEach((btn) => {
+        btn.addEventListener("click", () => orderSingleProduct(btn.dataset.orderProduct));
     });
 
-    document.querySelectorAll(".product-image").forEach((image) => {
-        image.addEventListener("click", () => openImageModal(image.src, image.alt));
+    document.querySelectorAll(".product-image").forEach((img) => {
+        img.addEventListener("click", () => openImageModal(img.src, img.alt));
     });
 
-    document.querySelectorAll(".image-zoom-btn").forEach((button) => {
-        button.addEventListener("click", () => {
-            const mainImage = document.getElementById(`main-img-${button.dataset.productId}`);
-            if (mainImage) openImageModal(mainImage.src, mainImage.alt);
+    document.querySelectorAll(".image-zoom-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const mainImg = document.getElementById(`main-img-${btn.dataset.productId}`);
+            if (mainImg) openImageModal(mainImg.src, mainImg.alt);
         });
     });
 
-    document.querySelectorAll(".thumb-img").forEach((thumbnail) => {
-        thumbnail.addEventListener("click", () => {
-            const productId = thumbnail.dataset.productId;
-            const imageURL = thumbnail.dataset.image;
-            const mainImage = document.getElementById(`main-img-${productId}`);
+    document.querySelectorAll(".thumb-img").forEach((thumb) => {
+        thumb.addEventListener("click", () => {
+            const pid = thumb.dataset.productId;
+            const imgUrl = thumb.dataset.image;
+            const mainImg = document.getElementById(`main-img-${pid}`);
 
-            if (mainImage) {
-                mainImage.src = imageURL;
-            }
+            if (mainImg) mainImg.src = imgUrl;
 
-            const parent = thumbnail.parentElement;
+            const parent = thumb.parentElement;
             if (parent) {
-                parent.querySelectorAll(".thumb-img").forEach(thumb => thumb.classList.remove("active"));
-                thumbnail.classList.add("active");
+                parent.querySelectorAll(".thumb-img").forEach(t => t.classList.remove("active"));
+                thumb.classList.add("active");
             }
         });
     });
@@ -241,9 +250,9 @@ function addToCart(productId) {
     const product = products.find(p => String(p.id) === String(productId));
     if (!product) return;
 
-    const existingItem = cart.find(item => String(item.id) === String(productId));
-    if (existingItem) {
-        existingItem.quantity += 1;
+    const existing = cart.find(i => String(i.id) === String(productId));
+    if (existing) {
+        existing.quantity += 1;
     } else {
         cart.push({
             id: product.id,
@@ -266,234 +275,181 @@ function updateCart() {
 }
 
 function updateCartCount() {
-    const cartCount = document.querySelector(".cart-count");
-    if (!cartCount) return;
-    const totalQuantity = cart.reduce((total, item) => total + Number(item.quantity || 0), 0);
-    cartCount.textContent = totalQuantity;
+    const el = document.querySelector(".cart-count");
+    if (!el) return;
+    el.textContent = cart.reduce((tot, i) => tot + Number(i.quantity || 0), 0);
 }
 
 function renderCart() {
-    const cartItems = document.getElementById("cartItems");
-    const cartEmpty = document.getElementById("cartEmpty");
-    const cartFooter = document.getElementById("cartFooter");
-    const cartTotal = document.getElementById("cartTotal");
+    const items = document.getElementById("cartItems");
+    const empty = document.getElementById("cartEmpty");
+    const footer = document.getElementById("cartFooter");
+    const total = document.getElementById("cartTotal");
 
-    if (!cartItems || !cartEmpty || !cartFooter || !cartTotal) return;
+    if (!items || !empty || !footer || !total) return;
 
     if (cart.length === 0) {
-        cartItems.innerHTML = "";
-        cartEmpty.style.display = "flex";
-        cartFooter.style.display = "none";
-        cartTotal.textContent = "৳ 0";
+        items.innerHTML = "";
+        empty.style.display = "flex";
+        footer.style.display = "none";
+        total.textContent = "৳ 0";
         return;
     }
 
-    cartEmpty.style.display = "none";
-    cartFooter.style.display = "block";
-    cartItems.innerHTML = "";
+    empty.style.display = "none";
+    footer.style.display = "block";
+    items.innerHTML = "";
 
-    cart.forEach((item) => {
-        const itemTotal = Number(item.price) * Number(item.quantity);
-        const cartItemHTML = `
+    cart.forEach((i) => {
+        const sub = Number(i.price) * Number(i.quantity);
+        items.insertAdjacentHTML("beforeend", `
             <div class="cart-item">
-                <img src="${escapeHTML(item.image)}" alt="${escapeHTML(item.name)}" class="cart-item-image">
+                <img src="${escapeHTML(i.image)}" alt="${escapeHTML(i.name)}" class="cart-item-image">
                 <div class="cart-item-info">
-                    <h4>${escapeHTML(item.name)}</h4>
-                    <span class="cart-item-price">৳ ${formatPrice(item.price)}</span>
+                    <h4>${escapeHTML(i.name)}</h4>
+                    <span class="cart-item-price">৳ ${formatPrice(i.price)}</span>
                     <div class="cart-quantity">
-                        <button class="quantity-btn" data-cart-action="decrease" data-product-id="${escapeHTML(item.id)}">
+                        <button class="quantity-btn" data-cart-action="decrease" data-product-id="${escapeHTML(i.id)}">
                             <i class="fas fa-minus"></i>
                         </button>
-                        <span>${item.quantity}</span>
-                        <button class="quantity-btn" data-cart-action="increase" data-product-id="${escapeHTML(item.id)}">
+                        <span>${i.quantity}</span>
+                        <button class="quantity-btn" data-cart-action="increase" data-product-id="${escapeHTML(i.id)}">
                             <i class="fas fa-plus"></i>
                         </button>
                     </div>
-                    <span class="cart-item-subtotal">৳ ${formatPrice(itemTotal)}</span>
+                    <span class="cart-item-subtotal">৳ ${formatPrice(sub)}</span>
                 </div>
-                <button class="remove-cart-item" data-product-id="${escapeHTML(item.id)}" aria-label="Remove Product">
+                <button class="remove-cart-item" data-product-id="${escapeHTML(i.id)}" aria-label="Remove">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
-        `;
-        cartItems.insertAdjacentHTML("beforeend", cartItemHTML);
+        `);
     });
 
-    const totalPrice = cart.reduce((total, item) => total + (Number(item.price) * Number(item.quantity)), 0);
-    cartTotal.textContent = `৳ ${formatPrice(totalPrice)}`;
-    attachCartItemEvents();
-}
+    const sum = cart.reduce((t, i) => t + (Number(i.price) * Number(i.quantity)), 0);
+    total.textContent = `৳ ${formatPrice(sum)}`;
 
-function attachCartItemEvents() {
-    document.querySelectorAll("[data-cart-action]").forEach((button) => {
-        button.addEventListener("click", () => {
-            changeCartQuantity(button.dataset.productId, button.dataset.cartAction);
-        });
+    document.querySelectorAll("[data-cart-action]").forEach(btn => {
+        btn.addEventListener("click", () => changeCartQuantity(btn.dataset.productId, btn.dataset.cartAction));
     });
-
-    document.querySelectorAll(".remove-cart-item").forEach((button) => {
-        button.addEventListener("click", () => {
-            removeCartItem(button.dataset.productId);
-        });
+    document.querySelectorAll(".remove-cart-item").forEach(btn => {
+        btn.addEventListener("click", () => removeCartItem(btn.dataset.productId));
     });
 }
 
-function changeCartQuantity(productId, action) {
-    const item = cart.find(item => String(item.id) === String(productId));
+function changeCartQuantity(pid, act) {
+    const item = cart.find(i => String(i.id) === String(pid));
     if (!item) return;
 
-    if (action === "increase") item.quantity += 1;
-    if (action === "decrease") {
+    if (act === "increase") item.quantity += 1;
+    if (act === "decrease") {
         item.quantity -= 1;
         if (item.quantity <= 0) {
-            cart = cart.filter(item => String(item.id) !== String(productId));
+            cart = cart.filter(i => String(i.id) !== String(pid));
         }
     }
-
     saveCart();
     updateCart();
 }
 
-function removeCartItem(productId) {
-    cart = cart.filter(item => String(item.id) !== String(productId));
+function removeCartItem(pid) {
+    cart = cart.filter(i => String(i.id) !== String(pid));
     saveCart();
     updateCart();
     showNotification("Product removed from cart.", "success");
 }
 
 function openCart() {
-    const sidebar = document.getElementById("cartSidebar");
-    const overlay = document.getElementById("cartOverlay");
-    if (sidebar && overlay) {
-        sidebar.classList.add("active");
-        overlay.classList.add("active");
-        document.body.style.overflow = "hidden";
-    }
+    document.getElementById("cartSidebar")?.classList.add("active");
+    document.getElementById("cartOverlay")?.classList.add("active");
+    document.body.style.overflow = "hidden";
 }
 
 function closeCart() {
-    const sidebar = document.getElementById("cartSidebar");
-    const overlay = document.getElementById("cartOverlay");
-    if (sidebar && overlay) {
-        sidebar.classList.remove("active");
-        overlay.classList.remove("active");
-        document.body.style.overflow = "";
-    }
+    document.getElementById("cartSidebar")?.classList.remove("active");
+    document.getElementById("cartOverlay")?.classList.remove("active");
+    document.body.style.overflow = "";
 }
 
-function orderSingleProduct(productId) {
-    const product = products.find(p => String(p.id) === String(productId));
-    if (!product) return;
-
-    const message = `Hello Melodex! 👋\n\nI want to order:\n\nProduct: ${product.name}\nPrice: ৳ ${formatPrice(product.price)}\n\nPlease let me know about availability and delivery.`;
-    const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappURL, "_blank");
+function orderSingleProduct(pid) {
+    const p = products.find(item => String(item.id) === String(pid));
+    if (!p) return;
+    const msg = `Hello Melodex! 👋\n\nI want to order:\n\nProduct: ${p.name}\nPrice: ৳ ${formatPrice(p.price)}\n\nPlease let me know about availability and delivery.`;
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank");
 }
 
 function checkoutCart() {
-    if (cart.length === 0) {
-        showNotification("Your cart is empty.", "error");
-        return;
-    }
-
-    let message = "Hello Melodex! 👋\n\nI want to order these products:\n\n";
-    let totalPrice = 0;
-
-    cart.forEach((item, index) => {
-        const subtotal = Number(item.price) * Number(item.quantity);
-        totalPrice += subtotal;
-        message += `${index + 1}. ${item.name}\nQuantity: ${item.quantity}\nPrice: ৳ ${formatPrice(item.price)}\nSubtotal: ৳ ${formatPrice(subtotal)}\n\n`;
+    if (cart.length === 0) return;
+    let msg = "Hello Melodex! 👋\n\nI want to order these products:\n\n";
+    let tot = 0;
+    cart.forEach((i, idx) => {
+        const sub = Number(i.price) * Number(i.quantity);
+        tot += sub;
+        msg += `${idx + 1}. ${i.name}\nQuantity: ${i.quantity}\nPrice: ৳ ${formatPrice(i.price)}\nSubtotal: ৳ ${formatPrice(sub)}\n\n`;
     });
-
-    message += `Total Amount: ৳ ${formatPrice(totalPrice)}\n\nPlease confirm availability and delivery details.`;
-    const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappURL, "_blank");
+    msg += `Total Amount: ৳ ${formatPrice(tot)}\n\nPlease confirm availability and delivery details.`;
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank");
 }
 
-function openImageModal(imageURL, altText) {
-    const modal = document.getElementById("imageModal");
-    const modalImage = document.getElementById("modalImage");
-    if (!modal || !modalImage) return;
-
-    modalImage.src = imageURL;
-    modalImage.alt = altText || "Product Image";
-    modal.classList.add("active");
+function openImageModal(url, alt) {
+    const m = document.getElementById("imageModal");
+    const img = document.getElementById("modalImage");
+    if (!m || !img) return;
+    img.src = url;
+    img.alt = alt || "Product";
+    m.classList.add("active");
     document.body.style.overflow = "hidden";
 }
 
 function closeImageModal() {
-    const modal = document.getElementById("imageModal");
-    if (modal) {
-        modal.classList.remove("active");
-        document.body.style.overflow = "";
-    }
+    document.getElementById("imageModal")?.classList.remove("active");
+    document.body.style.overflow = "";
 }
 
-function showNotification(message, type = "success") {
-    const container = document.getElementById("notificationContainer");
-    if (!container) return;
-
-    const notification = document.createElement("div");
-    notification.className = `notification ${type}`;
-    notification.innerHTML = `<span>${message}</span>`;
-    container.appendChild(notification);
-
+function showNotification(msg, type = "success") {
+    const box = document.getElementById("notificationContainer");
+    if (!box) return;
+    const el = document.createElement("div");
+    el.className = `notification ${type}`;
+    el.innerHTML = `<span>${msg}</span>`;
+    box.appendChild(el);
     setTimeout(() => {
-        notification.classList.add("hide");
-        setTimeout(() => notification.remove(), 300);
+        el.classList.add("hide");
+        setTimeout(() => el.remove(), 300);
     }, 2500);
 }
 
-function formatPrice(price) {
-    return Number(price || 0).toLocaleString("en-BD");
+function formatPrice(p) {
+    return Number(p || 0).toLocaleString("en-BD");
 }
 
-function escapeHTML(value) {
-    if (value === null || value === undefined) return "";
-    return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+function escapeHTML(str) {
+    if (str === null || str === undefined) return "";
+    return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
 function initializeEvents() {
-    const cartButton = document.getElementById("cartButton");
-    const closeCartButton = document.getElementById("closeCart");
-    const cartOverlay = document.getElementById("cartOverlay");
-    const checkoutButton = document.getElementById("checkoutButton");
-    const imageModal = document.getElementById("imageModal");
-    const imageModalClose = document.getElementById("imageModalClose");
-
-    if (cartButton) cartButton.addEventListener("click", openCart);
-    if (closeCartButton) closeCartButton.addEventListener("click", closeCart);
-    if (cartOverlay) cartOverlay.addEventListener("click", closeCart);
-    if (checkoutButton) checkoutButton.addEventListener("click", checkoutCart);
-    if (imageModalClose) imageModalClose.addEventListener("click", closeImageModal);
-
-    if (imageModal) {
-        imageModal.addEventListener("click", (event) => {
-            if (event.target === imageModal) closeImageModal();
-        });
-    }
-
-    document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") {
-            closeCart();
-            closeImageModal();
-        }
+    document.getElementById("cartButton")?.addEventListener("click", openCart);
+    document.getElementById("closeCart")?.addEventListener("click", closeCart);
+    document.getElementById("cartOverlay")?.addEventListener("click", closeCart);
+    document.getElementById("checkoutButton")?.addEventListener("click", checkoutCart);
+    document.getElementById("imageModalClose")?.addEventListener("click", closeImageModal);
+    document.getElementById("imageModal")?.addEventListener("click", (e) => {
+        if (e.target.id === "imageModal") closeImageModal();
+    });
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") { closeCart(); closeImageModal(); }
     });
 }
 
 function initializeSmoothScroll() {
-    document.querySelectorAll('a[href^="#"]').forEach((link) => {
-        link.addEventListener("click", function (event) {
-            const href = this.getAttribute("href");
-            if (!href || href === "#") return;
-            const target = document.querySelector(href);
+    document.querySelectorAll('a[href^="#"]').forEach((l) => {
+        l.addEventListener("click", function (e) {
+            const h = this.getAttribute("href");
+            if (!h || h === "#") return;
+            const target = document.querySelector(h);
             if (target) {
-                event.preventDefault();
+                e.preventDefault();
                 target.scrollIntoView({ behavior: "smooth", block: "start" });
             }
         });
@@ -505,6 +461,19 @@ async function initApp() {
     updateCart();
     initializeEvents();
     initializeSmoothScroll();
+
+    // Try Local Cache first
+    const cached = localStorage.getItem("melodex_cached_products");
+    if (cached) {
+        products = JSON.parse(cached);
+        updateProductCount();
+        displayProductsByCategory();
+    } else {
+        // If first visit, show Skeleton Shimmer instantly (0.0s)
+        renderInitialSkeletons();
+    }
+
+    // Direct background fast sync
     await fetchFirebaseProducts();
 }
 
