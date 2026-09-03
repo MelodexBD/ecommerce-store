@@ -1,5 +1,5 @@
 // =========================================
-// MELODEX STORE - FINAL ROBUST SCRIPT
+// MELODEX STORE - FINAL BULLETPROOF SCRIPT
 // =========================================
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
@@ -17,9 +17,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// Force long polling to bypass Messenger/Facebook in-app browser restrictions
+// Anti-timeout connection lock (Fixes 10s Backend Unreachable Bug)
 const db = initializeFirestore(app, {
-    experimentalForceLongPolling: true
+    experimentalForceLongPolling: true,
+    useFetchStreams: false
 });
 
 let products = [];
