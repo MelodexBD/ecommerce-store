@@ -714,3 +714,48 @@ button {
     #notificationContainer { left: 15px; right: 15px; }
     .notification { min-width: auto; width: 100%; }
 }
+/* =========================================
+   INSTANT SKELETON LOADER (0s VISUAL FEEDBACK)
+========================================= */
+
+.skeleton-card {
+    background: #111113;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    height: 380px;
+    display: flex;
+    flex-direction: column;
+}
+
+.skeleton-img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: linear-gradient(90deg, #16161a 25%, #22222a 50%, #16161a 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+}
+
+.skeleton-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.skeleton-line {
+    height: 14px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #16161a 25%, #22222a 50%, #16161a 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+}
+
+.skeleton-line.short { width: 40%; }
+.skeleton-line.mid { width: 70%; }
+.skeleton-line.btn { height: 42px; border-radius: 8px; margin-top: 10px; }
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
