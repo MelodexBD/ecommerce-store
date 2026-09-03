@@ -714,3 +714,41 @@ button {
     #notificationContainer { left: 15px; right: 15px; }
     .notification { min-width: auto; width: 100%; }
 }
+/* --- Product Image 1:1 Aspect Ratio & Auto-Crop --- */
+.product-card .product-image {
+    width: 100% !important;
+    aspect-ratio: 1 / 1 !important;     /* পারফেক্ট ১:১ স্কয়ার অনুপাত */
+    height: auto !important;
+    object-fit: cover !important;       /* ছবি না ফাটিয়ে চারপাশ ক্রপ করে মাঝের অংশ দেখাবে */
+    object-position: center !important;  /* কেন্দ্র বরাবর ফোকাস রাখবে */
+    display: block;
+}
+
+/* ছোট থাম্বনেইল গ্যালারিও ১:১ স্কয়ার রাখা */
+.product-thumbnails {
+    display: flex;
+    gap: 8px;
+    padding: 10px 14px 2px 14px;
+    background: transparent;
+    overflow-x: auto;
+}
+
+.thumb-img {
+    width: 48px !important;
+    height: 48px !important;
+    aspect-ratio: 1 / 1 !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 2px solid #334155;
+    opacity: 0.65;
+    transition: all 0.2s ease;
+}
+
+.thumb-img:hover, 
+.thumb-img.active {
+    border-color: #ef4444;
+    opacity: 1;
+    transform: scale(1.06);
+}
