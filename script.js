@@ -1,5 +1,5 @@
 // =========================================
-// MELODEX STORE - INDEXEDDB ZERO-LATENCY SCRIPT
+// MELODEX STORE - INSTANT FIRST-VISIT SCRIPT
 // =========================================
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
@@ -17,6 +17,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
+// Ultra-fast HTTP Polling without stream overhead
 const db = initializeFirestore(app, {
     experimentalForceLongPolling: true,
     useFetchStreams: false
@@ -25,52 +26,6 @@ const db = initializeFirestore(app, {
 let products = [];
 let cart = [];
 const WHATSAPP_NUMBER = "8801310863206";
-
-// =========================================
-// INDEXEDDB ENGINE (NO SIZE LIMIT / NO QUOTA ERROR)
-// =========================================
-const DB_NAME = "MelodexCacheDB";
-const STORE_NAME = "products_store";
-
-function openDB() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, 1);
-        request.onupgradeneeded = (e) => {
-            const db = e.target.result;
-            if (!db.objectStoreNames.contains(STORE_NAME)) {
-                db.createObjectStore(STORE_NAME);
-            }
-        };
-        request.onsuccess = (e) => resolve(e.target.result);
-        request.onerror = (e) => reject(e.target.error);
-    });
-}
-
-async function saveToIndexedDB(data) {
-    try {
-        const idb = await openDB();
-        const tx = idb.transaction(STORE_NAME, "readwrite");
-        const store = tx.objectStore(STORE_NAME);
-        store.put(data, "cached_products");
-    } catch (err) {
-        console.warn("IndexedDB Save Failed:", err);
-    }
-}
-
-async function getFromIndexedDB() {
-    try {
-        const idb = await openDB();
-        return new Promise((resolve) => {
-            const tx = idb.transaction(STORE_NAME, "readonly");
-            const store = tx.objectStore(STORE_NAME);
-            const req = store.get("cached_products");
-            req.onsuccess = () => resolve(req.result || null);
-            req.onerror = () => resolve(null);
-        });
-    } catch (err) {
-        return null;
-    }
-}
 
 // 0-second skeleton display on very first visit
 function renderInitialSkeletons() {
@@ -104,9 +59,7 @@ function loadCart() {
 }
 
 function saveCart() {
-    try {
-        localStorage.setItem("melodexCart", JSON.stringify(cart));
-    } catch (e) {}
+    localStorage.setItem("melodexCart", JSON.stringify(cart));
 }
 
 function normalizeCategory(category) {
@@ -160,10 +113,7 @@ async function fetchFirebaseProducts() {
         });
 
         products = firebaseProducts;
-        
-        // Save to IndexedDB (No 5MB Storage Limit)
-        await saveToIndexedDB(products);
-        
+        localStorage.setItem("melodex_cached_products", JSON.stringify(products));
         updateProductCount();
         displayProductsByCategory();
     } catch (error) {
@@ -512,17 +462,18 @@ async function initApp() {
     initializeEvents();
     initializeSmoothScroll();
 
-    // 1. Instantly read from IndexedDB (0.0s delay, unlimited capacity)
-    const cachedProducts = await getFromIndexedDB();
-    if (cachedProducts && cachedProducts.length > 0) {
-        products = cachedProducts;
+    // Try Local Cache first
+    const cached = localStorage.getItem("melodex_cached_products");
+    if (cached) {
+        products = JSON.parse(cached);
         updateProductCount();
         displayProductsByCategory();
     } else {
+        // If first visit, show Skeleton Shimmer instantly (0.0s)
         renderInitialSkeletons();
     }
 
-    // 2. Fetch latest updates from server
+    // Direct background fast sync
     await fetchFirebaseProducts();
 }
 
