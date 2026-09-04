@@ -1,71 +1,42 @@
 // =========================================
 // MELODEX STORE
-// ULTRA-FAST INDEXEDDB CACHE + FIRESTORE SYNC
+// FAST SDK LOADING + REALTIME CACHE + SYNC
 // =========================================
 
-const FIREBASE_PROJECT_ID = "melodex-store";
-const FIREBASE_API_KEY = "AIzaSyBTVoMKlJeRWsgIL5gCdWCHYdx3w8brWHQ";
-const WHATSAPP_NUMBER = "8801310863206";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+import { 
+    initializeFirestore, 
+    collection, 
+    getDocs, 
+    enableIndexedDbPersistence 
+} from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
-const FIRESTORE_BASE_URL = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/products`;
+// Firebase Configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyBTVoMKlJeRWsgIL5gCdWCHYdx3w8brWHQ",
+    authDomain: "melodex-store.firebaseapp.com",
+    projectId: "melodex-store",
+    storageBucket: "melodex-store.firebasestorage.app",
+    messagingSenderId: "563447283369",
+    appId: "1:563447283369:web:a999e89adf7380ec4733b8",
+    measurementId: "G-G133358KKB"
+};
+
+const WHATSAPP_NUMBER = "8801310863206";
+const app = initializeApp(firebaseConfig);
+
+// মেসেঞ্জার ও মোবাইল ব্রাউজারে ব্লকিং ছাড়া চলার কনফিগারেশন
+const db = initializeFirestore(app, {
+    experimentalForceLongPolling: true
+});
+
+// ফায়ারবেজের বিল্ট-ইন সুপারফাস্ট IndexedDB অফলাইন ক্যাশ চালু
+enableIndexedDbPersistence(db).catch(() => {
+    // মাল্টিপল ট্যাব খোলা থাকলে ক্যাশ ফলব্যাক নীরবে হ্যান্ডেল করবে
+});
 
 let products = [];
 let cart = [];
-let isSyncing = false;
-
-// =========================================
-// INDEXEDDB ENGINE (UNLIMITED CACHE STORAGE)
-// =========================================
-const DB_NAME = "MelodexCacheDB";
-const DB_VERSION = 1;
-const STORE_NAME = "productsStore";
-
-function getDB() {
-    return new Promise((resolve, reject) => {
-        if (!window.indexedDB) {
-            resolve(null);
-            return;
-        }
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-        request.onupgradeneeded = (e) => {
-            const db = e.target.result;
-            if (!db.objectStoreNames.contains(STORE_NAME)) {
-                db.createObjectStore(STORE_NAME, { keyPath: "id" });
-            }
-        };
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => resolve(null);
-    });
-}
-
-async function getCachedProducts() {
-    try {
-        const db = await getDB();
-        if (!db) return [];
-        return new Promise((resolve) => {
-            const tx = db.transaction(STORE_NAME, "readonly");
-            const store = tx.objectStore(STORE_NAME);
-            const request = store.getAll();
-            request.onsuccess = () => resolve(request.result || []);
-            request.onerror = () => resolve([]);
-        });
-    } catch {
-        return [];
-    }
-}
-
-async function saveProductsToCache(productList) {
-    try {
-        const db = await getDB();
-        if (!db || !productList.length) return;
-        const tx = db.transaction(STORE_NAME, "readwrite");
-        const store = tx.objectStore(STORE_NAME);
-        store.clear();
-        productList.forEach(item => store.put(item));
-    } catch (e) {
-        console.warn("IndexedDB cache save error:", e);
-    }
-}
 
 // =========================================
 // CATEGORY HELPERS
@@ -78,7 +49,7 @@ function normalizeCategory(category) {
     if (cat.includes("pedal")) return "pedals";
     if (cat.includes("stand")) return "stands";
     if (cat.includes("cable") || cat.includes("accessori")) return "cables";
-    return cat;
+    return "guitars";
 }
 
 function getCategoryName(category) {
@@ -93,123 +64,48 @@ function getCategoryName(category) {
 }
 
 // =========================================
-// FIRESTORE PARSER
+// FETCH PRODUCTS (FIREBASE SDK)
 // =========================================
-function firestoreValueToJS(value) {
-    if (!value) return null;
-    if ("stringValue" in value) return value.stringValue;
-    if ("integerValue" in value) return Number(value.integerValue);
-    if ("doubleValue" in value) return Number(value.doubleValue);
-    if ("booleanValue" in value) return value.booleanValue;
-    if ("arrayValue" in value) {
-        const values = value.arrayValue.values || [];
-        return values.map(item => firestoreValueToJS(item));
-    }
-    if ("mapValue" in value) {
-        const result = {};
-        const fields = value.mapValue.fields || {};
-        Object.keys(fields).forEach(key => {
-            result[key] = firestoreValueToJS(fields[key]);
+async function fetchProducts() {
+    showProductLoading();
+    try {
+        const querySnapshot = await getDocs(collection(db, "products"));
+        const fbProducts = [];
+
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            let imageList = [];
+            if (Array.isArray(data.images) && data.images.length > 0) {
+                imageList = data.images.filter(img => typeof img === "string" && img.trim() !== "");
+            }
+            if (imageList.length === 0 && data.image) {
+                imageList = [data.image];
+            }
+
+            fbProducts.push({
+                id: doc.id,
+                name: data.name || "Unnamed Product",
+                category: normalizeCategory(data.category),
+                price: Number(data.price) || 0,
+                image: imageList[0] || "",
+                images: imageList,
+                description: data.description || ""
+            });
         });
-        return result;
-    }
-    if ("timestampValue" in value) return value.timestampValue;
-    return null;
-}
 
-function convertFirestoreDocument(doc) {
-    const fields = doc.fields || {};
-    const data = {};
-    Object.keys(fields).forEach(key => {
-        data[key] = firestoreValueToJS(fields[key]);
-    });
-
-    let imageList = [];
-    if (Array.isArray(data.images) && data.images.length > 0) {
-        imageList = data.images.filter(img => typeof img === "string" && img.trim() !== "");
-    }
-    if (imageList.length === 0 && data.image) {
-        imageList = [data.image];
-    }
-
-    const docId = (doc.name || "").split("/").pop();
-
-    return {
-        id: docId,
-        name: data.name || "Unnamed Product",
-        category: normalizeCategory(data.category),
-        price: Number(data.price) || 0,
-        image: imageList[0] || "",
-        images: imageList,
-        description: data.description || ""
-    };
-}
-
-// =========================================
-// FIRESTORE BACKGROUND SYNC
-// =========================================
-async function syncFirebaseProducts() {
-    if (isSyncing) return;
-    isSyncing = true;
-
-    try {
-        const url = `${FIRESTORE_BASE_URL}?key=${encodeURIComponent(FIREBASE_API_KEY)}&pageSize=300`;
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        
-        const result = await response.json();
-        const docs = result.documents || [];
-        const freshProducts = docs.map(convertFirestoreDocument);
-
-        // পরিবর্তন হয়েছে কি না যাচাই
-        const hasChanged = JSON.stringify(freshProducts.map(p => p.id)) !== JSON.stringify(products.map(p => p.id)) ||
-                           products.length !== freshProducts.length;
-
-        if (hasChanged || products.length === 0) {
-            products = freshProducts;
-            updateProductCount();
-            displayProductsByCategory();
-            saveProductsToCache(products);
-            console.log(`Melodex: Synced ${products.length} products with database.`);
-        }
-    } catch (err) {
-        console.warn("Background sync offline/skipped:", err);
-        if (products.length === 0) {
-            showProductLoadError();
-        }
-    } finally {
-        isSyncing = false;
+        products = fbProducts;
+        updateProductCount();
+        displayProductsByCategory();
+        console.log(`Melodex: ${products.length} products loaded successfully.`);
+    } catch (error) {
+        console.error("Firebase fetch error:", error);
+        showProductLoadError();
     }
 }
 
 // =========================================
-// CART STORAGE
+// UI DISPLAY & LOADERS
 // =========================================
-function loadCart() {
-    try {
-        const saved = localStorage.getItem("melodexCart");
-        cart = saved ? JSON.parse(saved) : [];
-        if (!Array.isArray(cart)) cart = [];
-    } catch {
-        cart = [];
-    }
-}
-
-function saveCart() {
-    try {
-        localStorage.setItem("melodexCart", JSON.stringify(cart));
-    } catch (e) {
-        console.warn("Cart save failed:", e);
-    }
-}
-
-function updateCartCount() {
-    const cartCount = document.querySelector(".cart-count");
-    if (!cartCount) return;
-    const totalQuantity = cart.reduce((tot, item) => tot + Number(item.quantity || 0), 0);
-    cartCount.textContent = totalQuantity;
-}
-
 function updateProductCount() {
     const countElement = document.getElementById("total-products-count");
     if (countElement) {
@@ -217,18 +113,15 @@ function updateProductCount() {
     }
 }
 
-// =========================================
-// RENDER PRODUCTS
-// =========================================
 function showProductLoading() {
     const categories = ["guitars", "pedals", "pedalboards", "stands", "cables"];
     categories.forEach(category => {
         const container = document.getElementById(`${category}Container`);
-        if (container && (!products || products.length === 0)) {
+        if (container && products.length === 0) {
             container.innerHTML = `
-                <div class="product-loading">
-                    <div class="product-loader-spinner"></div>
-                    <span>Loading products...</span>
+                <div class="product-loading" style="grid-column: 1/-1; text-align: center; padding: 30px; color: #94a3b8;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #ef4444; margin-bottom: 8px;"></i>
+                    <p>Loading products...</p>
                 </div>
             `;
         }
@@ -239,11 +132,11 @@ function showProductLoadError() {
     const categories = ["guitars", "pedals", "pedalboards", "stands", "cables"];
     categories.forEach(category => {
         const container = document.getElementById(`${category}Container`);
-        if (container) {
+        if (container && products.length === 0) {
             container.innerHTML = `
-                <div class="product-loading">
-                    <span>Unable to load products. Please check internet and refresh.</span>
-                </div>
+                <p style="grid-column: 1/-1; text-align: center; color: #ef4444; padding: 20px;">
+                    প্রোডাক্ট লোড করা সম্ভব হয়নি। অনুগ্রহ করে পেজটি রিফ্রেশ করুন।
+                </p>
             `;
         }
     });
@@ -259,7 +152,7 @@ function displayProductsByCategory() {
         const categoryProducts = products.filter(p => p.category === category);
 
         if (categoryProducts.length === 0) {
-            container.innerHTML = `<p class="no-products">No products available in this category yet.</p>`;
+            container.innerHTML = `<p class="no-products" style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 20px;">এই ক্যাটাগরিতে কোনো প্রোডাক্ট নেই।</p>`;
             return;
         }
 
@@ -275,15 +168,13 @@ function displayProductsByCategory() {
                              class="thumb-img ${index === 0 ? 'active' : ''}"
                              data-product-id="${escapeHTML(product.id)}"
                              data-image="${escapeHTML(imgUrl)}"
-                             loading="lazy"
-                             decoding="async">
+                             loading="lazy">
                     `;
                 });
                 thumbnailsHTML += `</div>`;
             }
 
             const imgLoading = productIndex < 4 ? "eager" : "lazy";
-            const fetchPrio = productIndex < 2 ? "high" : "auto";
 
             productsHTML += `
                 <div class="product-card">
@@ -292,9 +183,7 @@ function displayProductsByCategory() {
                              alt="${escapeHTML(product.name)}"
                              class="product-image"
                              id="main-img-${escapeHTML(product.id)}"
-                             loading="${imgLoading}"
-                             fetchpriority="${fetchPrio}"
-                             decoding="async">
+                             loading="${imgLoading}">
                         <button class="image-zoom-btn" data-product-id="${escapeHTML(product.id)}" aria-label="View Image">
                             <i class="fas fa-expand"></i>
                         </button>
@@ -371,6 +260,24 @@ function initializeProductEvents() {
 // =========================================
 // CART LOGIC
 // =========================================
+function loadCart() {
+    try {
+        const saved = localStorage.getItem("melodexCart");
+        cart = saved ? JSON.parse(saved) : [];
+        if (!Array.isArray(cart)) cart = [];
+    } catch {
+        cart = [];
+    }
+}
+
+function saveCart() {
+    try {
+        localStorage.setItem("melodexCart", JSON.stringify(cart));
+    } catch (e) {
+        console.warn("Cart save failed:", e);
+    }
+}
+
 function addToCart(productId) {
     const product = products.find(p => String(p.id) === String(productId));
     if (!product) return;
@@ -397,6 +304,13 @@ function addToCart(productId) {
 function updateCart() {
     updateCartCount();
     renderCart();
+}
+
+function updateCartCount() {
+    const cartCount = document.querySelector(".cart-count");
+    if (!cartCount) return;
+    const totalQuantity = cart.reduce((tot, item) => tot + Number(item.quantity || 0), 0);
+    cartCount.textContent = totalQuantity;
 }
 
 function renderCart() {
@@ -629,26 +543,14 @@ function initializeEvents() {
 // =========================================
 // APP INITIALIZATION
 // =========================================
-async function initApp() {
+function initApp() {
     loadCart();
     updateCart();
     initializeEvents();
     initializeProductEvents();
     initializeCartEvents();
 
-    // ১. IndexedDB থেকে সাথে সাথে (০.০১ সেকেন্ডে) ক্যাশ তুলে আনা
-    const cached = await getCachedProducts();
-    if (cached && cached.length > 0) {
-        products = cached;
-        updateProductCount();
-        displayProductsByCategory();
-        console.log(`Melodex: Instant render from IndexedDB (${products.length} products).`);
-    } else {
-        showProductLoading();
-    }
-
-    // ২. ব্যাকগ্রাউন্ডে নীরবে ফায়ারবেজ সিঙ্ক
-    syncFirebaseProducts();
+    fetchProducts();
 }
 
 if (document.readyState === "loading") {
