@@ -1,6 +1,6 @@
 // =========================================
 // MELODEX STORE
-// ULTRA FAST PRODUCT LOADING + CACHE SYSTEM
+// FAST PRODUCT LOADING + CACHE + PAGINATION
 // =========================================
 
 
@@ -10,24 +10,47 @@
 
 const FIREBASE_PROJECT_ID = "melodex-store";
 
-const FIREBASE_API_KEY = "AIzaSyBTVoMKlJeRWsgIL5gCdWCHYdx3w8brWHQ";
+const FIREBASE_API_KEY =
+    "AIzaSyBTVoMKlJeRWsgIL5gCdWCHYdx3w8brWHQ";
 
-const WHATSAPP_NUMBER = "8801310863206";
+const WHATSAPP_NUMBER =
+    "8801310863206";
 
 
 // =========================================
 // CACHE SETTINGS
 // =========================================
 
-const PRODUCT_CACHE_KEY = "melodexProductsCacheV4";
+const PRODUCT_CACHE_KEY =
+    "melodexProductsCacheV5";
 
-const PRODUCT_CACHE_TIME_KEY = "melodexProductsCacheTimeV4";
+const PRODUCT_CACHE_TIME_KEY =
+    "melodexProductsCacheTimeV5";
 
 
-// Cache থাকবে সর্বোচ্চ 7 দিন
-// তবে প্রতিবার background-এ Firebase থেকে update check হবে
+// সর্বোচ্চ 7 দিন cache
+// Firebase background sync চলবে
 
-const CACHE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
+const CACHE_MAX_AGE =
+    7 * 24 * 60 * 60 * 1000;
+
+
+// =========================================
+// FIRESTORE SETTINGS
+// =========================================
+
+
+// প্রতি request-এ 100 product
+// তারপর pagination দিয়ে পরের product আনা হবে
+
+const FIRESTORE_PAGE_SIZE =
+    100;
+
+
+// সর্বোচ্চ 500 product safety limit
+
+const MAX_PRODUCTS_TO_LOAD =
+    500;
 
 
 // =========================================
@@ -38,17 +61,19 @@ let products = [];
 
 let cart = [];
 
-let productsAreLoading = false;
+let productsAreLoading =
+    false;
 
-let firebaseLoadFailed = false;
+let firebaseLoadFailed =
+    false;
 
 
 // =========================================
-// FIRESTORE REST API URL
+// FIRESTORE BASE URL
 // =========================================
 
-const FIRESTORE_PRODUCTS_URL =
-    `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/products?key=${FIREBASE_API_KEY}&pageSize=100`;
+const FIRESTORE_BASE_URL =
+    `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/products`;
 
 
 // =========================================
@@ -64,9 +89,10 @@ function normalizeCategory(category) {
     }
 
 
-    const cat = String(category)
-        .toLowerCase()
-        .trim();
+    const cat =
+        String(category)
+            .toLowerCase()
+            .trim();
 
 
     if (cat.includes("guitar")) {
@@ -98,9 +124,13 @@ function normalizeCategory(category) {
 
 
     if (
+
         cat.includes("cable") ||
+
         cat.includes("accessories") ||
+
         cat.includes("accessory")
+
     ) {
 
         return "cables";
@@ -121,20 +151,26 @@ function getCategoryName(category) {
 
     const names = {
 
-        guitars: "Guitars",
+        guitars:
+            "Guitars",
 
-        pedals: "Pedals & Effects",
+        pedals:
+            "Pedals & Effects",
 
-        pedalboards: "Pedalboards & Power",
+        pedalboards:
+            "Pedalboards & Power",
 
-        stands: "Stands",
+        stands:
+            "Stands",
 
-        cables: "Cables & Accessories"
+        cables:
+            "Cables & Accessories"
 
     };
 
 
-    return names[category] || category;
+    return names[category] ||
+        category;
 
 }
 
@@ -161,14 +197,18 @@ function firestoreValueToJS(value) {
 
     if ("integerValue" in value) {
 
-        return Number(value.integerValue);
+        return Number(
+            value.integerValue
+        );
 
     }
 
 
     if ("doubleValue" in value) {
 
-        return Number(value.doubleValue);
+        return Number(
+            value.doubleValue
+        );
 
     }
 
@@ -189,9 +229,13 @@ function firestoreValueToJS(value) {
 
     if ("arrayValue" in value) {
 
-        const values = value.arrayValue.values || [];
+        const values =
+            value.arrayValue.values || [];
 
-        return values.map(item => firestoreValueToJS(item));
+
+        return values.map(item =>
+            firestoreValueToJS(item)
+        );
 
     }
 
@@ -200,15 +244,20 @@ function firestoreValueToJS(value) {
 
         const result = {};
 
-        const fields = value.mapValue.fields || {};
+
+        const fields =
+            value.mapValue.fields || {};
 
 
-        Object.keys(fields).forEach(key => {
+        Object.keys(fields)
+            .forEach(key => {
 
-            result[key] =
-                firestoreValueToJS(fields[key]);
+                result[key] =
+                    firestoreValueToJS(
+                        fields[key]
+                    );
 
-        });
+            });
 
 
         return result;
@@ -241,28 +290,40 @@ function convertFirestoreDocument(document) {
     const data = {};
 
 
-    Object.keys(fields).forEach(key => {
+    Object.keys(fields)
+        .forEach(key => {
 
-        data[key] =
-            firestoreValueToJS(fields[key]);
+            data[key] =
+                firestoreValueToJS(
+                    fields[key]
+                );
 
-    });
+        });
 
 
     let imageList = [];
 
 
     if (
+
         Array.isArray(data.images) &&
+
         data.images.length > 0
+
     ) {
 
         imageList =
             data.images.filter(image => {
 
                 return (
-                    typeof image === "string" &&
+
+                    typeof image ===
+                    "string"
+
+                    &&
+
                     image.trim() !== ""
+
                 );
 
             });
@@ -271,11 +332,15 @@ function convertFirestoreDocument(document) {
 
 
     if (
+
         imageList.length === 0 &&
+
         data.image
+
     ) {
 
-        imageList = [data.image];
+        imageList =
+            [data.image];
 
     }
 
@@ -285,12 +350,15 @@ function convertFirestoreDocument(document) {
 
 
     const documentId =
-        documentPath.split("/").pop();
+        documentPath
+            .split("/")
+            .pop();
 
 
     return {
 
-        id: documentId,
+        id:
+            documentId,
 
         name:
             data.name ||
@@ -346,11 +414,15 @@ function loadProductsFromCache() {
 
 
         const parsedProducts =
-            JSON.parse(savedProducts);
+            JSON.parse(
+                savedProducts
+            );
 
 
         if (
-            !Array.isArray(parsedProducts)
+            !Array.isArray(
+                parsedProducts
+            )
         ) {
 
             return [];
@@ -358,23 +430,29 @@ function loadProductsFromCache() {
         }
 
 
-        // Cache খুব পুরনো হলে
-        // তবুও fallback হিসেবে রাখা হচ্ছে
-
         if (savedTime) {
 
             const cacheAge =
+
                 Date.now() -
-                Number(savedTime);
+
+                Number(
+                    savedTime
+                );
 
 
             if (
+
                 cacheAge >
+
                 CACHE_MAX_AGE
+
             ) {
 
                 console.log(
+
                     "Melodex cache is old. Firebase will refresh it."
+
                 );
 
             }
@@ -384,11 +462,15 @@ function loadProductsFromCache() {
 
         return parsedProducts;
 
+
     } catch (error) {
 
         console.error(
+
             "Product cache load error:",
+
             error
+
         );
 
 
@@ -422,7 +504,8 @@ function saveProductsToCache(productList) {
 
             PRODUCT_CACHE_TIME_KEY,
 
-            Date.now().toString()
+            Date.now()
+                .toString()
 
         );
 
@@ -430,8 +513,11 @@ function saveProductsToCache(productList) {
     } catch (error) {
 
         console.error(
+
             "Product cache save error:",
+
             error
+
         );
 
     }
@@ -455,11 +541,17 @@ function loadCart() {
 
         cart =
             savedCart
-                ? JSON.parse(savedCart)
+
+                ? JSON.parse(
+                    savedCart
+                )
+
                 : [];
 
 
-        if (!Array.isArray(cart)) {
+        if (
+            !Array.isArray(cart)
+        ) {
 
             cart = [];
 
@@ -469,8 +561,11 @@ function loadCart() {
     } catch (error) {
 
         console.error(
+
             "Cart load error:",
+
             error
+
         );
 
 
@@ -493,7 +588,9 @@ function saveCart() {
 
             "melodexCart",
 
-            JSON.stringify(cart)
+            JSON.stringify(
+                cart
+            )
 
         );
 
@@ -501,8 +598,11 @@ function saveCart() {
     } catch (error) {
 
         console.error(
+
             "Cart save error:",
+
             error
+
         );
 
     }
@@ -511,97 +611,189 @@ function saveCart() {
 
 
 // =========================================
-// FAST FIRESTORE PRODUCT FETCH
+// FETCH ALL FIRESTORE PRODUCTS
+// WITH PAGINATION
 // =========================================
 
 async function fetchFirebaseProducts() {
 
-    productsAreLoading = true;
+    if (
+        productsAreLoading
+    ) {
 
-    firebaseLoadFailed = false;
+        return;
+
+    }
+
+
+    productsAreLoading =
+        true;
+
+
+    firebaseLoadFailed =
+        false;
+
+
+    const controller =
+        new AbortController();
+
+
+    const timeout =
+        setTimeout(() => {
+
+            controller.abort();
+
+        }, 30000);
 
 
     try {
 
-        const controller =
-            new AbortController();
+        let allDocuments =
+            [];
 
 
-        const timeout =
-            setTimeout(() => {
-
-                controller.abort();
-
-            }, 15000);
+        let pageToken =
+            null;
 
 
-        const response =
-            await fetch(
+        let hasMore =
+            true;
 
-                FIRESTORE_PRODUCTS_URL,
 
-                {
+        while (
 
-                    method: "GET",
+            hasMore &&
 
-                    signal:
-                        controller.signal,
+            allDocuments.length <
+            MAX_PRODUCTS_TO_LOAD
 
-                    cache:
-                        "no-store"
+        ) {
 
-                }
+            let url =
 
+                `${FIRESTORE_BASE_URL}` +
+
+                `?key=${encodeURIComponent(FIREBASE_API_KEY)}` +
+
+                `&pageSize=${FIRESTORE_PAGE_SIZE}`;
+
+
+            if (pageToken) {
+
+                url +=
+
+                    `&pageToken=${encodeURIComponent(pageToken)}`;
+
+            }
+
+
+            const response =
+                await fetch(
+
+                    url,
+
+                    {
+
+                        method:
+                            "GET",
+
+                        signal:
+                            controller.signal,
+
+                        cache:
+                            "no-store"
+
+                    }
+
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+
+                    `Firebase request failed: ${response.status}`
+
+                );
+
+            }
+
+
+            const result =
+                await response.json();
+
+
+            const documents =
+                result.documents || [];
+
+
+            allDocuments.push(
+                ...documents
             );
 
 
-        clearTimeout(timeout);
+            pageToken =
+                result.nextPageToken ||
+                null;
 
 
-        if (!response.ok) {
+            hasMore =
+                Boolean(pageToken);
 
-            throw new Error(
 
-                `Firebase request failed: ${response.status}`
+            if (
 
-            );
+                documents.length ===
+                0
+
+            ) {
+
+                hasMore =
+                    false;
+
+            }
 
         }
 
 
-        const result =
-            await response.json();
+        // Safety limit
 
+        allDocuments =
+            allDocuments.slice(
 
-        const documents =
-            result.documents || [];
+                0,
+
+                MAX_PRODUCTS_TO_LOAD
+
+            );
 
 
         const firebaseProducts =
-            documents.map(document => {
 
-                return convertFirestoreDocument(
-                    document
-                );
+            allDocuments.map(
+                document =>
 
-            });
+                    convertFirestoreDocument(
+                        document
+                    )
+            );
 
 
-        // নতুন Firebase product পাওয়া গেলে
-        // সেটাই ব্যবহার হবে
+        // Firebase থেকে data পাওয়া গেলে
+        // সেটাই main product list হবে
 
         products =
             firebaseProducts;
 
 
-        // Browser Cache Update
+        // Cache Update
 
         saveProductsToCache(
             products
         );
 
 
-        // Product UI Update
+        // UI Update
 
         updateProductCount();
 
@@ -626,23 +818,33 @@ async function fetchFirebaseProducts() {
         );
 
 
-        firebaseLoadFailed = true;
+        firebaseLoadFailed =
+            true;
 
 
         // Firebase fail হলেও
-        // Cached product থাকলে সেটাই থাকবে
+        // cache থাকলে cache চলবে
 
         if (
+
             products.length === 0
+
         ) {
 
             showProductLoadError();
 
         }
 
+
     } finally {
 
-        productsAreLoading = false;
+        clearTimeout(
+            timeout
+        );
+
+
+        productsAreLoading =
+            false;
 
     }
 
@@ -669,8 +871,11 @@ function updateProductCount() {
 
 
     countElement.textContent =
+
         products.length > 0
+
             ? `${products.length}+`
+
             : "0";
 
 }
@@ -719,7 +924,9 @@ function showProductLoading() {
                 <div class="product-loader-spinner"></div>
 
                 <span>
+
                     Loading products...
+
                 </span>
 
             </div>
@@ -824,21 +1031,28 @@ function displayProductsByCategory() {
 
 
         const categoryProducts =
+
             products.filter(product => {
 
                 return (
+
                     product.category ===
                     category
+
                 );
 
             });
 
 
-        container.innerHTML = "";
+        container.innerHTML =
+            "";
 
 
         if (
-            categoryProducts.length === 0
+
+            categoryProducts.length ===
+            0
+
         ) {
 
             container.innerHTML = `
@@ -857,19 +1071,25 @@ function displayProductsByCategory() {
         }
 
 
-        let productsHTML = "";
+        let productsHTML =
+            "";
 
 
         categoryProducts.forEach(
 
             (product, productIndex) => {
 
-                let thumbnailsHTML = "";
+
+                let thumbnailsHTML =
+                    "";
 
 
                 if (
+
                     product.images &&
+
                     product.images.length > 1
+
                 ) {
 
                     thumbnailsHTML =
@@ -896,6 +1116,8 @@ function displayProductsByCategory() {
 
                                     loading="lazy"
 
+                                    decoding="async"
+
                                 >
 
                             `;
@@ -911,17 +1133,23 @@ function displayProductsByCategory() {
                 }
 
 
-                // প্রথম কয়েকটি product image priority পাবে
+                // প্রথম কয়েকটি image দ্রুত load হবে
 
                 const imageLoading =
+
                     productIndex < 4
+
                         ? "eager"
+
                         : "lazy";
 
 
                 const fetchPriority =
+
                     productIndex < 2
+
                         ? "high"
+
                         : "auto";
 
 
@@ -981,9 +1209,11 @@ function displayProductsByCategory() {
                             <span class="product-category">
 
                                 ${escapeHTML(
+
                                     getCategoryName(
                                         product.category
                                     )
+
                                 )}
 
                             </span>
@@ -1085,8 +1315,6 @@ function initializeProductEvents() {
         event => {
 
 
-            // ADD TO CART
-
             const cartButton =
                 event.target.closest(
                     ".btn-add-cart"
@@ -1108,8 +1336,6 @@ function initializeProductEvents() {
             }
 
 
-            // ORDER SINGLE PRODUCT
-
             const orderButton =
                 event.target.closest(
                     "[data-order-product]"
@@ -1130,8 +1356,6 @@ function initializeProductEvents() {
 
             }
 
-
-            // IMAGE ZOOM BUTTON
 
             const zoomButton =
                 event.target.closest(
@@ -1167,8 +1391,6 @@ function initializeProductEvents() {
             }
 
 
-            // MAIN PRODUCT IMAGE
-
             const productImage =
                 event.target.closest(
                     ".product-image"
@@ -1190,8 +1412,6 @@ function initializeProductEvents() {
 
             }
 
-
-            // THUMBNAIL
 
             const thumbnail =
                 event.target.closest(
@@ -1271,14 +1491,12 @@ function initializeProductEvents() {
 function addToCart(productId) {
 
     const product =
-        products.find(product => {
+        products.find(product =>
 
-            return (
-                String(product.id) ===
-                String(productId)
-            );
+            String(product.id) ===
+            String(productId)
 
-        });
+        );
 
 
     if (!product) {
@@ -1289,19 +1507,18 @@ function addToCart(productId) {
 
 
     const existingItem =
-        cart.find(item => {
+        cart.find(item =>
 
-            return (
-                String(item.id) ===
-                String(productId)
-            );
+            String(item.id) ===
+            String(productId)
 
-        });
+        );
 
 
     if (existingItem) {
 
-        existingItem.quantity += 1;
+        existingItem.quantity +=
+            1;
 
     } else {
 
@@ -1379,20 +1596,16 @@ function updateCartCount() {
 
 
     const totalQuantity =
+
         cart.reduce(
 
-            (total, item) => {
+            (total, item) =>
 
-                return (
+                total +
 
-                    total +
-                    Number(
-                        item.quantity || 0
-                    )
-
-                );
-
-            },
+                Number(
+                    item.quantity || 0
+                ),
 
             0
 
@@ -1438,8 +1651,11 @@ function renderCart() {
     if (
 
         !cartItems ||
+
         !cartEmpty ||
+
         !cartFooter ||
+
         !cartTotal
 
     ) {
@@ -1453,7 +1669,8 @@ function renderCart() {
         cart.length === 0
     ) {
 
-        cartItems.innerHTML = "";
+        cartItems.innerHTML =
+            "";
 
 
         cartEmpty.style.display =
@@ -1481,7 +1698,8 @@ function renderCart() {
         "block";
 
 
-    let cartHTML = "";
+    let cartHTML =
+        "";
 
 
     cart.forEach(item => {
@@ -1506,6 +1724,8 @@ function renderCart() {
 
                     class="cart-item-image"
 
+                    loading="lazy"
+
                 >
 
 
@@ -1514,18 +1734,14 @@ function renderCart() {
 
                     <h4>
 
-                        ${escapeHTML(
-                            item.name
-                        )}
+                        ${escapeHTML(item.name)}
 
                     </h4>
 
 
                     <span class="cart-item-price">
 
-                        ৳ ${formatPrice(
-                            item.price
-                        )}
+                        ৳ ${formatPrice(item.price)}
 
                     </span>
 
@@ -1575,9 +1791,7 @@ function renderCart() {
 
                     <span class="cart-item-subtotal">
 
-                        ৳ ${formatPrice(
-                            itemTotal
-                        )}
+                        ৳ ${formatPrice(itemTotal)}
 
                     </span>
 
@@ -1612,23 +1826,20 @@ function renderCart() {
 
 
     const totalPrice =
+
         cart.reduce(
 
-            (total, item) => {
+            (total, item) =>
 
-                return (
+                total +
 
-                    total +
+                (
 
-                    (
-                        Number(item.price) *
+                    Number(item.price) *
 
-                        Number(item.quantity)
-                    )
+                    Number(item.quantity)
 
-                );
-
-            },
+                ),
 
             0
 
@@ -1645,7 +1856,7 @@ function renderCart() {
 
 
 // =========================================
-// CART ITEM EVENT DELEGATION
+// CART EVENT DELEGATION
 // =========================================
 
 function initializeCartEvents() {
@@ -1710,24 +1921,17 @@ function initializeCartEvents() {
 // =========================================
 
 function changeCartQuantity(
-
     productId,
-
     action
-
 ) {
 
     const item =
-        cart.find(item => {
+        cart.find(item =>
 
-            return (
+            String(item.id) ===
+            String(productId)
 
-                String(item.id) ===
-                String(productId)
-
-            );
-
-        });
+        );
 
 
     if (!item) {
@@ -1741,7 +1945,8 @@ function changeCartQuantity(
         action === "increase"
     ) {
 
-        item.quantity += 1;
+        item.quantity +=
+            1;
 
     }
 
@@ -1750,7 +1955,8 @@ function changeCartQuantity(
         action === "decrease"
     ) {
 
-        item.quantity -= 1;
+        item.quantity -=
+            1;
 
 
         if (
@@ -1758,16 +1964,12 @@ function changeCartQuantity(
         ) {
 
             cart =
-                cart.filter(item => {
+                cart.filter(item =>
 
-                    return (
+                    String(item.id) !==
+                    String(productId)
 
-                        String(item.id) !==
-                        String(productId)
-
-                    );
-
-                });
+                );
 
         }
 
@@ -1788,16 +1990,12 @@ function changeCartQuantity(
 function removeCartItem(productId) {
 
     cart =
-        cart.filter(item => {
+        cart.filter(item =>
 
-            return (
+            String(item.id) !==
+            String(productId)
 
-                String(item.id) !==
-                String(productId)
-
-            );
-
-        });
+        );
 
 
     saveCart();
@@ -1904,16 +2102,12 @@ function closeCart() {
 function orderSingleProduct(productId) {
 
     const product =
-        products.find(product => {
+        products.find(product =>
 
-            return (
+            String(product.id) ===
+            String(productId)
 
-                String(product.id) ===
-                String(productId)
-
-            );
-
-        });
+        );
 
 
     if (!product) {
@@ -1980,7 +2174,8 @@ function checkoutCart() {
         "Hello Melodex! 👋\n\nI want to order these products:\n\n";
 
 
-    let totalPrice = 0;
+    let totalPrice =
+        0;
 
 
     cart.forEach(
@@ -2040,11 +2235,8 @@ Please confirm availability and delivery details.`;
 // =========================================
 
 function openImageModal(
-
     imageURL,
-
     altText
-
 ) {
 
     const modal =
@@ -2074,6 +2266,7 @@ function openImageModal(
 
 
     modalImage.alt =
+
         altText ||
         "Product Image";
 
@@ -2115,7 +2308,7 @@ function closeImageModal() {
 
 
 // =========================================
-// FIX BODY SCROLL LOCK
+// BODY SCROLL LOCK
 // =========================================
 
 function updateBodyScrollLock() {
@@ -2135,6 +2328,7 @@ function updateBodyScrollLock() {
     const modalIsOpen =
 
         imageModal &&
+
         imageModal.classList.contains(
             "active"
         );
@@ -2143,14 +2337,18 @@ function updateBodyScrollLock() {
     const cartIsOpen =
 
         cartSidebar &&
+
         cartSidebar.classList.contains(
             "active"
         );
 
 
     if (
+
         modalIsOpen ||
+
         cartIsOpen
+
     ) {
 
         document.body.style.overflow =
@@ -2171,11 +2369,8 @@ function updateBodyScrollLock() {
 // =========================================
 
 function showNotification(
-
     message,
-
     type = "success"
-
 ) {
 
     const container =
@@ -2256,6 +2451,7 @@ function escapeHTML(value) {
     if (
 
         value === null ||
+
         value === undefined
 
     ) {
@@ -2435,10 +2631,8 @@ function initializeEvents() {
         event => {
 
             if (
-
                 event.key ===
                 "Escape"
-
             ) {
 
                 closeCart();
@@ -2482,6 +2676,7 @@ function initializeSmoothScroll() {
                     if (
 
                         !href ||
+
                         href === "#"
 
                     ) {
@@ -2529,18 +2724,18 @@ function initializeSmoothScroll() {
 
 function initApp() {
 
-    // ---------------------------------
-    // 1. CART LOAD IMMEDIATELY
-    // ---------------------------------
+    // -----------------------------
+    // 1. LOAD CART IMMEDIATELY
+    // -----------------------------
 
     loadCart();
 
     updateCart();
 
 
-    // ---------------------------------
-    // 2. ALL EVENTS
-    // ---------------------------------
+    // -----------------------------
+    // 2. INITIALIZE EVENTS
+    // -----------------------------
 
     initializeEvents();
 
@@ -2551,20 +2746,21 @@ function initApp() {
     initializeSmoothScroll();
 
 
-    // ---------------------------------
-    // 3. LOAD CACHE INSTANTLY
-    // ---------------------------------
+    // -----------------------------
+    // 3. LOAD PRODUCT CACHE FIRST
+    // -----------------------------
 
     const cachedProducts =
         loadProductsFromCache();
 
 
     if (
+
         cachedProducts.length > 0
+
     ) {
 
-        // Cache থেকে সাথে সাথে
-        // Product দেখাবে
+        // Cached product instantly show
 
         products =
             cachedProducts;
@@ -2584,23 +2780,19 @@ function initApp() {
 
     } else {
 
-        // প্রথমবার visitor হলে
-
-        // সুন্দর loading দেখাবে
+        // First visitor
 
         showProductLoading();
 
     }
 
 
-    // ---------------------------------
+    // -----------------------------
     // 4. FIREBASE BACKGROUND SYNC
-    // ---------------------------------
+    // -----------------------------
 
-    // এখানে await ব্যবহার করা হয়নি
-
-    // তাই UI Firebase-এর জন্য
-    // অপেক্ষা করবে না
+    // await ব্যবহার করা হয়নি
+    // UI Firebase-এর জন্য অপেক্ষা করবে না
 
     fetchFirebaseProducts();
 
