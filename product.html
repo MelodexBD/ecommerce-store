@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Product | Melodex</title>
+
+    <meta name="description"
+          content="View product details and order from Melodex.">
+
+    <link rel="stylesheet"
+          href="styles.css?v=2.6">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+
+        .product-page {
+            min-height: 100vh;
+            padding: 130px 20px 70px;
+        }
+
+        .product-details-container {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .back-shop {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            color: #ef4444;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .product-details-card {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            background: #111827;
+            border-radius: 16px;
+            padding: 30px;
+        }
+
+        .product-main-image {
+            width: 100%;
+            max-height: 600px;
+            object-fit: contain;
+            border-radius: 12px;
+            background: #0f172a;
+            cursor: pointer;
+        }
+
+        .details-thumbnails {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .details-thumb {
+            width: 75px;
+            height: 75px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .details-thumb.active {
+            border-color: #ef4444;
+        }
+
+        .product-details-category {
+            color: #ef4444;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .product-details-name {
+            font-size: 38px;
+            margin-bottom: 20px;
+        }
+
+        .product-details-price {
+            color: #ef4444;
+            font-size: 30px;
+            font-weight: 700;
+            margin-bottom: 25px;
+        }
+
+        .product-details-description {
+            color: #cbd5e1;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            white-space: pre-line;
+        }
+
+        .product-details-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .product-details-actions button {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .details-cart-btn {
+            background: #ef4444;
+            color: white;
+        }
+
+        .details-whatsapp-btn {
+            background: #25d366;
+            color: white;
+        }
+
+        .product-page-loading {
+            text-align: center;
+            padding: 100px 20px;
+            color: #94a3b8;
+            font-size: 18px;
+        }
+
+        .product-not-found {
+            text-align: center;
+            padding: 100px 20px;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+
+            .product-details-card {
+                grid-template-columns: 1fr;
+                gap: 25px;
+                padding: 20px;
+            }
+
+            .product-details-name {
+                font-size: 28px;
+            }
+
+            .product-details-price {
+                font-size: 24px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <nav class="navbar">
+
+        <div class="nav-container">
+
+            <a href="index.html"
+               class="logo">
+
+                <span class="logo-white">
+                    MELO
+                </span>
+
+                <span class="logo-red">
+                    DEX
+                </span>
+
+            </a>
+
+            <a href="index.html"
+               class="nav-link">
+
+                <i class="fas fa-arrow-left"></i>
+
+                Back to Shop
+
+            </a>
+
+        </div>
+
+    </nav>
+
+
+    <main class="product-page">
+
+        <div class="product-details-container">
+
+            <a href="index.html"
+               class="back-shop">
+
+                <i class="fas fa-arrow-left"></i>
+
+                Back to All Products
+
+            </a>
+
+
+            <div id="productDetails">
+
+                <div class="product-page-loading">
+
+                    <i class="fas fa-spinner fa-spin"></i>
+
+                    <p>
+                        Loading product...
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <script type="module">
+
+        import {
+            initializeApp
+        } from
+        "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+
+
+        import {
+
+            getFirestore,
+
+            doc,
+
+            getDoc
+
+        } from
+        "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+
+        const firebaseConfig = {
+
+            apiKey:
+                "AIzaSyBTVoMKlJeRWsgIL5gCdWCHYdx3w8brWHQ",
+
+            authDomain:
+                "melodex-store.firebaseapp.com",
+
+            projectId:
+                "melodex-store",
+
+            storageBucket:
+                "melodex-store.firebasestorage.app",
+
+            messagingSenderId:
+                "563447283369",
+
+            appId:
+                "1:563447283369:web:a999e89adf7380ec4733b8"
+
+        };
+
+
+        const WHATSAPP_NUMBER =
+            "8801310863206";
+
+
+        const app =
+            initializeApp(
+                firebaseConfig
+            );
+
+
+        const db =
+            getFirestore(
+                app
+            );
+
+
+        function formatPrice(price) {
+
+            return Number(
+                price || 0
+            ).toLocaleString(
+                "en-BD"
+            );
+
+        }
+
+
+        function escapeHTML(value) {
+
+            if (
+                value === null ||
+                value === undefined
+            ) {
+
+                return "";
+
+            }
+
+
+            return String(value)
+
+                .replace(
+                    /&/g,
+                    "&amp;"
+                )
+
+                .replace(
+                    /</g,
+                    "&lt;"
+                )
+
+                .replace(
+                    />/g,
+                    "&gt;"
+                )
+
+                .replace(
+                    /"/g,
+                    "&quot;"
+                )
+
+                .replace(
+                    /'/g,
+                    "&#039;"
+                );
+
+        }
+
+
+        function getCategoryName(category) {
+
+            const names = {
+
+                guitars:
+                    "Guitars",
+
+                pedals:
+                    "Pedals & Effects",
+
+                pedalboards:
+                    "Pedalboards & Power",
+
+                stands:
+                    "Stands",
+
+                cables:
+                    "Cables & Accessories"
+
+            };
+
+
+            return names[category] ||
+                category;
+
+        }
+
+
+        function normalizeCategory(category) {
+
+            if (!category) {
+
+                return "guitars";
+
+            }
+
+
+            const cat =
+                String(category)
+                    .toLowerCase()
+                    .trim();
+
+
+            if (
+                cat.includes("guitar")
+            ) {
+
+                return "guitars";
+
+            }
+
+
+            if (
+                cat.includes("pedalboard")
+            ) {
+
+                return "pedalboards";
+
+            }
+
+
+            if (
+                cat.includes("pedal")
+            ) {
+
+                return "pedals";
+
+            }
+
+
+            if (
+                cat.includes("stand")
+            ) {
+
+                return "stands";
+
+            }
+
+
+            if (
+
+                cat.includes("cable") ||
+
+                cat.includes("accessori")
+
+            ) {
+
+                return "cables";
+
+            }
+
+
+            return "guitars";
+
+        }
+
+
+        function getProductIdFromURL() {
+
+            const params =
+                new URLSearchParams(
+                    window.location.search
+                );
+
+
+            return params.get(
+                "id"
+            );
+
+        }
+
+
+        async function loadProduct() {
+
+            const productId =
+                getProductIdFromURL();
+
+
+            const container =
+                document.getElementById(
+                    "productDetails"
+                );
+
+
+            if (!productId) {
+
+                container.innerHTML = `
+
+                    <div class="product-not-found">
+
+                        <h2>
+                            Product not found
+                        </h2>
+
+                        <p>
+                            No product link was provided.
+                        </p>
+
+                        <br>
+
+                        <a
+                            href="index.html"
+                            class="btn explore-btn"
+                        >
+
+                            Back to Shop
+
+                        </a>
+
+                    </div>
+
+                `;
+
+
+                return;
+
+            }
+
+
+            try {
+
+                const productRef =
+                    doc(
+
+                        db,
+
+                        "products",
+
+                        productId
+
+                    );
+
+
+                const productSnap =
+                    await getDoc(
+                        productRef
+                    );
+
+
+                if (
+                    !productSnap.exists()
+                ) {
+
+                    container.innerHTML = `
+
+                        <div class="product-not-found">
+
+                            <h2>
+                                Product not found
+                            </h2>
+
+                            <p>
+                                This product may have been removed.
+                            </p>
+
+                            <br>
+
+                            <a
+                                href="index.html"
+                                class="btn explore-btn"
+                            >
+
+                                Back to Shop
+
+                            </a>
+
+                        </div>
+
+                    `;
+
+
+                    return;
+
+                }
+
+
+                const data =
+                    productSnap.data();
+
+
+                let images =
+                    [];
+
+
+                if (
+
+                    Array.isArray(
+                        data.images
+                    )
+
+                ) {
+
+                    images =
+                        data.images.filter(
+                            image =>
+
+                                typeof image ===
+                                "string" &&
+
+                                image.trim() !== ""
+
+                        );
+
+                }
+
+
+                if (
+
+                    images.length === 0 &&
+
+                    data.image
+
+                ) {
+
+                    images =
+                        [
+                            data.image
+                        ];
+
+                }
+
+
+                const product = {
+
+                    id:
+                        productSnap.id,
+
+                    name:
+                        data.name ||
+                        "Unnamed Product",
+
+                    category:
+                        normalizeCategory(
+                            data.category
+                        ),
+
+                    price:
+                        Number(
+                            data.price
+                        ) || 0,
+
+                    images:
+                        images,
+
+                    image:
+                        images[0] || "",
+
+                    description:
+                        data.description || ""
+
+                };
+
+
+                let thumbnailsHTML =
+                    "";
+
+
+                if (
+                    product.images.length > 1
+                ) {
+
+                    thumbnailsHTML =
+                        `<div class="details-thumbnails">`;
+
+
+                    product.images.forEach(
+
+                        (
+                            image,
+                            index
+                        ) => {
+
+                            thumbnailsHTML += `
+
+                                <img
+
+                                    src="${escapeHTML(image)}"
+
+                                    class="details-thumb ${index === 0 ? "active" : ""}"
+
+                                    data-image="${escapeHTML(image)}"
+
+                                    loading="lazy"
+
+                                >
+
+                            `;
+
+                        }
+
+                    );
+
+
+                    thumbnailsHTML +=
+                        `</div>`;
+
+                }
+
+
+                container.innerHTML = `
+
+                    <div class="product-details-card">
+
+
+                        <div>
+
+
+                            <img
+
+                                id="mainProductImage"
+
+                                src="${escapeHTML(product.image)}"
+
+                                alt="${escapeHTML(product.name)}"
+
+                                class="product-main-image"
+
+                            >
+
+
+                            ${thumbnailsHTML}
+
+
+                        </div>
+
+
+                        <div>
+
+
+                            <div class="product-details-category">
+
+                                ${escapeHTML(
+
+                                    getCategoryName(
+                                        product.category
+                                    )
+
+                                )}
+
+                            </div>
+
+
+                            <h1 class="product-details-name">
+
+                                ${escapeHTML(
+                                    product.name
+                                )}
+
+                            </h1>
+
+
+                            <div class="product-details-price">
+
+                                ৳ ${formatPrice(
+                                    product.price
+                                )}
+
+                            </div>
+
+
+                            <div class="product-details-description">
+
+                                ${escapeHTML(
+                                    product.description
+                                )}
+
+                            </div>
+
+
+                            <div class="product-details-actions">
+
+
+                                <button
+
+                                    class="details-cart-btn"
+
+                                    id="addToCartButton"
+
+                                >
+
+                                    <i class="fas fa-shopping-cart"></i>
+
+                                    Add to Cart
+
+                                </button>
+
+
+                                <button
+
+                                    class="details-whatsapp-btn"
+
+                                    id="orderWhatsAppButton"
+
+                                >
+
+                                    <i class="fab fa-whatsapp"></i>
+
+                                    Order Now
+
+                                </button>
+
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+
+                `;
+
+
+                document.title =
+                    `${product.name} | Melodex`;
+
+
+                // THUMBNAIL CHANGE
+
+                document
+                    .querySelectorAll(
+                        ".details-thumb"
+                    )
+                    .forEach(
+                        thumb => {
+
+                            thumb.addEventListener(
+
+                                "click",
+
+                                () => {
+
+                                    document
+                                        .getElementById(
+                                            "mainProductImage"
+                                        )
+                                        .src =
+                                        thumb.dataset.image;
+
+
+                                    document
+                                        .querySelectorAll(
+                                            ".details-thumb"
+                                        )
+                                        .forEach(
+                                            item => {
+
+                                                item
+                                                    .classList
+                                                    .remove(
+                                                        "active"
+                                                    );
+
+                                            }
+                                        );
+
+
+                                    thumb
+                                        .classList
+                                        .add(
+                                            "active"
+                                        );
+
+                                }
+
+                            );
+
+                        }
+
+                    );
+
+
+                // ADD TO CART
+
+                document
+                    .getElementById(
+                        "addToCartButton"
+                    )
+                    .addEventListener(
+
+                        "click",
+
+                        () => {
+
+                            addProductToCart(
+                                product
+                            );
+
+                        }
+
+                    );
+
+
+                // WHATSAPP ORDER
+
+                document
+                    .getElementById(
+                        "orderWhatsAppButton"
+                    )
+                    .addEventListener(
+
+                        "click",
+
+                        () => {
+
+                            const message =
+
+                                `Hello Melodex! 👋
+
+I want to order:
+
+Product: ${product.name}
+
+Price: ৳ ${formatPrice(product.price)}
+
+Please let me know about availability and delivery.`;
+
+
+                            const url =
+
+                                `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+
+
+                            window.open(
+
+                                url,
+
+                                "_blank"
+
+                            );
+
+                        }
+
+                    );
+
+
+            } catch (error) {
+
+                console.error(
+                    error
+                );
+
+
+                container.innerHTML = `
+
+                    <div class="product-not-found">
+
+                        <h2>
+                            Unable to load product
+                        </h2>
+
+                        <p>
+                            Please refresh the page.
+                        </p>
+
+                    </div>
+
+                `;
+
+            }
+
+        }
+
+
+        function addProductToCart(
+            product
+        ) {
+
+            let cart =
+                [];
+
+
+            try {
+
+                cart =
+                    JSON.parse(
+
+                        localStorage.getItem(
+                            "melodexCart"
+                        ) || "[]"
+
+                    );
+
+            } catch {
+
+                cart =
+                    [];
+
+            }
+
+
+            const existing =
+                cart.find(
+
+                    item =>
+
+                        String(
+                            item.id
+                        ) ===
+
+                        String(
+                            product.id
+                        )
+
+                );
+
+
+            if (existing) {
+
+                existing.quantity +=
+                    1;
+
+            } else {
+
+                cart.push({
+
+                    id:
+                        product.id,
+
+                    name:
+                        product.name,
+
+                    price:
+                        product.price,
+
+                    image:
+                        product.image,
+
+                    category:
+                        product.category,
+
+                    quantity:
+                        1
+
+                });
+
+            }
+
+
+            localStorage.setItem(
+
+                "melodexCart",
+
+                JSON.stringify(
+                    cart
+                )
+
+            );
+
+
+            alert(
+                "Product added to cart!"
+            );
+
+        }
+
+
+        loadProduct();
+
+    </script>
+
+</body>
+</html>
