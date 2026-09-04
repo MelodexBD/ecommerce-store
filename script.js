@@ -37,12 +37,10 @@ const WHATSAPP_NUMBER = "8801310863206";
 
 const app = initializeApp(firebaseConfig);
 
-// Messenger / mobile browser compatible configuration
 const db = initializeFirestore(app, {
     experimentalForceLongPolling: true
 });
 
-// Firebase built-in IndexedDB offline cache
 enableIndexedDbPersistence(db).catch(() => {
     // Multiple tabs / unsupported browser fallback
 });
@@ -67,7 +65,9 @@ function normalizeCategory(category) {
         return "guitars";
     }
 
-    const cat = String(category).toLowerCase().trim();
+    const cat = String(category)
+        .toLowerCase()
+        .trim();
 
     if (cat.includes("guitar")) {
         return "guitars";
@@ -118,7 +118,25 @@ function getPublicProductUrl(productId) {
         return window.location.href;
     }
 
-    const productUrl = new URL("./", window.location.href);
+    /*
+        Always create the URL from the PUBLIC WEBSITE ROOT.
+
+        Example:
+
+        Admin:
+        /ecommerce-store/admin/
+
+        Public:
+        /ecommerce-store/
+
+        Result:
+        /ecommerce-store/?product=PRODUCT_ID
+    */
+
+    const productUrl = new URL(
+        "./",
+        window.location.href
+    );
 
     productUrl.search = "";
     productUrl.hash = "";
@@ -143,70 +161,90 @@ async function fetchProducts() {
 
         const querySnapshot =
             await getDocs(
-                collection(db, "products")
+                collection(
+                    db,
+                    "products"
+                )
             );
 
         const fbProducts = [];
 
-        querySnapshot.forEach((docSnap) => {
+        querySnapshot.forEach(
+            docSnap => {
 
-            const data = docSnap.data();
+                const data =
+                    docSnap.data();
 
-            let imageList = [];
+                let imageList = [];
 
-            if (
-                Array.isArray(data.images) &&
-                data.images.length > 0
-            ) {
+                if (
+                    Array.isArray(
+                        data.images
+                    ) &&
+                    data.images.length > 0
+                ) {
 
-                imageList =
-                    data.images.filter(
-                        img =>
-                            typeof img === "string" &&
-                            img.trim() !== ""
-                    );
+                    imageList =
+                        data.images.filter(
+                            img =>
+                                typeof img === "string" &&
+                                img.trim() !== ""
+                        );
+                }
+
+                if (
+                    imageList.length === 0 &&
+                    data.image
+                ) {
+
+                    imageList = [
+                        data.image
+                    ];
+                }
+
+                fbProducts.push({
+
+                    id: docSnap.id,
+
+                    name:
+                        data.name ||
+                        "Unnamed Product",
+
+                    category:
+                        normalizeCategory(
+                            data.category
+                        ),
+
+                    price:
+                        Number(data.price) ||
+                        0,
+
+                    image:
+                        imageList[0] || "",
+
+                    images:
+                        imageList,
+
+                    description:
+                        data.description ||
+                        ""
+                });
             }
-
-            if (
-                imageList.length === 0 &&
-                data.image
-            ) {
-
-                imageList = [data.image];
-            }
-
-            fbProducts.push({
-
-                id: docSnap.id,
-
-                name:
-                    data.name ||
-                    "Unnamed Product",
-
-                category:
-                    normalizeCategory(
-                        data.category
-                    ),
-
-                price:
-                    Number(data.price) || 0,
-
-                image:
-                    imageList[0] || "",
-
-                images:
-                    imageList,
-
-                description:
-                    data.description || ""
-            });
-        });
+        );
 
         products = fbProducts;
 
         updateProductCount();
 
         displayProductsByCategory();
+
+        /*
+            If URL contains:
+
+            ?product=FIRESTORE_DOCUMENT_ID
+
+            open that product automatically.
+        */
 
         initializeProductDetailFromUrl();
 
@@ -232,21 +270,29 @@ async function fetchProducts() {
 function updateProductCount() {
 
     const countElements = [
-        document.getElementById("total-products-count"),
-        document.getElementById("productCount")
+
+        document.getElementById(
+            "total-products-count"
+        ),
+
+        document.getElementById(
+            "productCount"
+        )
     ];
 
-    countElements.forEach(element => {
+    countElements.forEach(
+        element => {
 
-        if (!element) {
-            return;
+            if (!element) {
+                return;
+            }
+
+            element.textContent =
+                products.length > 0
+                    ? `${products.length}+`
+                    : "0";
         }
-
-        element.textContent =
-            products.length > 0
-                ? `${products.length}+`
-                : "0";
-    });
+    );
 }
 
 // =========================================
@@ -263,42 +309,46 @@ function showProductLoading() {
         "cables"
     ];
 
-    categories.forEach(category => {
+    categories.forEach(
+        category => {
 
-        const container =
-            document.getElementById(
-                `${category}Container`
-            );
+            const container =
+                document.getElementById(
+                    `${category}Container`
+                );
 
-        if (
-            container &&
-            products.length === 0
-        ) {
+            if (
+                container &&
+                products.length === 0
+            ) {
 
-            container.innerHTML = `
-                <div
-                    class="product-loading"
-                    style="
-                        grid-column: 1/-1;
-                        text-align: center;
-                        padding: 30px;
-                        color: #94a3b8;
-                    "
-                >
-                    <i
-                        class="fas fa-spinner fa-spin"
+                container.innerHTML = `
+                    <div
+                        class="product-loading"
                         style="
-                            font-size: 24px;
-                            color: #ef4444;
-                            margin-bottom: 8px;
+                            grid-column: 1/-1;
+                            text-align: center;
+                            padding: 30px;
+                            color: #94a3b8;
                         "
-                    ></i>
+                    >
+                        <i
+                            class="fas fa-spinner fa-spin"
+                            style="
+                                font-size: 24px;
+                                color: #ef4444;
+                                margin-bottom: 8px;
+                            "
+                        ></i>
 
-                    <p>Loading products...</p>
-                </div>
-            `;
+                        <p>
+                            Loading products...
+                        </p>
+                    </div>
+                `;
+            }
         }
-    });
+    );
 }
 
 // =========================================
@@ -315,33 +365,35 @@ function showProductLoadError() {
         "cables"
     ];
 
-    categories.forEach(category => {
+    categories.forEach(
+        category => {
 
-        const container =
-            document.getElementById(
-                `${category}Container`
-            );
+            const container =
+                document.getElementById(
+                    `${category}Container`
+                );
 
-        if (
-            container &&
-            products.length === 0
-        ) {
+            if (
+                container &&
+                products.length === 0
+            ) {
 
-            container.innerHTML = `
-                <p
-                    style="
-                        grid-column: 1/-1;
-                        text-align: center;
-                        color: #ef4444;
-                        padding: 20px;
-                    "
-                >
-                    প্রোডাক্ট লোড করা সম্ভব হয়নি।
-                    অনুগ্রহ করে পেজটি রিফ্রেশ করুন।
-                </p>
-            `;
+                container.innerHTML = `
+                    <p
+                        style="
+                            grid-column: 1/-1;
+                            text-align: center;
+                            color: #ef4444;
+                            padding: 20px;
+                        "
+                    >
+                        প্রোডাক্ট লোড করা সম্ভব হয়নি।
+                        অনুগ্রহ করে পেজটি রিফ্রেশ করুন।
+                    </p>
+                `;
+            }
         }
-    });
+    );
 }
 
 // =========================================
@@ -358,172 +410,190 @@ function displayProductsByCategory() {
         "cables"
     ];
 
-    categories.forEach(category => {
+    categories.forEach(
+        category => {
 
-        const container =
-            document.getElementById(
-                `${category}Container`
-            );
+            const container =
+                document.getElementById(
+                    `${category}Container`
+                );
 
-        if (!container) {
-            return;
-        }
+            if (!container) {
+                return;
+            }
 
-        const categoryProducts =
-            products.filter(
-                p => p.category === category
-            );
+            const categoryProducts =
+                products.filter(
+                    product =>
+                        product.category ===
+                        category
+                );
 
-        if (categoryProducts.length === 0) {
+            if (
+                categoryProducts.length === 0
+            ) {
 
-            container.innerHTML = `
-                <p
-                    class="no-products"
-                    style="
-                        grid-column: 1/-1;
-                        text-align: center;
-                        color: #64748b;
-                        padding: 20px;
-                    "
-                >
-                    এই ক্যাটাগরিতে কোনো প্রোডাক্ট নেই।
-                </p>
-            `;
+                container.innerHTML = `
+                    <p
+                        class="no-products"
+                        style="
+                            grid-column: 1/-1;
+                            text-align: center;
+                            color: #64748b;
+                            padding: 20px;
+                        "
+                    >
+                        এই ক্যাটাগরিতে কোনো প্রোডাক্ট নেই।
+                    </p>
+                `;
 
-            return;
-        }
+                return;
+            }
 
-        let productsHTML = "";
+            let productsHTML = "";
 
-        categoryProducts.forEach(
-            (product, productIndex) => {
+            categoryProducts.forEach(
+                (
+                    product,
+                    productIndex
+                ) => {
 
-                let thumbnailsHTML = "";
+                    let thumbnailsHTML = "";
 
-                if (
-                    product.images &&
-                    product.images.length > 1
-                ) {
+                    if (
+                        product.images &&
+                        product.images.length > 1
+                    ) {
 
-                    thumbnailsHTML = `
-                        <div class="product-thumbnails">
-                    `;
+                        thumbnailsHTML = `
+                            <div class="product-thumbnails">
+                        `;
 
-                    product.images.forEach(
-                        (imgUrl, index) => {
+                        product.images.forEach(
+                            (
+                                imgUrl,
+                                index
+                            ) => {
 
-                            thumbnailsHTML += `
+                                thumbnailsHTML += `
+                                    <img
+                                        src="${escapeHTML(imgUrl)}"
+                                        alt="${escapeHTML(product.name)} thumbnail"
+                                        class="thumb-img ${
+                                            index === 0
+                                                ? "active"
+                                                : ""
+                                        }"
+                                        data-product-id="${escapeHTML(product.id)}"
+                                        data-image="${escapeHTML(imgUrl)}"
+                                        loading="lazy"
+                                    >
+                                `;
+                            }
+                        );
+
+                        thumbnailsHTML += `
+                            </div>
+                        `;
+                    }
+
+                    const imgLoading =
+                        productIndex < 4
+                            ? "eager"
+                            : "lazy";
+
+                    productsHTML += `
+                        <div
+                            class="product-card"
+                            data-product-card="${escapeHTML(product.id)}"
+                        >
+
+                            <div class="product-image-wrapper">
+
                                 <img
-                                    src="${escapeHTML(imgUrl)}"
-                                    alt="${escapeHTML(product.name)} thumbnail"
-                                    class="thumb-img ${
-                                        index === 0
-                                            ? "active"
-                                            : ""
-                                    }"
-                                    data-product-id="${escapeHTML(product.id)}"
-                                    data-image="${escapeHTML(imgUrl)}"
-                                    loading="lazy"
+                                    src="${escapeHTML(product.image)}"
+                                    alt="${escapeHTML(product.name)}"
+                                    class="product-image"
+                                    id="main-img-${escapeHTML(product.id)}"
+                                    loading="${imgLoading}"
                                 >
-                            `;
-                        }
-                    );
 
-                    thumbnailsHTML += `
+                                <button
+                                    class="image-zoom-btn"
+                                    data-product-id="${escapeHTML(product.id)}"
+                                    aria-label="View Image"
+                                    type="button"
+                                >
+                                    <i class="fas fa-expand"></i>
+                                </button>
+
+                            </div>
+
+                            ${thumbnailsHTML}
+
+                            <div class="product-info">
+
+                                <span class="product-category">
+                                    ${escapeHTML(
+                                        getCategoryName(
+                                            product.category
+                                        )
+                                    )}
+                                </span>
+
+                                <h3
+                                    class="product-name product-detail-link"
+                                    data-product-detail="${escapeHTML(product.id)}"
+                                    title="View Product Details"
+                                    tabindex="0"
+                                    role="button"
+                                >
+                                    ${escapeHTML(product.name)}
+                                </h3>
+
+                                <p class="product-description">
+                                    ${escapeHTML(
+                                        product.description
+                                    )}
+                                </p>
+
+                                <div class="product-price">
+                                    ৳ ${formatPrice(product.price)}
+                                </div>
+
+                                <div class="product-actions">
+
+                                    <button
+                                        class="btn-add-cart"
+                                        data-product-id="${escapeHTML(product.id)}"
+                                        type="button"
+                                    >
+                                        <i class="fas fa-shopping-cart"></i>
+                                        Add to Cart
+                                    </button>
+
+                                    <button
+                                        class="btn btn-whatsapp"
+                                        data-order-product="${escapeHTML(product.id)}"
+                                        type="button"
+                                    >
+                                        <i class="fab fa-whatsapp"></i>
+                                        Order Now
+                                    </button>
+
+                                </div>
+
+                            </div>
+
                         </div>
                     `;
                 }
+            );
 
-                const imgLoading =
-                    productIndex < 4
-                        ? "eager"
-                        : "lazy";
-
-                productsHTML += `
-                    <div class="product-card">
-
-                        <div class="product-image-wrapper">
-
-                            <img
-                                src="${escapeHTML(product.image)}"
-                                alt="${escapeHTML(product.name)}"
-                                class="product-image"
-                                id="main-img-${escapeHTML(product.id)}"
-                                loading="${imgLoading}"
-                            >
-
-                            <button
-                                class="image-zoom-btn"
-                                data-product-id="${escapeHTML(product.id)}"
-                                aria-label="View Image"
-                                type="button"
-                            >
-                                <i class="fas fa-expand"></i>
-                            </button>
-
-                        </div>
-
-                        ${thumbnailsHTML}
-
-                        <div class="product-info">
-
-                            <span class="product-category">
-                                ${escapeHTML(
-                                    getCategoryName(
-                                        product.category
-                                    )
-                                )}
-                            </span>
-
-                            <h3
-                                class="product-name"
-                                data-product-detail="${escapeHTML(product.id)}"
-                                title="View Product Details"
-                            >
-                                ${escapeHTML(product.name)}
-                            </h3>
-
-                            <p class="product-description">
-                                ${escapeHTML(
-                                    product.description
-                                )}
-                            </p>
-
-                            <div class="product-price">
-                                ৳ ${formatPrice(product.price)}
-                            </div>
-
-                            <div class="product-actions">
-
-                                <button
-                                    class="btn-add-cart"
-                                    data-product-id="${escapeHTML(product.id)}"
-                                    type="button"
-                                >
-                                    <i class="fas fa-shopping-cart"></i>
-                                    Add to Cart
-                                </button>
-
-                                <button
-                                    class="btn btn-whatsapp"
-                                    data-order-product="${escapeHTML(product.id)}"
-                                    type="button"
-                                >
-                                    <i class="fab fa-whatsapp"></i>
-                                    Order Now
-                                </button>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-                `;
-            }
-        );
-
-        container.innerHTML = productsHTML;
-    });
+            container.innerHTML =
+                productsHTML;
+        }
+    );
 }
 
 // =========================================
@@ -660,7 +730,9 @@ function initializeProductEvents() {
                     );
 
                 if (mainImg) {
-                    mainImg.src = imgURL;
+
+                    mainImg.src =
+                        imgURL;
                 }
 
                 const parent =
@@ -672,10 +744,11 @@ function initializeProductEvents() {
                         .querySelectorAll(
                             ".thumb-img"
                         )
-                        .forEach(t =>
-                            t.classList.remove(
-                                "active"
-                            )
+                        .forEach(
+                            item =>
+                                item.classList.remove(
+                                    "active"
+                                )
                         );
 
                     thumb.classList.add(
@@ -683,6 +756,39 @@ function initializeProductEvents() {
                     );
                 }
             }
+        }
+    );
+
+    // =====================================
+    // KEYBOARD PRODUCT DETAIL
+    // =====================================
+
+    document.addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key !== "Enter" &&
+                event.key !== " "
+            ) {
+                return;
+            }
+
+            const detailBtn =
+                event.target.closest(
+                    "[data-product-detail]"
+                );
+
+            if (!detailBtn) {
+                return;
+            }
+
+            event.preventDefault();
+
+            openProductDetail(
+                detailBtn.dataset.productDetail,
+                true
+            );
         }
     );
 }
@@ -700,11 +806,15 @@ function loadCart() {
                 "melodexCart"
             );
 
-        cart = saved
-            ? JSON.parse(saved)
-            : [];
+        cart =
+            saved
+                ? JSON.parse(saved)
+                : [];
 
-        if (!Array.isArray(cart)) {
+        if (
+            !Array.isArray(cart)
+        ) {
+
             cart = [];
         }
 
@@ -755,8 +865,8 @@ function addToCart(productId) {
 
     const existing =
         cart.find(
-            i =>
-                String(i.id) ===
+            item =>
+                String(item.id) ===
                 String(productId)
         );
 
@@ -820,7 +930,10 @@ function updateCartCount() {
 
     const totalQuantity =
         cart.reduce(
-            (total, item) =>
+            (
+                total,
+                item
+            ) =>
                 total +
                 Number(
                     item.quantity || 0
@@ -867,9 +980,12 @@ function renderCart() {
         return;
     }
 
-    if (cart.length === 0) {
+    if (
+        cart.length === 0
+    ) {
 
-        cartItems.innerHTML = "";
+        cartItems.innerHTML =
+            "";
 
         cartEmpty.style.display =
             "flex";
@@ -893,78 +1009,81 @@ function renderCart() {
 
     let totalPrice = 0;
 
-    cart.forEach(item => {
+    cart.forEach(
+        item => {
 
-        const itemTotal =
-            Number(item.price) *
-            Number(item.quantity);
+            const itemTotal =
+                Number(item.price) *
+                Number(item.quantity);
 
-        totalPrice += itemTotal;
+            totalPrice +=
+                itemTotal;
 
-        cartHTML += `
-            <div class="cart-item">
+            cartHTML += `
+                <div class="cart-item">
 
-                <img
-                    src="${escapeHTML(item.image)}"
-                    alt="${escapeHTML(item.name)}"
-                    class="cart-item-image"
-                    loading="lazy"
-                >
+                    <img
+                        src="${escapeHTML(item.image)}"
+                        alt="${escapeHTML(item.name)}"
+                        class="cart-item-image"
+                        loading="lazy"
+                    >
 
-                <div class="cart-item-info">
+                    <div class="cart-item-info">
 
-                    <h4>
-                        ${escapeHTML(item.name)}
-                    </h4>
+                        <h4>
+                            ${escapeHTML(item.name)}
+                        </h4>
 
-                    <span class="cart-item-price">
-                        ৳ ${formatPrice(item.price)}
-                    </span>
-
-                    <div class="cart-quantity">
-
-                        <button
-                            class="quantity-btn"
-                            data-cart-action="decrease"
-                            data-product-id="${escapeHTML(item.id)}"
-                            type="button"
-                        >
-                            <i class="fas fa-minus"></i>
-                        </button>
-
-                        <span>
-                            ${item.quantity}
+                        <span class="cart-item-price">
+                            ৳ ${formatPrice(item.price)}
                         </span>
 
-                        <button
-                            class="quantity-btn"
-                            data-cart-action="increase"
-                            data-product-id="${escapeHTML(item.id)}"
-                            type="button"
-                        >
-                            <i class="fas fa-plus"></i>
-                        </button>
+                        <div class="cart-quantity">
+
+                            <button
+                                class="quantity-btn"
+                                data-cart-action="decrease"
+                                data-product-id="${escapeHTML(item.id)}"
+                                type="button"
+                            >
+                                <i class="fas fa-minus"></i>
+                            </button>
+
+                            <span>
+                                ${item.quantity}
+                            </span>
+
+                            <button
+                                class="quantity-btn"
+                                data-cart-action="increase"
+                                data-product-id="${escapeHTML(item.id)}"
+                                type="button"
+                            >
+                                <i class="fas fa-plus"></i>
+                            </button>
+
+                        </div>
+
+                        <span class="cart-item-subtotal">
+                            ৳ ${formatPrice(itemTotal)}
+                        </span>
 
                     </div>
 
-                    <span class="cart-item-subtotal">
-                        ৳ ${formatPrice(itemTotal)}
-                    </span>
+                    <button
+                        class="remove-cart-item"
+                        data-product-id="${escapeHTML(item.id)}"
+                        aria-label="Remove Product"
+                        type="button"
+                    >
+                        <i class="fas fa-trash"></i>
+                    </button>
 
                 </div>
-
-                <button
-                    class="remove-cart-item"
-                    data-product-id="${escapeHTML(item.id)}"
-                    aria-label="Remove Product"
-                    type="button"
-                >
-                    <i class="fas fa-trash"></i>
-                </button>
-
-            </div>
-        `;
-    });
+            `;
+        }
+    );
 
     cartItems.innerHTML =
         cartHTML;
@@ -1033,15 +1152,22 @@ function changeCartQuantity(
         return;
     }
 
-    if (action === "increase") {
+    if (
+        action === "increase"
+    ) {
+
         item.quantity += 1;
     }
 
-    if (action === "decrease") {
+    if (
+        action === "decrease"
+    ) {
 
         item.quantity -= 1;
 
-        if (item.quantity <= 0) {
+        if (
+            item.quantity <= 0
+        ) {
 
             cart =
                 cart.filter(
@@ -1061,7 +1187,9 @@ function changeCartQuantity(
 // REMOVE CART ITEM
 // =========================================
 
-function removeCartItem(productId) {
+function removeCartItem(
+    productId
+) {
 
     cart =
         cart.filter(
@@ -1130,12 +1258,14 @@ function closeCart() {
         );
 
     if (sidebar) {
+
         sidebar.classList.remove(
             "active"
         );
     }
 
     if (overlay) {
+
         overlay.classList.remove(
             "active"
         );
@@ -1148,7 +1278,9 @@ function closeCart() {
 // SINGLE PRODUCT WHATSAPP ORDER
 // =========================================
 
-function orderSingleProduct(productId) {
+function orderSingleProduct(
+    productId
+) {
 
     const product =
         products.find(
@@ -1186,7 +1318,9 @@ Please let me know about availability and delivery.`;
 
 function checkoutCart() {
 
-    if (cart.length === 0) {
+    if (
+        cart.length === 0
+    ) {
 
         showNotification(
             "Your cart is empty.",
@@ -1203,13 +1337,17 @@ function checkoutCart() {
     let total = 0;
 
     cart.forEach(
-        (item, index) => {
+        (
+            item,
+            index
+        ) => {
 
             const subtotal =
                 Number(item.price) *
                 Number(item.quantity);
 
-            total += subtotal;
+            total +=
+                subtotal;
 
             msg +=
 `${index + 1}. ${item.name}
@@ -1302,16 +1440,15 @@ function closeImageModal() {
 
 function createProductDetailModal() {
 
-    if (
+    const existing =
         document.getElementById(
             "productDetailModal"
-        )
-    ) {
+        );
+
+    if (existing) {
 
         productDetailModal =
-            document.getElementById(
-                "productDetailModal"
-            );
+            existing;
 
         return;
     }
@@ -1328,13 +1465,14 @@ function createProductDetailModal() {
         "product-detail-modal";
 
     modal.innerHTML = `
+
         <div
             class="product-detail-overlay"
             data-detail-close="true"
         ></div>
 
         <div
-            class="product-detail-dialog"
+            class="product-detail-box"
             role="dialog"
             aria-modal="true"
             aria-labelledby="detailProductName"
@@ -1397,9 +1535,7 @@ function createProductDetailModal() {
                         class="product-detail-price"
                     ></div>
 
-                    <div
-                        class="product-detail-divider"
-                    ></div>
+                    <div class="product-detail-divider"></div>
 
                     <div class="product-detail-description-title">
                         Product Description
@@ -1414,7 +1550,7 @@ function createProductDetailModal() {
 
                         <button
                             type="button"
-                            class="product-detail-add-cart"
+                            class="detail-cart-btn"
                             id="detailAddCart"
                         >
                             <i class="fas fa-shopping-cart"></i>
@@ -1423,12 +1559,20 @@ function createProductDetailModal() {
 
                         <button
                             type="button"
-                            class="product-detail-whatsapp"
+                            class="detail-whatsapp-btn"
                             id="detailWhatsApp"
                         >
                             <i class="fab fa-whatsapp"></i>
                             Order on WhatsApp
                         </button>
+
+                    </div>
+
+                    <div class="product-detail-share">
+
+                        <span>
+                            Share Product
+                        </span>
 
                         <button
                             type="button"
@@ -1580,10 +1724,14 @@ function openProductDetail(
     // THUMBNAILS
     // =====================================
 
-    thumbnails.innerHTML = "";
+    thumbnails.innerHTML =
+        "";
 
     imageList.forEach(
-        (imageUrl, index) => {
+        (
+            imageUrl,
+            index
+        ) => {
 
             const thumb =
                 document.createElement(
@@ -1597,7 +1745,7 @@ function openProductDetail(
                 `${product.name} image ${index + 1}`;
 
             thumb.className =
-                `product-detail-thumb ${
+                `detail-thumb ${
                     index === 0
                         ? "active"
                         : ""
@@ -1615,7 +1763,7 @@ function openProductDetail(
 
                     thumbnails
                         .querySelectorAll(
-                            ".product-detail-thumb"
+                            ".detail-thumb"
                         )
                         .forEach(
                             item =>
@@ -1637,7 +1785,7 @@ function openProductDetail(
     );
 
     // =====================================
-    // MODAL ACTIVE
+    // OPEN MODAL
     // =====================================
 
     modal.classList.add(
@@ -1647,7 +1795,7 @@ function openProductDetail(
     updateBodyScrollLock();
 
     // =====================================
-    // UPDATE URL
+    // UPDATE PUBLIC URL
     // =====================================
 
     if (updateUrl) {
@@ -1656,6 +1804,11 @@ function openProductDetail(
             getPublicProductUrl(
                 product.id
             );
+
+        /*
+            Only push a new history state
+            when URL is actually different.
+        */
 
         if (
             window.location.href !==
@@ -1699,34 +1852,26 @@ function closeProductDetail(
 
     updateBodyScrollLock();
 
-    if (removeUrl) {
+    if (
+        removeUrl &&
+        new URLSearchParams(
+            window.location.search
+        ).has("product")
+    ) {
 
-        const params =
-            new URLSearchParams(
-                window.location.search
-            );
+        /*
+            IMPORTANT:
 
-        if (params.has("product")) {
+            Use replaceState instead of pushState.
 
-            params.delete(
-                "product"
-            );
+            This prevents an unnecessary
+            extra history entry when
+            closing the product modal.
+        */
 
-            const cleanUrl =
-                window.location.pathname +
-                (
-                    params.toString()
-                        ? `?${params.toString()}`
-                        : ""
-                ) +
-                window.location.hash;
-
-            window.history.pushState(
-                {},
-                "",
-                cleanUrl
-            );
-        }
+        removeProductQuery(
+            true
+        );
     }
 }
 
@@ -1735,7 +1880,7 @@ function closeProductDetail(
 // =========================================
 
 function removeProductQuery(
-    useReplaceState = false
+    useReplaceState = true
 ) {
 
     const params =
@@ -1743,7 +1888,9 @@ function removeProductQuery(
             window.location.search
         );
 
-    if (!params.has("product")) {
+    if (
+        !params.has("product")
+    ) {
         return;
     }
 
@@ -1760,7 +1907,9 @@ function removeProductQuery(
         ) +
         window.location.hash;
 
-    if (useReplaceState) {
+    if (
+        useReplaceState
+    ) {
 
         window.history.replaceState(
             {},
@@ -1816,17 +1965,26 @@ function initializeProductDetailEvents() {
             "detailImageZoom"
         );
 
+    // =====================================
+    // CLOSE BUTTON
+    // =====================================
+
     if (closeBtn) {
 
         closeBtn.addEventListener(
             "click",
             () => {
+
                 closeProductDetail(
                     true
                 );
             }
         );
     }
+
+    // =====================================
+    // OVERLAY
+    // =====================================
 
     if (modal) {
 
@@ -1848,6 +2006,10 @@ function initializeProductDetailEvents() {
         );
     }
 
+    // =====================================
+    // ADD TO CART
+    // =====================================
+
     if (addCartBtn) {
 
         addCartBtn.addEventListener(
@@ -1865,6 +2027,10 @@ function initializeProductDetailEvents() {
             }
         );
     }
+
+    // =====================================
+    // WHATSAPP
+    // =====================================
 
     if (whatsappBtn) {
 
@@ -1884,6 +2050,10 @@ function initializeProductDetailEvents() {
         );
     }
 
+    // =====================================
+    // COPY LINK
+    // =====================================
+
     if (copyLinkBtn) {
 
         copyLinkBtn.addEventListener(
@@ -1891,6 +2061,10 @@ function initializeProductDetailEvents() {
             copyCurrentProductLink
         );
     }
+
+    // =====================================
+    // IMAGE ZOOM
+    // =====================================
 
     if (zoomBtn) {
 
@@ -2313,6 +2487,8 @@ function initializeEvents() {
                 return;
             }
 
+            // Product Detail first
+
             const detailModal =
                 document.getElementById(
                     "productDetailModal"
@@ -2332,6 +2508,8 @@ function initializeEvents() {
                 return;
             }
 
+            // Image Modal
+
             const imageModal =
                 document.getElementById(
                     "imageModal"
@@ -2348,6 +2526,8 @@ function initializeEvents() {
 
                 return;
             }
+
+            // Cart
 
             const cartSidebar =
                 document.getElementById(
@@ -2367,7 +2547,7 @@ function initializeEvents() {
     );
 
     // =====================================
-    // BROWSER BACK/FORWARD
+    // BROWSER BACK / FORWARD
     // =====================================
 
     window.addEventListener(
@@ -2412,9 +2592,12 @@ function initializeEvents() {
                         detailModal.classList.remove(
                             "active"
                         );
-
-                        updateBodyScrollLock();
                     }
+
+                    currentDetailProduct =
+                        null;
+
+                    updateBodyScrollLock();
                 }
 
             } else {
@@ -2479,6 +2662,7 @@ function initializeEvents() {
                                 {
                                     behavior:
                                         "smooth",
+
                                     block:
                                         "start"
                                 }
@@ -2494,7 +2678,7 @@ function initializeEvents() {
 // APP INITIALIZATION
 // =========================================
 
-function initApp() {
+async function initApp() {
 
     loadCart();
 
@@ -2508,7 +2692,12 @@ function initApp() {
 
     initializeProductDetailEvents();
 
-    fetchProducts();
+    /*
+        Wait for Firebase products to load
+        before checking ?product=ID.
+    */
+
+    await fetchProducts();
 }
 
 // =========================================
