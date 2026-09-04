@@ -1,12 +1,11 @@
 // =========================================
 // MELODEX STORE
-// ULTRA FAST CACHE + FIREBASE SYNC
-// DIRECT PRODUCT LINK SYSTEM
+// FIREBASE SDK + PRODUCT LOADING + CART
 // =========================================
 
 
 // =========================================
-// FIREBASE IMPORT
+// FIREBASE IMPORTS
 // =========================================
 
 import {
@@ -15,15 +14,10 @@ import {
 
 
 import {
-
-    initializeFirestore,
-
+    getFirestore,
     collection,
-
     getDocs,
-
     enableIndexedDbPersistence
-
 } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
 
@@ -33,26 +27,19 @@ import {
 
 const firebaseConfig = {
 
-    apiKey:
-        "AIzaSyBTVoMKlJeRWsgIL5gCdWCHYdx3w8brWHQ",
+    apiKey: "AIzaSyBTVoMKlJeRWsgIL5gCdWCHYdx3w8brWHQ",
 
-    authDomain:
-        "melodex-store.firebaseapp.com",
+    authDomain: "melodex-store.firebaseapp.com",
 
-    projectId:
-        "melodex-store",
+    projectId: "melodex-store",
 
-    storageBucket:
-        "melodex-store.firebasestorage.app",
+    storageBucket: "melodex-store.firebasestorage.app",
 
-    messagingSenderId:
-        "563447283369",
+    messagingSenderId: "563447283369",
 
-    appId:
-        "1:563447283369:web:a999e89adf7380ec4733b8",
+    appId: "1:563447283369:web:a999e89adf7380ec4733b8",
 
-    measurementId:
-        "G-G133358KKB"
+    measurementId: "G-G133358KKB"
 
 };
 
@@ -61,47 +48,45 @@ const firebaseConfig = {
 // WHATSAPP
 // =========================================
 
-const WHATSAPP_NUMBER =
-    "8801310863206";
+const WHATSAPP_NUMBER = "8801310863206";
 
 
 // =========================================
-// CACHE SETTINGS
-// =========================================
-
-const PRODUCT_CACHE_KEY =
-    "melodexProductsCacheV6";
-
-
-const PRODUCT_CACHE_TIME_KEY =
-    "melodexProductsCacheTimeV6";
-
-
-// LocalStorage cache থাকবে 7 দিন
-
-const CACHE_MAX_AGE =
-    7 * 24 * 60 * 60 * 1000;
-
-
-// =========================================
-// FIREBASE INITIALIZATION
+// INITIALIZE FIREBASE
 // =========================================
 
 const app =
-    initializeApp(firebaseConfig);
+    initializeApp(
+        firebaseConfig
+    );
 
+
+// গুরুত্বপূর্ণ:
+// initializeFirestore() ব্যবহার করা হয়নি
+// কারণ আপনার browser-এ cacheSizeBytes error হচ্ছিল
 
 const db =
-    initializeFirestore(app);
+    getFirestore(app);
 
 
-// Firebase Offline Cache Enable
+// =========================================
+// FIREBASE OFFLINE CACHE
+// =========================================
 
 enableIndexedDbPersistence(db)
-    .catch(error => {
+
+    .then(() => {
 
         console.log(
-            "Firebase persistence info:",
+            "Firebase offline cache enabled."
+        );
+
+    })
+
+    .catch(error => {
+
+        console.warn(
+            "Firebase cache could not be enabled:",
             error.code
         );
 
@@ -114,12 +99,7 @@ enableIndexedDbPersistence(db)
 
 let products = [];
 
-
 let cart = [];
-
-
-let firebaseSyncRunning =
-    false;
 
 
 // =========================================
@@ -181,9 +161,11 @@ function normalizeCategory(category) {
 
         cat.includes("cable") ||
 
+        cat.includes("accessories") ||
+
         cat.includes("accessory") ||
 
-        cat.includes("accessories")
+        cat.includes("accessori")
 
     ) {
 
@@ -229,236 +211,24 @@ function getCategoryName(category) {
 
 
 // =========================================
-// LOAD PRODUCTS FROM LOCAL CACHE
+// FETCH PRODUCTS FROM FIREBASE
 // =========================================
 
-function loadProductsFromCache() {
+async function fetchProducts() {
 
-    try {
-
-        const savedProducts =
-            localStorage.getItem(
-                PRODUCT_CACHE_KEY
-            );
-
-
-        const savedTime =
-            localStorage.getItem(
-                PRODUCT_CACHE_TIME_KEY
-            );
-
-
-        if (
-            !savedProducts
-        ) {
-
-            return [];
-
-        }
-
-
-        const parsedProducts =
-            JSON.parse(
-                savedProducts
-            );
-
-
-        if (
-            !Array.isArray(
-                parsedProducts
-            )
-        ) {
-
-            return [];
-
-        }
-
-
-        if (
-            savedTime
-        ) {
-
-            const age =
-
-                Date.now() -
-
-                Number(savedTime);
-
-
-            if (
-                age > CACHE_MAX_AGE
-            ) {
-
-                console.log(
-                    "Melodex cache is old. Background Firebase sync will refresh it."
-                );
-
-            }
-
-        }
-
-
-        return parsedProducts;
-
-    }
-
-    catch (error) {
-
-        console.error(
-            "Cache load failed:",
-            error
-        );
-
-
-        return [];
-
-    }
-
-}
-
-
-// =========================================
-// SAVE PRODUCTS TO LOCAL CACHE
-// =========================================
-
-function saveProductsToCache(
-    productList
-) {
-
-    try {
-
-        localStorage.setItem(
-
-            PRODUCT_CACHE_KEY,
-
-            JSON.stringify(
-                productList
-            )
-
-        );
-
-
-        localStorage.setItem(
-
-            PRODUCT_CACHE_TIME_KEY,
-
-            Date.now()
-                .toString()
-
-        );
-
-    }
-
-    catch (error) {
-
-        console.error(
-            "Cache save failed:",
-            error
-        );
-
-    }
-
-}
-
-
-// =========================================
-// COMPARE PRODUCT LISTS
-// =========================================
-
-function productsAreSame(
-
-    oldProducts,
-
-    newProducts
-
-) {
-
-    try {
-
-        if (
-
-            oldProducts.length !==
-
-            newProducts.length
-
-        ) {
-
-            return false;
-
-        }
-
-
-        const oldData =
-            JSON.stringify(
-                oldProducts
-                    .slice()
-                    .sort(
-                        (a, b) =>
-                            String(a.id)
-                                .localeCompare(
-                                    String(b.id)
-                                )
-                    )
-            );
-
-
-        const newData =
-            JSON.stringify(
-                newProducts
-                    .slice()
-                    .sort(
-                        (a, b) =>
-                            String(a.id)
-                                .localeCompare(
-                                    String(b.id)
-                                )
-                    )
-            );
-
-
-        return (
-            oldData ===
-            newData
-        );
-
-    }
-
-    catch {
-
-        return false;
-
-    }
-
-}
-
-
-// =========================================
-// FIREBASE PRODUCT FETCH
-// =========================================
-
-async function fetchProductsFromFirebase() {
-
-    if (
-        firebaseSyncRunning
-    ) {
-
-        return;
-
-    }
-
-
-    firebaseSyncRunning =
-        true;
+    showProductLoading();
 
 
     try {
 
         const querySnapshot =
             await getDocs(
+
                 collection(
                     db,
                     "products"
                 )
+
             );
 
 
@@ -466,176 +236,153 @@ async function fetchProductsFromFirebase() {
             [];
 
 
-        querySnapshot.forEach(
-            doc => {
+        querySnapshot.forEach(doc => {
 
-                const data =
-                    doc.data();
-
-
-                let imageList =
-                    [];
+            const data =
+                doc.data();
 
 
-                if (
+            let imageList =
+                [];
 
-                    Array.isArray(
-                        data.images
-                    ) &&
 
-                    data.images.length > 0
+            // Multiple images
 
-                ) {
+            if (
 
-                    imageList =
-                        data.images
-                            .filter(
-                                image =>
+                Array.isArray(
+                    data.images
+                ) &&
 
-                                    typeof image ===
-                                        "string" &&
+                data.images.length > 0
 
-                                    image.trim() !==
-                                        ""
+            ) {
+
+                imageList =
+                    data.images.filter(
+                        image => {
+
+                            return (
+
+                                typeof image ===
+                                "string"
+
+                                &&
+
+                                image.trim() !==
+                                ""
+
                             );
 
-                }
-
-
-                if (
-
-                    imageList.length === 0 &&
-
-                    data.image
-
-                ) {
-
-                    imageList =
-                        [
-                            data.image
-                        ];
-
-                }
-
-
-                firebaseProducts.push({
-
-                    id:
-                        doc.id,
-
-                    name:
-                        data.name ||
-                        "Unnamed Product",
-
-                    category:
-                        normalizeCategory(
-                            data.category
-                        ),
-
-                    price:
-                        Number(
-                            data.price
-                        ) || 0,
-
-                    image:
-                        imageList[0] ||
-                        "",
-
-                    images:
-                        imageList,
-
-                    description:
-                        data.description ||
-                        ""
-
-                });
+                        }
+                    );
 
             }
-        );
 
 
-        const changed =
+            // Single image fallback
 
-            !productsAreSame(
+            if (
 
-                products,
+                imageList.length === 0 &&
 
-                firebaseProducts
+                data.image
 
-            );
+            ) {
 
+                imageList =
+
+                    [
+                        data.image
+                    ];
+
+            }
+
+
+            firebaseProducts.push({
+
+                id:
+                    doc.id,
+
+
+                name:
+
+                    data.name ||
+
+                    "Unnamed Product",
+
+
+                category:
+
+                    normalizeCategory(
+                        data.category
+                    ),
+
+
+                price:
+
+                    Number(
+                        data.price
+                    ) || 0,
+
+
+                image:
+
+                    imageList[0] ||
+                    "",
+
+
+                images:
+
+                    imageList,
+
+
+                description:
+
+                    data.description ||
+                    ""
+
+            });
+
+        });
+
+
+        // Firebase products save
 
         products =
             firebaseProducts;
 
 
-        // Always update cache
+        // Update product count
 
-        saveProductsToCache(
-            products
-        );
+        updateProductCount();
 
 
-        // প্রথমবার অথবা Firebase-এ পরিবর্তন হলে UI update
+        // Display products
 
-        if (
-
-            changed ||
-
-            document.querySelector(
-                ".product-loading"
-            )
-
-        ) {
-
-            updateProductCount();
-
-            displayProductsByCategory();
-
-        }
+        displayProductsByCategory();
 
 
         console.log(
 
-            `Melodex: ${products.length} products synced from Firebase.`
+            `Melodex: ${products.length} products loaded successfully.`
 
         );
 
 
-        // Direct product link থাকলে product open করবে
+    } catch (error) {
 
-        openProductFromURL();
-
-
-    }
-
-    catch (error) {
 
         console.error(
 
-            "Firebase sync error:",
+            "Firebase fetch error:",
 
             error
 
         );
 
 
-        // কোনো cached product না থাকলে error দেখাবে
-
-        if (
-            products.length === 0
-        ) {
-
-            showProductLoadError();
-
-        }
-
-    }
-
-    finally {
-
-        firebaseSyncRunning =
-            false;
+        showProductLoadError();
 
     }
 
@@ -649,14 +396,13 @@ async function fetchProductsFromFirebase() {
 function updateProductCount() {
 
     const countElement =
+
         document.getElementById(
             "total-products-count"
         );
 
 
-    if (
-        !countElement
-    ) {
+    if (!countElement) {
 
         return;
 
@@ -675,7 +421,7 @@ function updateProductCount() {
 
 
 // =========================================
-// PRODUCT LOADING
+// SHOW PRODUCT LOADING
 // =========================================
 
 function showProductLoading() {
@@ -699,37 +445,49 @@ function showProductLoading() {
         category => {
 
             const container =
+
                 document.getElementById(
                     `${category}Container`
                 );
 
 
             if (
-                !container
+
+                container &&
+
+                products.length === 0
+
             ) {
 
-                return;
+                container.innerHTML = `
 
-            }
+                    <div
+                        class="product-loading"
+                        style="
+                            grid-column: 1/-1;
+                            text-align: center;
+                            padding: 30px;
+                            color: #94a3b8;
+                        "
+                    >
 
+                        <i
+                            class="fas fa-spinner fa-spin"
+                            style="
+                                font-size: 24px;
+                                margin-bottom: 8px;
+                            "
+                        ></i>
 
-            container.innerHTML =
+                        <p>
+                            Loading products...
+                        </p>
 
-                `
-
-                <div class="product-loading">
-
-                    <div class="product-loader-spinner"></div>
-
-                    <span>
-
-                        Loading products...
-
-                    </span>
-
-                </div>
+                    </div>
 
                 `;
+
+            }
 
         }
     );
@@ -738,7 +496,7 @@ function showProductLoading() {
 
 
 // =========================================
-// PRODUCT LOAD ERROR
+// SHOW LOAD ERROR
 // =========================================
 
 function showProductLoadError() {
@@ -762,37 +520,39 @@ function showProductLoadError() {
         category => {
 
             const container =
+
                 document.getElementById(
                     `${category}Container`
                 );
 
 
             if (
-                !container
+
+                container &&
+
+                products.length === 0
+
             ) {
 
-                return;
+                container.innerHTML = `
 
-            }
+                    <p
+                        style="
+                            grid-column: 1/-1;
+                            text-align: center;
+                            color: #ef4444;
+                            padding: 20px;
+                        "
+                    >
 
+                        Product load করা সম্ভব হয়নি।
+                        অনুগ্রহ করে পেজটি refresh করুন।
 
-            container.innerHTML =
-
-                `
-
-                <div class="product-loading">
-
-                    <span>
-
-                        Unable to load products.
-
-                        Please refresh the page.
-
-                    </span>
-
-                </div>
+                    </p>
 
                 `;
+
+            }
 
         }
     );
@@ -824,15 +584,15 @@ function displayProductsByCategory() {
     categories.forEach(
         category => {
 
+
             const container =
+
                 document.getElementById(
                     `${category}Container`
                 );
 
 
-            if (
-                !container
-            ) {
+            if (!container) {
 
                 return;
 
@@ -855,17 +615,23 @@ function displayProductsByCategory() {
 
             ) {
 
-                container.innerHTML =
+                container.innerHTML = `
 
-                    `
+                    <p
+                        class="no-products"
+                        style="
+                            grid-column: 1/-1;
+                            text-align: center;
+                            padding: 20px;
+                        "
+                    >
 
-                    <p class="no-products">
-
-                        No products available in this category yet.
+                        এই ক্যাটাগরিতে কোনো
+                        প্রোডাক্ট নেই।
 
                     </p>
 
-                    `;
+                `;
 
 
                 return;
@@ -884,9 +650,14 @@ function displayProductsByCategory() {
                     productIndex
                 ) => {
 
+
                     let thumbnailsHTML =
                         "";
 
+
+                    // ---------------------------------
+                    // PRODUCT THUMBNAILS
+                    // ---------------------------------
 
                     if (
 
@@ -896,7 +667,9 @@ function displayProductsByCategory() {
 
                     ) {
 
+
                         thumbnailsHTML =
+
                             `<div class="product-thumbnails">`;
 
 
@@ -907,9 +680,8 @@ function displayProductsByCategory() {
                                 index
                             ) => {
 
-                                thumbnailsHTML +=
 
-                                    `
+                                thumbnailsHTML += `
 
                                     <img
 
@@ -927,7 +699,7 @@ function displayProductsByCategory() {
 
                                     >
 
-                                    `;
+                                `;
 
                             }
 
@@ -940,6 +712,10 @@ function displayProductsByCategory() {
                     }
 
 
+                    // ---------------------------------
+                    // IMAGE LOADING
+                    // ---------------------------------
+
                     const imageLoading =
 
                         productIndex < 4
@@ -949,28 +725,13 @@ function displayProductsByCategory() {
                             : "lazy";
 
 
-                    const fetchPriority =
+                    // ---------------------------------
+                    // PRODUCT CARD
+                    // ---------------------------------
 
-                        productIndex < 2
+                    productsHTML += `
 
-                            ? "high"
-
-                            : "auto";
-
-
-                    productsHTML +=
-
-                        `
-
-                        <div
-
-                            class="product-card"
-
-                            id="product-${escapeHTML(product.id)}"
-
-                            data-product-id="${escapeHTML(product.id)}"
-
-                        >
+                        <div class="product-card">
 
 
                             <div class="product-image-wrapper">
@@ -989,8 +750,6 @@ function displayProductsByCategory() {
                                     data-product-id="${escapeHTML(product.id)}"
 
                                     loading="${imageLoading}"
-
-                                    fetchpriority="${fetchPriority}"
 
                                     decoding="async"
 
@@ -1100,7 +859,7 @@ function displayProductsByCategory() {
 
                         </div>
 
-                        `;
+                    `;
 
                 }
 
@@ -1111,179 +870,14 @@ function displayProductsByCategory() {
                 productsHTML;
 
         }
+
     );
 
 }
 
 
 // =========================================
-// DIRECT PRODUCT LINK
-// =========================================
-
-// Example:
-//
-// https://yourwebsite.com/?product=PRODUCT_ID
-//
-// অথবা
-//
-// https://yourwebsite.com/#product=PRODUCT_ID
-
-
-function getProductIDFromURL() {
-
-    const params =
-        new URLSearchParams(
-            window.location.search
-        );
-
-
-    const productID =
-        params.get(
-            "product"
-        );
-
-
-    if (
-        productID
-    ) {
-
-        return productID;
-
-    }
-
-
-    const hash =
-        window.location.hash;
-
-
-    if (
-
-        hash.startsWith(
-            "#product="
-        )
-
-    ) {
-
-        return decodeURIComponent(
-
-            hash.replace(
-                "#product=",
-                ""
-            )
-
-        );
-
-    }
-
-
-    return null;
-
-}
-
-
-// =========================================
-// OPEN PRODUCT FROM URL
-// =========================================
-
-function openProductFromURL() {
-
-    const productID =
-        getProductIDFromURL();
-
-
-    if (
-        !productID
-    ) {
-
-        return;
-
-    }
-
-
-    const productElement =
-        document.getElementById(
-            `product-${productID}`
-        );
-
-
-    if (
-        !productElement
-    ) {
-
-        return;
-
-    }
-
-
-    // একটু delay দেওয়া হয়েছে
-    // যাতে DOM সম্পূর্ণ render হয়
-
-    setTimeout(
-        () => {
-
-            productElement.scrollIntoView({
-
-                behavior:
-                    "smooth",
-
-                block:
-                    "center"
-
-            });
-
-
-            // Highlight
-
-            productElement.classList.add(
-                "product-direct-highlight"
-            );
-
-
-            setTimeout(
-                () => {
-
-                    productElement.classList.remove(
-                        "product-direct-highlight"
-                    );
-
-                },
-
-                3000
-            );
-
-
-        },
-
-        300
-    );
-
-}
-
-
-// =========================================
-// COPY PRODUCT LINK HELPER
-// =========================================
-
-function getProductDirectLink(
-    productId
-) {
-
-    const baseURL =
-
-        window.location.origin +
-
-        window.location.pathname;
-
-
-    return
-
-        `${baseURL}?product=${encodeURIComponent(productId)}`;
-
-}
-
-
-// =========================================
-// PRODUCT EVENT DELEGATION
+// PRODUCT EVENTS
 // =========================================
 
 function initializeProductEvents() {
@@ -1295,15 +889,16 @@ function initializeProductEvents() {
         event => {
 
 
+            // ADD TO CART
+
             const cartButton =
+
                 event.target.closest(
                     ".btn-add-cart"
                 );
 
 
-            if (
-                cartButton
-            ) {
+            if (cartButton) {
 
                 addToCart(
 
@@ -1318,15 +913,16 @@ function initializeProductEvents() {
             }
 
 
+            // ORDER PRODUCT
+
             const orderButton =
+
                 event.target.closest(
                     "[data-order-product]"
                 );
 
 
-            if (
-                orderButton
-            ) {
+            if (orderButton) {
 
                 orderSingleProduct(
 
@@ -1341,17 +937,19 @@ function initializeProductEvents() {
             }
 
 
+            // IMAGE ZOOM BUTTON
+
             const zoomButton =
+
                 event.target.closest(
                     ".image-zoom-btn"
                 );
 
 
-            if (
-                zoomButton
-            ) {
+            if (zoomButton) {
 
                 const mainImage =
+
                     document.getElementById(
 
                         `main-img-${zoomButton.dataset.productId}`
@@ -1359,9 +957,7 @@ function initializeProductEvents() {
                     );
 
 
-                if (
-                    mainImage
-                ) {
+                if (mainImage) {
 
                     openImageModal(
 
@@ -1379,15 +975,16 @@ function initializeProductEvents() {
             }
 
 
+            // MAIN PRODUCT IMAGE
+
             const productImage =
+
                 event.target.closest(
                     ".product-image"
                 );
 
 
-            if (
-                productImage
-            ) {
+            if (productImage) {
 
                 openImageModal(
 
@@ -1403,27 +1000,31 @@ function initializeProductEvents() {
             }
 
 
+            // THUMBNAIL
+
             const thumbnail =
+
                 event.target.closest(
                     ".thumb-img"
                 );
 
 
-            if (
-                thumbnail
-            ) {
+            if (thumbnail) {
 
                 const productId =
+
                     thumbnail.dataset
                         .productId;
 
 
                 const imageURL =
+
                     thumbnail.dataset
                         .image;
 
 
                 const mainImage =
+
                     document.getElementById(
 
                         `main-img-${productId}`
@@ -1431,9 +1032,7 @@ function initializeProductEvents() {
                     );
 
 
-                if (
-                    mainImage
-                ) {
+                if (mainImage) {
 
                     mainImage.src =
                         imageURL;
@@ -1442,12 +1041,11 @@ function initializeProductEvents() {
 
 
                 const parent =
+
                     thumbnail.parentElement;
 
 
-                if (
-                    parent
-                ) {
+                if (parent) {
 
                     parent
                         .querySelectorAll(
@@ -1470,9 +1068,6 @@ function initializeProductEvents() {
 
                 }
 
-
-                return;
-
             }
 
         }
@@ -1491,6 +1086,7 @@ function loadCart() {
     try {
 
         const savedCart =
+
             localStorage.getItem(
                 "melodexCart"
             );
@@ -1508,18 +1104,25 @@ function loadCart() {
 
 
         if (
+
             !Array.isArray(
                 cart
             )
+
         ) {
 
             cart = [];
 
         }
 
-    }
 
-    catch {
+    } catch (error) {
+
+        console.error(
+            "Cart load error:",
+            error
+        );
+
 
         cart = [];
 
@@ -1546,14 +1149,10 @@ function saveCart() {
 
         );
 
-    }
-
-    catch (
-        error
-    ) {
+    } catch (error) {
 
         console.warn(
-            "Cart save failed:",
+            "Cart save error:",
             error
         );
 
@@ -1566,27 +1165,19 @@ function saveCart() {
 // ADD TO CART
 // =========================================
 
-function addToCart(
-    productId
-) {
+function addToCart(productId) {
 
     const product =
+
         products.find(
             product =>
 
-                String(
-                    product.id
-                ) ===
-
-                String(
-                    productId
-                )
+                String(product.id) ===
+                String(productId)
         );
 
 
-    if (
-        !product
-    ) {
+    if (!product) {
 
         return;
 
@@ -1594,29 +1185,20 @@ function addToCart(
 
 
     const existingItem =
+
         cart.find(
             item =>
 
-                String(
-                    item.id
-                ) ===
-
-                String(
-                    productId
-                )
+                String(item.id) ===
+                String(productId)
         );
 
 
-    if (
-        existingItem
-    ) {
+    if (existingItem) {
 
-        existingItem.quantity +=
-            1;
+        existingItem.quantity += 1;
 
-    }
-
-    else {
+    } else {
 
         cart.push({
 
@@ -1679,14 +1261,13 @@ function updateCart() {
 function updateCartCount() {
 
     const cartCount =
+
         document.querySelector(
             ".cart-count"
         );
 
 
-    if (
-        !cartCount
-    ) {
+    if (!cartCount) {
 
         return;
 
@@ -1705,8 +1286,7 @@ function updateCartCount() {
                 total +
 
                 Number(
-                    item.quantity ||
-                    0
+                    item.quantity || 0
                 ),
 
             0
@@ -1727,24 +1307,28 @@ function updateCartCount() {
 function renderCart() {
 
     const cartItems =
+
         document.getElementById(
             "cartItems"
         );
 
 
     const cartEmpty =
+
         document.getElementById(
             "cartEmpty"
         );
 
 
     const cartFooter =
+
         document.getElementById(
             "cartFooter"
         );
 
 
     const cartTotal =
+
         document.getElementById(
             "cartTotal"
         );
@@ -1767,9 +1351,14 @@ function renderCart() {
     }
 
 
+    // EMPTY CART
+
     if (
+
         cart.length === 0
+
     ) {
+
 
         cartItems.innerHTML =
             "";
@@ -1811,24 +1400,19 @@ function renderCart() {
     cart.forEach(
         item => {
 
+
             const itemTotal =
 
-                Number(
-                    item.price
-                ) *
+                Number(item.price) *
 
-                Number(
-                    item.quantity
-                );
+                Number(item.quantity);
 
 
             totalPrice +=
                 itemTotal;
 
 
-            cartHTML +=
-
-                `
+            cartHTML += `
 
                 <div class="cart-item">
 
@@ -1939,7 +1523,7 @@ function renderCart() {
 
                 </div>
 
-                `;
+            `;
 
         }
     );
@@ -1972,14 +1556,13 @@ function initializeCartEvents() {
 
 
             const quantityButton =
+
                 event.target.closest(
                     "[data-cart-action]"
                 );
 
 
-            if (
-                quantityButton
-            ) {
+            if (quantityButton) {
 
                 changeCartQuantity(
 
@@ -1998,14 +1581,13 @@ function initializeCartEvents() {
 
 
             const removeButton =
+
                 event.target.closest(
                     ".remove-cart-item"
                 );
 
 
-            if (
-                removeButton
-            ) {
+            if (removeButton) {
 
                 removeCartItem(
 
@@ -2036,22 +1618,16 @@ function changeCartQuantity(
 ) {
 
     const item =
+
         cart.find(
             item =>
 
-                String(
-                    item.id
-                ) ===
-
-                String(
-                    productId
-                )
+                String(item.id) ===
+                String(productId)
         );
 
 
-    if (
-        !item
-    ) {
+    if (!item) {
 
         return;
 
@@ -2059,40 +1635,40 @@ function changeCartQuantity(
 
 
     if (
+
         action ===
         "increase"
+
     ) {
 
-        item.quantity +=
-            1;
+        item.quantity += 1;
 
     }
 
 
     if (
+
         action ===
         "decrease"
+
     ) {
 
-        item.quantity -=
-            1;
+        item.quantity -= 1;
 
 
         if (
+
             item.quantity <= 0
+
         ) {
 
             cart =
+
                 cart.filter(
                     item =>
 
-                        String(
-                            item.id
-                        ) !==
-
-                        String(
-                            productId
-                        )
+                        String(item.id) !==
+                        String(productId)
                 );
 
         }
@@ -2111,21 +1687,15 @@ function changeCartQuantity(
 // REMOVE CART ITEM
 // =========================================
 
-function removeCartItem(
-    productId
-) {
+function removeCartItem(productId) {
 
     cart =
+
         cart.filter(
             item =>
 
-                String(
-                    item.id
-                ) !==
-
-                String(
-                    productId
-                )
+                String(item.id) !==
+                String(productId)
         );
 
 
@@ -2152,20 +1722,25 @@ function removeCartItem(
 function openCart() {
 
     const sidebar =
+
         document.getElementById(
             "cartSidebar"
         );
 
 
     const overlay =
+
         document.getElementById(
             "cartOverlay"
         );
 
 
     if (
+
         sidebar &&
+
         overlay
+
     ) {
 
         sidebar.classList.add(
@@ -2192,20 +1767,20 @@ function openCart() {
 function closeCart() {
 
     const sidebar =
+
         document.getElementById(
             "cartSidebar"
         );
 
 
     const overlay =
+
         document.getElementById(
             "cartOverlay"
         );
 
 
-    if (
-        sidebar
-    ) {
+    if (sidebar) {
 
         sidebar.classList.remove(
             "active"
@@ -2214,9 +1789,7 @@ function closeCart() {
     }
 
 
-    if (
-        overlay
-    ) {
+    if (overlay) {
 
         overlay.classList.remove(
             "active"
@@ -2234,27 +1807,19 @@ function closeCart() {
 // ORDER SINGLE PRODUCT
 // =========================================
 
-function orderSingleProduct(
-    productId
-) {
+function orderSingleProduct(productId) {
 
     const product =
+
         products.find(
             product =>
 
-                String(
-                    product.id
-                ) ===
-
-                String(
-                    productId
-                )
+                String(product.id) ===
+                String(productId)
         );
 
 
-    if (
-        !product
-    ) {
+    if (!product) {
 
         return;
 
@@ -2263,7 +1828,7 @@ function orderSingleProduct(
 
     const message =
 
-        `Hello Melodex! 👋
+`Hello Melodex! 👋
 
 I want to order:
 
@@ -2296,7 +1861,9 @@ Please let me know about availability and delivery.`;
 function checkoutCart() {
 
     if (
+
         cart.length === 0
+
     ) {
 
         showNotification(
@@ -2329,15 +1896,12 @@ function checkoutCart() {
             index
         ) => {
 
+
             const subtotal =
 
-                Number(
-                    item.price
-                ) *
+                Number(item.price) *
 
-                Number(
-                    item.quantity
-                );
+                Number(item.quantity);
 
 
             totalPrice +=
@@ -2346,7 +1910,7 @@ function checkoutCart() {
 
             message +=
 
-                `${index + 1}. ${item.name}
+`${index + 1}. ${item.name}
 Quantity: ${item.quantity}
 Price: ৳ ${formatPrice(item.price)}
 Subtotal: ৳ ${formatPrice(subtotal)}
@@ -2360,7 +1924,7 @@ Subtotal: ৳ ${formatPrice(subtotal)}
 
     message +=
 
-        `Total Amount: ৳ ${formatPrice(totalPrice)}
+`Total Amount: ৳ ${formatPrice(totalPrice)}
 
 Please confirm availability and delivery details.`;
 
@@ -2382,7 +1946,7 @@ Please confirm availability and delivery details.`;
 
 
 // =========================================
-// IMAGE MODAL
+// OPEN IMAGE MODAL
 // =========================================
 
 function openImageModal(
@@ -2394,12 +1958,14 @@ function openImageModal(
 ) {
 
     const modal =
+
         document.getElementById(
             "imageModal"
         );
 
 
     const modalImage =
+
         document.getElementById(
             "modalImage"
         );
@@ -2439,17 +2005,20 @@ function openImageModal(
 }
 
 
+// =========================================
+// CLOSE IMAGE MODAL
+// =========================================
+
 function closeImageModal() {
 
     const modal =
+
         document.getElementById(
             "imageModal"
         );
 
 
-    if (
-        modal
-    ) {
+    if (modal) {
 
         modal.classList.remove(
             "active"
@@ -2470,12 +2039,14 @@ function closeImageModal() {
 function updateBodyScrollLock() {
 
     const imageModal =
+
         document.getElementById(
             "imageModal"
         );
 
 
     const cartSidebar =
+
         document.getElementById(
             "cartSidebar"
         );
@@ -2499,15 +2070,23 @@ function updateBodyScrollLock() {
         );
 
 
-    document.body.style.overflow =
+    if (
 
         modalIsOpen ||
 
         cartIsOpen
 
-            ? "hidden"
+    ) {
 
-            : "";
+        document.body.style.overflow =
+            "hidden";
+
+    } else {
+
+        document.body.style.overflow =
+            "";
+
+    }
 
 }
 
@@ -2520,20 +2099,18 @@ function showNotification(
 
     message,
 
-    type =
-        "success"
+    type = "success"
 
 ) {
 
     const container =
+
         document.getElementById(
             "notificationContainer"
         );
 
 
-    if (
-        !container
-    ) {
+    if (!container) {
 
         return;
 
@@ -2541,6 +2118,7 @@ function showNotification(
 
 
     const notification =
+
         document.createElement(
             "div"
         );
@@ -2561,8 +2139,8 @@ function showNotification(
 
 
     setTimeout(
-
         () => {
+
 
             notification.classList.add(
                 "hide"
@@ -2570,7 +2148,6 @@ function showNotification(
 
 
             setTimeout(
-
                 () => {
 
                     notification.remove();
@@ -2578,13 +2155,12 @@ function showNotification(
                 },
 
                 300
-
             );
+
 
         },
 
         2500
-
     );
 
 }
@@ -2594,9 +2170,7 @@ function showNotification(
 // FORMAT PRICE
 // =========================================
 
-function formatPrice(
-    price
-) {
+function formatPrice(price) {
 
     return Number(
 
@@ -2613,9 +2187,7 @@ function formatPrice(
 // ESCAPE HTML
 // =========================================
 
-function escapeHTML(
-    value
-) {
+function escapeHTML(value) {
 
     if (
 
@@ -2630,9 +2202,7 @@ function escapeHTML(
     }
 
 
-    return String(
-        value
-    )
+    return String(value)
 
         .replace(
             /&/g,
@@ -2669,104 +2239,113 @@ function escapeHTML(
 function initializeEvents() {
 
     const cartButton =
+
         document.getElementById(
             "cartButton"
         );
 
 
     const closeCartButton =
+
         document.getElementById(
             "closeCart"
         );
 
 
     const cartOverlay =
+
         document.getElementById(
             "cartOverlay"
         );
 
 
     const checkoutButton =
+
         document.getElementById(
             "checkoutButton"
         );
 
 
     const imageModal =
+
         document.getElementById(
             "imageModal"
         );
 
 
     const imageModalClose =
+
         document.getElementById(
             "imageModalClose"
         );
 
 
-    if (
-        cartButton
-    ) {
+    if (cartButton) {
 
         cartButton.addEventListener(
+
             "click",
+
             openCart
+
         );
 
     }
 
 
-    if (
-        closeCartButton
-    ) {
+    if (closeCartButton) {
 
         closeCartButton.addEventListener(
+
             "click",
+
             closeCart
+
         );
 
     }
 
 
-    if (
-        cartOverlay
-    ) {
+    if (cartOverlay) {
 
         cartOverlay.addEventListener(
+
             "click",
+
             closeCart
+
         );
 
     }
 
 
-    if (
-        checkoutButton
-    ) {
+    if (checkoutButton) {
 
         checkoutButton.addEventListener(
+
             "click",
+
             checkoutCart
+
         );
 
     }
 
 
-    if (
-        imageModalClose
-    ) {
+    if (imageModalClose) {
 
         imageModalClose.addEventListener(
+
             "click",
+
             closeImageModal
+
         );
 
     }
 
 
-    if (
-        imageModal
-    ) {
+    if (imageModal) {
 
         imageModal.addEventListener(
 
@@ -2775,8 +2354,10 @@ function initializeEvents() {
             event => {
 
                 if (
+
                     event.target ===
                     imageModal
+
                 ) {
 
                     closeImageModal();
@@ -2797,8 +2378,10 @@ function initializeEvents() {
         event => {
 
             if (
+
                 event.key ===
                 "Escape"
+
             ) {
 
                 closeCart();
@@ -2812,10 +2395,13 @@ function initializeEvents() {
     );
 
 
+    // SMOOTH SCROLL
+
     document
         .querySelectorAll(
             'a[href^="#"]'
         )
+
         .forEach(
             link => {
 
@@ -2823,11 +2409,11 @@ function initializeEvents() {
 
                     "click",
 
-                    function (
-                        event
-                    ) {
+                    function(event) {
+
 
                         const href =
+
                             this.getAttribute(
                                 "href"
                             );
@@ -2847,14 +2433,13 @@ function initializeEvents() {
 
 
                         const target =
+
                             document.querySelector(
                                 href
                             );
 
 
-                        if (
-                            target
-                        ) {
+                        if (target) {
 
                             event.preventDefault();
 
@@ -2876,26 +2461,31 @@ function initializeEvents() {
                 );
 
             }
+
         );
 
 }
 
 
 // =========================================
-// APPLICATION INITIALIZATION
+// INITIALIZE APPLICATION
 // =========================================
 
 function initApp() {
 
 
-    // CART INSTANT LOAD
+    // ---------------------------------
+    // CART LOAD
+    // ---------------------------------
 
     loadCart();
 
     updateCart();
 
 
+    // ---------------------------------
     // EVENTS
+    // ---------------------------------
 
     initializeEvents();
 
@@ -2904,68 +2494,17 @@ function initApp() {
     initializeCartEvents();
 
 
-    // =====================================
-    // INSTANT PRODUCT CACHE LOAD
-    // =====================================
+    // ---------------------------------
+    // FIREBASE PRODUCT LOAD
+    // ---------------------------------
 
-    const cachedProducts =
-        loadProductsFromCache();
-
-
-    if (
-        cachedProducts.length > 0
-    ) {
-
-
-        // সাথে সাথে Cache থেকে Show
-
-        products =
-            cachedProducts;
-
-
-        updateProductCount();
-
-        displayProductsByCategory();
-
-
-        console.log(
-
-            `Melodex: ${products.length} products loaded instantly from browser cache.`
-
-        );
-
-
-        // Direct link থাকলে সাথে সাথে scroll
-
-        openProductFromURL();
-
-
-    }
-
-    else {
-
-
-        // প্রথমবার visitor হলে
-
-        showProductLoading();
-
-    }
-
-
-    // =====================================
-    // BACKGROUND FIREBASE SYNC
-    // =====================================
-
-    // await করা হয়নি
-    // তাই Website Firebase-এর জন্য অপেক্ষা করবে না
-
-    fetchProductsFromFirebase();
+    fetchProducts();
 
 }
 
 
 // =========================================
-// START APP
+// START APPLICATION
 // =========================================
 
 if (
@@ -2983,9 +2522,7 @@ if (
 
     );
 
-}
-
-else {
+} else {
 
     initApp();
 
