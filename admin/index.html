@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Melodex Admin Dashboard</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
         * {
             box-sizing: border-box;
@@ -53,7 +56,9 @@
             color: #cbd5e1;
         }
 
-        input, select, textarea {
+        input,
+        select,
+        textarea {
             width: 100%;
             padding: 12px;
             border-radius: 8px;
@@ -63,7 +68,9 @@
             font-size: 14px;
         }
 
-        input:focus, select:focus, textarea:focus {
+        input:focus,
+        select:focus,
+        textarea:focus {
             border-color: #ef4444;
             outline: none;
             box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
@@ -168,10 +175,25 @@
         .product-meta {
             font-size: 13px;
             color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .product-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #64748b;
+            word-break: break-all;
+        }
+
+        .product-link i {
+            color: #ef4444;
         }
 
         .actions {
             display: flex;
+            flex-wrap: wrap;
             gap: 8px;
             flex-shrink: 0;
         }
@@ -195,6 +217,16 @@
 
         .delete-btn:hover {
             background: #b91c1c;
+        }
+
+        .copy-btn {
+            background: #2563eb;
+            padding: 8px 13px;
+            font-size: 13px;
+        }
+
+        .copy-btn:hover {
+            background: #1d4ed8;
         }
 
         .cancel-btn {
@@ -236,441 +268,1576 @@
             aspect-ratio: 1 / 1;
         }
 
-        .status-text {
-            margin-top: 10px;
-            font-size: 13px;
-            color: #94a3b8;
-        }
-
         @media (max-width: 700px) {
-            body { padding: 12px; }
-            .card { padding: 18px; }
-            .header-bar { flex-direction: column; align-items: flex-start; }
-            .logout-btn { width: 100%; }
-            .product-item { flex-direction: column; align-items: flex-start; }
-            .product-img-group { max-width: 100%; }
-            .actions { width: 100%; }
-            .edit-btn, .delete-btn { flex: 1; }
+
+            body {
+                padding: 12px;
+            }
+
+            .card {
+                padding: 18px;
+            }
+
+            .header-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .logout-btn {
+                width: 100%;
+            }
+
+            .product-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .product-img-group {
+                max-width: 100%;
+            }
+
+            .actions {
+                width: 100%;
+            }
+
+            .edit-btn,
+            .delete-btn,
+            .copy-btn {
+                flex: 1;
+            }
+
         }
     </style>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+        import { initializeApp }
+        from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+
+        import {
+            getAuth,
+            signInWithEmailAndPassword,
+            onAuthStateChanged,
+            signOut
+        }
+        from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+
+        import {
+            getFirestore,
+            collection,
+            addDoc,
+            getDocs,
+            deleteDoc,
+            doc,
+            updateDoc,
+            serverTimestamp
+        }
+        from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+
+        // =========================================
+        // FIREBASE CONFIG
+        // =========================================
 
         const firebaseConfig = {
+
             apiKey: "AIzaSyBTVoMKlJeRWsgIL5gCdWCHYdx3w8brWHQ",
+
             authDomain: "melodex-store.firebaseapp.com",
+
             projectId: "melodex-store",
+
             storageBucket: "melodex-store.firebasestorage.app",
+
             messagingSenderId: "563447283369",
+
             appId: "1:563447283369:web:a999e89adf7380ec4733b8",
+
             measurementId: "G-G133358KKB"
+
         };
 
+
+        // =========================================
+        // WEBSITE URL
+        // =========================================
+
+        /*
+        যদি admin.html এবং website একই domain/folder এ থাকে
+        তাহলে নিচের system automatically কাজ করবে।
+        */
+
+        function getWebsiteURL() {
+
+            const currentURL = window.location.href;
+
+            return currentURL
+                .replace(/admin\.html.*$/i, "")
+                .replace(/\/$/, "");
+
+        }
+
+
         const app = initializeApp(firebaseConfig);
+
         const auth = getAuth(app);
+
         const db = getFirestore(app);
 
+
         let editDocId = null;
+
         let cachedProducts = {};
 
-        const loginSection = document.getElementById("login-section");
-        const adminPanel = document.getElementById("admin-panel");
-        const loginBtn = document.getElementById("login-btn");
-        const logoutBtn = document.getElementById("logout-btn");
-        const saveProductBtn = document.getElementById("save-product-btn");
-        const cancelEditBtn = document.getElementById("cancel-edit-btn");
-        const productList = document.getElementById("product-list");
-        const formTitle = document.getElementById("form-title");
-        const imageInput = document.getElementById("prod-imgs");
-        const imagePreview = document.getElementById("image-preview");
+
+        const loginSection =
+            document.getElementById("login-section");
+
+        const adminPanel =
+            document.getElementById("admin-panel");
+
+        const loginBtn =
+            document.getElementById("login-btn");
+
+        const logoutBtn =
+            document.getElementById("logout-btn");
+
+        const saveProductBtn =
+            document.getElementById("save-product-btn");
+
+        const cancelEditBtn =
+            document.getElementById("cancel-edit-btn");
+
+        const productList =
+            document.getElementById("product-list");
+
+        const formTitle =
+            document.getElementById("form-title");
+
+        const imageInput =
+            document.getElementById("prod-imgs");
+
+        const imagePreview =
+            document.getElementById("image-preview");
+
+
+        // =========================================
+        // AUTH STATE
+        // =========================================
 
         onAuthStateChanged(auth, (user) => {
+
             if (user) {
+
                 loginSection.classList.add("hidden");
+
                 adminPanel.classList.remove("hidden");
+
                 loadProducts();
+
             } else {
+
                 loginSection.classList.remove("hidden");
+
                 adminPanel.classList.add("hidden");
+
             }
+
         });
+
+
+        // =========================================
+        // LOGIN
+        // =========================================
 
         loginBtn.addEventListener("click", async () => {
-            const email = document.getElementById("login-email").value.trim();
-            const password = document.getElementById("login-pass").value;
+
+            const email =
+                document
+                .getElementById("login-email")
+                .value
+                .trim();
+
+            const password =
+                document
+                .getElementById("login-pass")
+                .value;
+
 
             if (!email || !password) {
+
                 alert("Email এবং Password দিন!");
+
                 return;
+
             }
+
 
             loginBtn.disabled = true;
+
             loginBtn.innerText = "Logging in...";
 
+
             try {
-                await signInWithEmailAndPassword(auth, email, password);
-            } catch (error) {
-                alert("লগইন ব্যর্থ হয়েছে: " + error.message);
-            } finally {
-                loginBtn.disabled = false;
-                loginBtn.innerText = "Login";
+
+                await signInWithEmailAndPassword(
+                    auth,
+                    email,
+                    password
+                );
+
             }
+
+            catch (error) {
+
+                alert(
+                    "লগইন ব্যর্থ হয়েছে: " +
+                    error.message
+                );
+
+            }
+
+            finally {
+
+                loginBtn.disabled = false;
+
+                loginBtn.innerText = "Login";
+
+            }
+
         });
 
-        logoutBtn.addEventListener("click", async () => {
-            await signOut(auth);
-        });
 
-        /* =========================================
-           IMAGE PROCESSING: HD QUALITY 1:1 SQUARE
-        ========================================= */
+        // =========================================
+        // LOGOUT
+        // =========================================
+
+        logoutBtn.addEventListener(
+            "click",
+            async () => {
+
+                await signOut(auth);
+
+            }
+        );
+
+
+        // =========================================
+        // IMAGE PROCESSING
+        // 800x800 HD SQUARE
+        // =========================================
+
         function processImage(file) {
+
             return new Promise((resolve, reject) => {
+
                 const reader = new FileReader();
+
                 reader.readAsDataURL(file);
 
+
                 reader.onload = (event) => {
+
                     const img = new Image();
+
                     img.src = event.target.result;
 
+
                     img.onload = () => {
+
                         const finalSize = 800;
-                        const canvas = document.createElement("canvas");
+
+                        const canvas =
+                            document.createElement("canvas");
+
                         canvas.width = finalSize;
+
                         canvas.height = finalSize;
 
-                        const ctx = canvas.getContext("2d");
-                        
-                        // ছবি যাতে ব্লার বা ঘোলা না হয় তার জন্য High Smoothing
+
+                        const ctx =
+                            canvas.getContext("2d");
+
+
                         ctx.imageSmoothingEnabled = true;
+
                         ctx.imageSmoothingQuality = "high";
 
-                        const originalWidth = img.width;
-                        const originalHeight = img.height;
-                        const sourceSize = Math.min(originalWidth, originalHeight);
-                        const sourceX = Math.round((originalWidth - sourceSize) / 2);
-                        const sourceY = Math.round((originalHeight - sourceSize) / 2);
+
+                        const originalWidth =
+                            img.width;
+
+                        const originalHeight =
+                            img.height;
+
+
+                        const sourceSize =
+                            Math.min(
+                                originalWidth,
+                                originalHeight
+                            );
+
+
+                        const sourceX =
+                            Math.round(
+                                (originalWidth - sourceSize) / 2
+                            );
+
+
+                        const sourceY =
+                            Math.round(
+                                (originalHeight - sourceSize) / 2
+                            );
+
 
                         ctx.fillStyle = "#ffffff";
-                        ctx.fillRect(0, 0, finalSize, finalSize);
 
-                        ctx.drawImage(
-                            img,
-                            sourceX,
-                            sourceY,
-                            sourceSize,
-                            sourceSize,
+                        ctx.fillRect(
                             0,
                             0,
                             finalSize,
                             finalSize
                         );
 
-                        // ঝকঝকে কোয়ালিটি রাখার জন্য 0.88 ব্যবহার করা হয়েছে
-                        const compressedImage = canvas.toDataURL("image/jpeg", 0.88);
+
+                        ctx.drawImage(
+
+                            img,
+
+                            sourceX,
+                            sourceY,
+
+                            sourceSize,
+                            sourceSize,
+
+                            0,
+                            0,
+
+                            finalSize,
+                            finalSize
+
+                        );
+
+
+                        const compressedImage =
+                            canvas.toDataURL(
+                                "image/jpeg",
+                                0.88
+                            );
+
+
                         resolve(compressedImage);
+
                     };
 
-                    img.onerror = (error) => reject(error);
+
+                    img.onerror =
+                        (error) => reject(error);
+
                 };
 
-                reader.onerror = (error) => reject(error);
+
+                reader.onerror =
+                    (error) => reject(error);
+
             });
+
         }
 
-        imageInput.addEventListener("change", async () => {
-            imagePreview.innerHTML = "";
-            const files = Array.from(imageInput.files);
 
-            if (files.length > 4) {
-                alert("সর্বোচ্চ ৪টি ছবি নির্বাচন করতে পারবেন!");
-                imageInput.value = "";
-                return;
-            }
+        // =========================================
+        // IMAGE PREVIEW
+        // =========================================
 
-            for (const file of files) {
-                const previewUrl = URL.createObjectURL(file);
-                const previewBox = document.createElement("div");
-                previewBox.className = "preview-box";
-                previewBox.innerHTML = `<img src="${previewUrl}" alt="Preview">`;
-                imagePreview.appendChild(previewBox);
-            }
-        });
+        imageInput.addEventListener(
+            "change",
+            async () => {
 
-        saveProductBtn.addEventListener("click", async () => {
-            const name = document.getElementById("prod-name").value.trim();
-            const price = document.getElementById("prod-price").value;
-            const category = document.getElementById("prod-category").value;
-            const description = document.getElementById("prod-desc").value.trim();
-            const files = imageInput.files;
+                imagePreview.innerHTML = "";
 
-            if (!name || !price) {
-                alert("দয়া করে Product Name এবং Price দিন!");
-                return;
-            }
 
-            if (Number(price) < 0) {
-                alert("সঠিক Price দিন!");
-                return;
-            }
+                const files =
+                    Array.from(
+                        imageInput.files
+                    );
 
-            if (!editDocId && files.length === 0) {
-                alert("নতুন প্রোডাক্টের জন্য অন্তত ১টি ছবি দিন!");
-                return;
-            }
 
-            if (files.length > 4) {
-                alert("সর্বোচ্চ ৪টি ছবি দিতে পারবেন!");
-                return;
-            }
+                if (files.length > 4) {
 
-            saveProductBtn.disabled = true;
+                    alert(
+                        "সর্বোচ্চ ৪টি ছবি নির্বাচন করতে পারবেন!"
+                    );
 
-            try {
-                let imageUrls = [];
+                    imageInput.value = "";
 
-                if (files.length > 0) {
-                    for (let i = 0; i < files.length; i++) {
-                        saveProductBtn.innerText = `ছবি 1:1 করা হচ্ছে (${i + 1}/${files.length})...`;
-                        const processedImage = await processImage(files[i]);
-                        imageUrls.push(processedImage);
-                    }
+                    return;
+
                 }
 
-                saveProductBtn.innerText = "Saving Product...";
 
-                if (editDocId) {
-                    const updateData = {
-                        name: name,
-                        price: Number(price),
-                        category: category,
-                        description: description,
-                        updatedAt: serverTimestamp()
-                    };
+                for (const file of files) {
 
-                    if (imageUrls.length > 0) {
-                        updateData.image = imageUrls[0];
-                        updateData.images = imageUrls;
-                    }
+                    const previewUrl =
+                        URL.createObjectURL(file);
 
-                    await updateDoc(doc(db, "products", editDocId), updateData);
-                    alert("প্রোডাক্ট সফলভাবে আপডেট হয়েছে!");
-                    resetForm();
-                } else {
-                    await addDoc(collection(db, "products"), {
-                        name: name,
-                        price: Number(price),
-                        category: category,
-                        description: description,
-                        image: imageUrls[0],
-                        images: imageUrls,
-                        createdAt: serverTimestamp(),
-                        updatedAt: serverTimestamp()
-                    });
-                    alert("প্রোডাক্ট সফলভাবে যোগ হয়েছে!");
-                    resetForm();
+
+                    const previewBox =
+                        document.createElement("div");
+
+
+                    previewBox.className =
+                        "preview-box";
+
+
+                    previewBox.innerHTML =
+                        `<img src="${previewUrl}" alt="Preview">`;
+
+
+                    imagePreview.appendChild(
+                        previewBox
+                    );
+
                 }
 
-                await loadProducts();
-            } catch (error) {
-                console.error(error);
-                alert("সমস্যা হয়েছে: " + error.message);
-            } finally {
-                saveProductBtn.disabled = false;
-                saveProductBtn.innerText = editDocId ? "Update Product" : "Add Product";
             }
-        });
+        );
+
+
+        // =========================================
+        // SAVE PRODUCT
+        // =========================================
+
+        saveProductBtn.addEventListener(
+            "click",
+            async () => {
+
+
+                const name =
+                    document
+                    .getElementById("prod-name")
+                    .value
+                    .trim();
+
+
+                const price =
+                    document
+                    .getElementById("prod-price")
+                    .value;
+
+
+                const category =
+                    document
+                    .getElementById("prod-category")
+                    .value;
+
+
+                const description =
+                    document
+                    .getElementById("prod-desc")
+                    .value
+                    .trim();
+
+
+                const files =
+                    imageInput.files;
+
+
+                if (!name || !price) {
+
+                    alert(
+                        "দয়া করে Product Name এবং Price দিন!"
+                    );
+
+                    return;
+
+                }
+
+
+                if (Number(price) < 0) {
+
+                    alert(
+                        "সঠিক Price দিন!"
+                    );
+
+                    return;
+
+                }
+
+
+                if (
+                    !editDocId &&
+                    files.length === 0
+                ) {
+
+                    alert(
+                        "নতুন প্রোডাক্টের জন্য অন্তত ১টি ছবি দিন!"
+                    );
+
+                    return;
+
+                }
+
+
+                if (files.length > 4) {
+
+                    alert(
+                        "সর্বোচ্চ ৪টি ছবি দিতে পারবেন!"
+                    );
+
+                    return;
+
+                }
+
+
+                saveProductBtn.disabled = true;
+
+
+                try {
+
+
+                    let imageUrls = [];
+
+
+                    if (files.length > 0) {
+
+
+                        for (
+                            let i = 0;
+                            i < files.length;
+                            i++
+                        ) {
+
+
+                            saveProductBtn.innerText =
+                                `ছবি Processing হচ্ছে (${i + 1}/${files.length})...`;
+
+
+                            const processedImage =
+                                await processImage(
+                                    files[i]
+                                );
+
+
+                            imageUrls.push(
+                                processedImage
+                            );
+
+                        }
+
+                    }
+
+
+                    saveProductBtn.innerText =
+                        "Saving Product...";
+
+
+                    // =====================================
+                    // UPDATE PRODUCT
+                    // =====================================
+
+                    if (editDocId) {
+
+
+                        const updateData = {
+
+                            name: name,
+
+                            price: Number(price),
+
+                            category: category,
+
+                            description: description,
+
+                            updatedAt:
+                                serverTimestamp()
+
+                        };
+
+
+                        if (
+                            imageUrls.length > 0
+                        ) {
+
+                            updateData.image =
+                                imageUrls[0];
+
+                            updateData.images =
+                                imageUrls;
+
+                        }
+
+
+                        await updateDoc(
+
+                            doc(
+                                db,
+                                "products",
+                                editDocId
+                            ),
+
+                            updateData
+
+                        );
+
+
+                        alert(
+                            "প্রোডাক্ট সফলভাবে আপডেট হয়েছে!"
+                        );
+
+
+                        resetForm();
+
+
+                    }
+
+
+                    // =====================================
+                    // ADD NEW PRODUCT
+                    // =====================================
+
+                    else {
+
+
+                        const newProduct = await addDoc(
+
+                            collection(
+                                db,
+                                "products"
+                            ),
+
+                            {
+
+                                name: name,
+
+                                price:
+                                    Number(price),
+
+                                category:
+                                    category,
+
+                                description:
+                                    description,
+
+                                image:
+                                    imageUrls[0],
+
+                                images:
+                                    imageUrls,
+
+                                createdAt:
+                                    serverTimestamp(),
+
+                                updatedAt:
+                                    serverTimestamp()
+
+                            }
+
+                        );
+
+
+                        // PRODUCT LINK
+
+                        const productURL =
+                            `${getWebsiteURL()}/?product=${newProduct.id}`;
+
+
+                        alert(
+                            "প্রোডাক্ট সফলভাবে যোগ হয়েছে!\n\n" +
+                            "Product Link:\n" +
+                            productURL
+                        );
+
+
+                        resetForm();
+
+                    }
+
+
+                    await loadProducts();
+
+
+                }
+
+
+                catch (error) {
+
+                    console.error(error);
+
+                    alert(
+                        "সমস্যা হয়েছে: " +
+                        error.message
+                    );
+
+                }
+
+
+                finally {
+
+                    saveProductBtn.disabled = false;
+
+                    saveProductBtn.innerText =
+                        editDocId
+                            ? "Update Product"
+                            : "Add Product";
+
+                }
+
+            }
+        );
+
+
+        // =========================================
+        // RESET FORM
+        // =========================================
 
         function resetForm() {
+
             editDocId = null;
-            document.getElementById("prod-name").value = "";
-            document.getElementById("prod-price").value = "";
-            document.getElementById("prod-category").value = "Guitars";
-            document.getElementById("prod-desc").value = "";
+
+
+            document
+                .getElementById("prod-name")
+                .value = "";
+
+
+            document
+                .getElementById("prod-price")
+                .value = "";
+
+
+            document
+                .getElementById("prod-category")
+                .value =
+                    "Guitars";
+
+
+            document
+                .getElementById("prod-desc")
+                .value = "";
+
+
             imageInput.value = "";
+
+
             imagePreview.innerHTML = "";
-            formTitle.innerText = "Add New Product";
-            saveProductBtn.innerText = "Add Product";
-            cancelEditBtn.classList.add("hidden");
+
+
+            formTitle.innerText =
+                "Add New Product";
+
+
+            saveProductBtn.innerText =
+                "Add Product";
+
+
+            cancelEditBtn
+                .classList
+                .add("hidden");
+
         }
 
-        cancelEditBtn.addEventListener("click", resetForm);
+
+        // =========================================
+        // CANCEL EDIT
+        // =========================================
+
+        cancelEditBtn.addEventListener(
+            "click",
+            resetForm
+        );
+
+
+        // =========================================
+        // LOAD PRODUCTS
+        // =========================================
 
         async function loadProducts() {
-            productList.innerHTML = `<p style="color:#94a3b8;">Products loading...</p>`;
+
+
+            productList.innerHTML =
+                `<p style="color:#94a3b8;">
+                    Products loading...
+                </p>`;
+
 
             try {
-                const snapshot = await getDocs(collection(db, "products"));
+
+
+                const snapshot =
+                    await getDocs(
+                        collection(
+                            db,
+                            "products"
+                        )
+                    );
+
+
                 productList.innerHTML = "";
+
+
                 cachedProducts = {};
 
+
                 if (snapshot.empty) {
-                    productList.innerHTML = `<p style="color:#94a3b8;">এখনো কোনো প্রোডাক্ট যোগ করা হয়নি।</p>`;
+
+                    productList.innerHTML =
+                        `<p style="color:#94a3b8;">
+                            এখনো কোনো প্রোডাক্ট যোগ করা হয়নি।
+                        </p>`;
+
                     return;
+
                 }
 
-                snapshot.forEach((item) => {
-                    const product = item.data();
-                    cachedProducts[item.id] = product;
 
-                    const images = Array.isArray(product.images) && product.images.length > 0
-                        ? product.images
-                        : (product.image ? [product.image] : []);
+                snapshot.forEach(
+                    (item) => {
 
-                    const div = document.createElement("div");
-                    div.className = "product-item";
 
-                    const imageGroup = document.createElement("div");
-                    imageGroup.className = "product-img-group";
+                        const product =
+                            item.data();
 
-                    images.slice(0, 4).forEach((imageUrl) => {
-                        const image = document.createElement("img");
-                        image.src = imageUrl;
-                        image.alt = product.name;
-                        image.loading = "lazy";
-                        imageGroup.appendChild(image);
-                    });
 
-                    const details = document.createElement("div");
-                    details.className = "product-details";
+                        cachedProducts[item.id] =
+                            product;
 
-                    const title = document.createElement("h4");
-                    title.textContent = product.name || "Unnamed Product";
 
-                    const meta = document.createElement("p");
-                    meta.className = "product-meta";
-                    meta.textContent = `৳${Number(product.price || 0).toLocaleString("en-BD")} | ${product.category || "No Category"} | ${images.length}টি ছবি`;
+                        const images =
+                            Array.isArray(
+                                product.images
+                            ) &&
+                            product.images.length > 0
 
-                    details.appendChild(title);
-                    details.appendChild(meta);
+                            ? product.images
 
-                    const actions = document.createElement("div");
-                    actions.className = "actions";
+                            : (
+                                product.image
+                                    ? [product.image]
+                                    : []
+                            );
 
-                    const editButton = document.createElement("button");
-                    editButton.className = "edit-btn";
-                    editButton.textContent = "Edit";
-                    editButton.addEventListener("click", () => startEdit(item.id));
 
-                    const deleteButton = document.createElement("button");
-                    deleteButton.className = "delete-btn";
-                    deleteButton.textContent = "Delete";
-                    deleteButton.addEventListener("click", () => deleteProduct(item.id));
+                        const div =
+                            document.createElement("div");
 
-                    actions.appendChild(editButton);
-                    actions.appendChild(deleteButton);
 
-                    div.appendChild(imageGroup);
-                    div.appendChild(details);
-                    div.appendChild(actions);
+                        div.className =
+                            "product-item";
 
-                    productList.appendChild(div);
-                });
-            } catch (error) {
-                console.error(error);
-                productList.innerHTML = `<p style="color:#ef4444;">প্রোডাক্ট লোড করতে সমস্যা হয়েছে।</p>`;
+
+                        // ===============================
+                        // IMAGE GROUP
+                        // ===============================
+
+                        const imageGroup =
+                            document.createElement("div");
+
+
+                        imageGroup.className =
+                            "product-img-group";
+
+
+                        images
+                            .slice(0, 4)
+                            .forEach(
+                                (imageUrl) => {
+
+
+                                    const image =
+                                        document.createElement("img");
+
+
+                                    image.src =
+                                        imageUrl;
+
+
+                                    image.alt =
+                                        product.name;
+
+
+                                    image.loading =
+                                        "lazy";
+
+
+                                    imageGroup.appendChild(
+                                        image
+                                    );
+
+
+                                }
+                            );
+
+
+                        // ===============================
+                        // DETAILS
+                        // ===============================
+
+                        const details =
+                            document.createElement("div");
+
+
+                        details.className =
+                            "product-details";
+
+
+                        const title =
+                            document.createElement("h4");
+
+
+                        title.textContent =
+                            product.name ||
+                            "Unnamed Product";
+
+
+                        const meta =
+                            document.createElement("p");
+
+
+                        meta.className =
+                            "product-meta";
+
+
+                        meta.textContent =
+                            `৳${Number(
+                                product.price || 0
+                            ).toLocaleString(
+                                "en-BD"
+                            )} | ${product.category || "No Category"} | ${images.length}টি ছবি`;
+
+
+                        // PRODUCT URL
+
+                        const productURL =
+                            `${getWebsiteURL()}/?product=${item.id}`;
+
+
+                        const linkText =
+                            document.createElement("div");
+
+
+                        linkText.className =
+                            "product-link";
+
+
+                        linkText.innerHTML =
+                            `<i class="fas fa-link"></i> ${productURL}`;
+
+
+                        details.appendChild(
+                            title
+                        );
+
+
+                        details.appendChild(
+                            meta
+                        );
+
+
+                        details.appendChild(
+                            linkText
+                        );
+
+
+                        // ===============================
+                        // ACTION BUTTONS
+                        // ===============================
+
+                        const actions =
+                            document.createElement("div");
+
+
+                        actions.className =
+                            "actions";
+
+
+                        // COPY LINK BUTTON
+
+                        const copyButton =
+                            document.createElement("button");
+
+
+                        copyButton.className =
+                            "copy-btn";
+
+
+                        copyButton.innerText =
+                            "Copy Link";
+
+
+                        copyButton.addEventListener(
+                            "click",
+                            async () => {
+
+
+                                try {
+
+
+                                    await navigator
+                                        .clipboard
+                                        .writeText(
+                                            productURL
+                                        );
+
+
+                                    const oldText =
+                                        copyButton.innerText;
+
+
+                                    copyButton.innerText =
+                                        "Copied ✓";
+
+
+                                    setTimeout(
+                                        () => {
+
+                                            copyButton.innerText =
+                                                oldText;
+
+                                        },
+                                        1500
+                                    );
+
+
+                                }
+
+
+                                catch {
+
+
+                                    prompt(
+                                        "এই Link Copy করুন:",
+                                        productURL
+                                    );
+
+
+                                }
+
+                            }
+                        );
+
+
+                        // EDIT BUTTON
+
+                        const editButton =
+                            document.createElement("button");
+
+
+                        editButton.className =
+                            "edit-btn";
+
+
+                        editButton.textContent =
+                            "Edit";
+
+
+                        editButton.addEventListener(
+                            "click",
+                            () =>
+                                startEdit(
+                                    item.id
+                                )
+                        );
+
+
+                        // DELETE BUTTON
+
+                        const deleteButton =
+                            document.createElement("button");
+
+
+                        deleteButton.className =
+                            "delete-btn";
+
+
+                        deleteButton.textContent =
+                            "Delete";
+
+
+                        deleteButton.addEventListener(
+                            "click",
+                            () =>
+                                deleteProduct(
+                                    item.id
+                                )
+                        );
+
+
+                        actions.appendChild(
+                            copyButton
+                        );
+
+
+                        actions.appendChild(
+                            editButton
+                        );
+
+
+                        actions.appendChild(
+                            deleteButton
+                        );
+
+
+                        div.appendChild(
+                            imageGroup
+                        );
+
+
+                        div.appendChild(
+                            details
+                        );
+
+
+                        div.appendChild(
+                            actions
+                        );
+
+
+                        productList.appendChild(
+                            div
+                        );
+
+
+                    }
+                );
+
+
             }
+
+
+            catch (error) {
+
+
+                console.error(error);
+
+
+                productList.innerHTML =
+                    `<p style="color:#ef4444;">
+                        প্রোডাক্ট লোড করতে সমস্যা হয়েছে।
+                    </p>`;
+
+
+            }
+
         }
+
+
+        // =========================================
+        // START EDIT
+        // =========================================
 
         function startEdit(id) {
-            const product = cachedProducts[id];
+
+
+            const product =
+                cachedProducts[id];
+
+
             if (!product) return;
 
+
             editDocId = id;
-            document.getElementById("prod-name").value = product.name || "";
-            document.getElementById("prod-price").value = product.price || "";
-            document.getElementById("prod-category").value = product.category || "Guitars";
-            document.getElementById("prod-desc").value = product.description || "";
+
+
+            document
+                .getElementById("prod-name")
+                .value =
+                    product.name || "";
+
+
+            document
+                .getElementById("prod-price")
+                .value =
+                    product.price || "";
+
+
+            document
+                .getElementById("prod-category")
+                .value =
+                    product.category ||
+                    "Guitars";
+
+
+            document
+                .getElementById("prod-desc")
+                .value =
+                    product.description ||
+                    "";
+
+
             imageInput.value = "";
+
+
             imagePreview.innerHTML = "";
-            formTitle.innerText = "Edit Product: " + (product.name || "");
-            saveProductBtn.innerText = "Update Product";
-            cancelEditBtn.classList.remove("hidden");
-            window.scrollTo({ top: 0, behavior: "smooth" });
+
+
+            formTitle.innerText =
+                "Edit Product: " +
+                (
+                    product.name ||
+                    ""
+                );
+
+
+            saveProductBtn.innerText =
+                "Update Product";
+
+
+            cancelEditBtn
+                .classList
+                .remove("hidden");
+
+
+            window.scrollTo({
+
+                top: 0,
+
+                behavior: "smooth"
+
+            });
+
         }
+
+
+        // =========================================
+        // DELETE PRODUCT
+        // =========================================
 
         async function deleteProduct(id) {
-            const confirmed = confirm("আপনি কি নিশ্চিত যে এই প্রোডাক্টটি Delete করতে চান?");
+
+
+            const confirmed =
+                confirm(
+                    "আপনি কি নিশ্চিত যে এই প্রোডাক্টটি Delete করতে চান?"
+                );
+
+
             if (!confirmed) return;
 
+
             try {
-                await deleteDoc(doc(db, "products", id));
+
+
+                await deleteDoc(
+
+                    doc(
+                        db,
+                        "products",
+                        id
+                    )
+
+                );
+
+
                 await loadProducts();
-                alert("প্রোডাক্ট Delete হয়েছে!");
-            } catch (error) {
-                alert("Delete করতে সমস্যা হয়েছে: " + error.message);
+
+
+                alert(
+                    "প্রোডাক্ট Delete হয়েছে!"
+                );
+
+
             }
+
+
+            catch (error) {
+
+
+                alert(
+                    "Delete করতে সমস্যা হয়েছে: " +
+                    error.message
+                );
+
+
+            }
+
         }
+
     </script>
+
 </head>
+
+
 <body>
-    <div class="container">
-        <!-- LOGIN SECTION -->
-        <div id="login-section" class="card">
-            <h2>Melodex Admin Login</h2>
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="login-email" placeholder="admin@example.com" autocomplete="email">
-            </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
-            </div>
-            <button id="login-btn" class="w-full">Login</button>
+
+
+<div class="container">
+
+
+    <!-- LOGIN -->
+
+    <div
+        id="login-section"
+        class="card"
+    >
+
+        <h2>
+            Melodex Admin Login
+        </h2>
+
+
+        <div class="form-group">
+
+            <label>
+                Email
+            </label>
+
+            <input
+                type="email"
+                id="login-email"
+                placeholder="admin@example.com"
+                autocomplete="email"
+            >
+
         </div>
 
-        <!-- ADMIN PANEL -->
-        <div id="admin-panel" class="hidden">
-            <div class="header-bar">
-                <h2>Melodex Admin Dashboard</h2>
-                <button id="logout-btn" class="logout-btn">Logout</button>
-            </div>
 
-            <!-- ADD / EDIT PRODUCT -->
-            <div class="card">
-                <h2 id="form-title">Add New Product</h2>
-                <div class="form-group">
-                    <label>Product Name</label>
-                    <input type="text" id="prod-name" placeholder="যেমন: Boss DS-1 Distortion">
-                </div>
-                <div class="form-group">
-                    <label>Category</label>
-                    <select id="prod-category">
-                        <option value="Guitars">Guitars</option>
-                        <option value="Pedals">Pedals</option>
-                        <option value="Pedalboards">Pedalboards</option>
-                        <option value="Stands">Stands</option>
-                        <option value="Cables & Accessories">Cables & Accessories</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Price (BDT)</label>
-                    <input type="number" id="prod-price" placeholder="যেমন: 8500" min="0">
-                </div>
-                <div class="form-group">
-                    <label>Description</label>
-                    <textarea id="prod-desc" rows="3" placeholder="প্রোডাক্টের বিস্তারিত বিবরণ..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Product Images (১ থেকে ৪টি)</label>
-                    <input type="file" id="prod-imgs" accept="image/*" multiple>
-                    <span class="hint">সব ছবি Automatically 800 × 800px এবং 1:1 Square হবে।</span>
-                    <span class="hint">Edit করার সময় নতুন ছবি না দিলে আগের ছবিগুলোই থাকবে।</span>
-                    <div id="image-preview" class="image-preview"></div>
-                </div>
-                <button id="save-product-btn" class="w-full">Add Product</button>
-                <button id="cancel-edit-btn" class="w-full cancel-btn hidden">Cancel Edit</button>
-            </div>
+        <div class="form-group">
 
-            <!-- PRODUCT LIST -->
-            <div class="card">
-                <h2>Uploaded Products</h2>
-                <div id="product-list"></div>
-            </div>
+            <label>
+                Password
+            </label>
+
+            <input
+                type="password"
+                id="login-pass"
+                placeholder="••••••••"
+                autocomplete="current-password"
+            >
+
         </div>
+
+
+        <button
+            id="login-btn"
+            class="w-full"
+        >
+
+            Login
+
+        </button>
+
+
     </div>
+
+
+
+    <!-- ADMIN PANEL -->
+
+    <div
+        id="admin-panel"
+        class="hidden"
+    >
+
+
+        <div class="header-bar">
+
+            <h2>
+                Melodex Admin Dashboard
+            </h2>
+
+
+            <button
+                id="logout-btn"
+                class="logout-btn"
+            >
+
+                Logout
+
+            </button>
+
+        </div>
+
+
+
+        <!-- ADD / EDIT PRODUCT -->
+
+        <div class="card">
+
+
+            <h2 id="form-title">
+
+                Add New Product
+
+            </h2>
+
+
+
+            <div class="form-group">
+
+                <label>
+                    Product Name
+                </label>
+
+
+                <input
+                    type="text"
+                    id="prod-name"
+                    placeholder="যেমন: Boss DS-1 Distortion"
+                >
+
+            </div>
+
+
+
+            <div class="form-group">
+
+                <label>
+                    Category
+                </label>
+
+
+                <select
+                    id="prod-category"
+                >
+
+                    <option value="Guitars">
+                        Guitars
+                    </option>
+
+                    <option value="Pedals">
+                        Pedals
+                    </option>
+
+                    <option value="Pedalboards">
+                        Pedalboards
+                    </option>
+
+                    <option value="Stands">
+                        Stands
+                    </option>
+
+                    <option value="Cables & Accessories">
+                        Cables & Accessories
+                    </option>
+
+                </select>
+
+            </div>
+
+
+
+            <div class="form-group">
+
+                <label>
+                    Price (BDT)
+                </label>
+
+
+                <input
+                    type="number"
+                    id="prod-price"
+                    placeholder="যেমন: 8500"
+                    min="0"
+                >
+
+            </div>
+
+
+
+            <div class="form-group">
+
+                <label>
+                    Description
+                </label>
+
+
+                <textarea
+                    id="prod-desc"
+                    rows="3"
+                    placeholder="প্রোডাক্টের বিস্তারিত বিবরণ..."
+                ></textarea>
+
+            </div>
+
+
+
+            <div class="form-group">
+
+                <label>
+                    Product Images (১ থেকে ৪টি)
+                </label>
+
+
+                <input
+                    type="file"
+                    id="prod-imgs"
+                    accept="image/*"
+                    multiple
+                >
+
+
+                <span class="hint">
+
+                    সব ছবি Automatically
+                    800 × 800px এবং
+                    1:1 Square হবে।
+
+                </span>
+
+
+                <span class="hint">
+
+                    Edit করার সময় নতুন ছবি
+                    না দিলে আগের ছবিগুলোই থাকবে।
+
+                </span>
+
+
+                <div
+                    id="image-preview"
+                    class="image-preview"
+                ></div>
+
+            </div>
+
+
+
+            <button
+                id="save-product-btn"
+                class="w-full"
+            >
+
+                Add Product
+
+            </button>
+
+
+
+            <button
+                id="cancel-edit-btn"
+                class="w-full cancel-btn hidden"
+            >
+
+                Cancel Edit
+
+            </button>
+
+
+        </div>
+
+
+
+        <!-- PRODUCT LIST -->
+
+        <div class="card">
+
+            <h2>
+                Uploaded Products
+            </h2>
+
+
+            <div
+                id="product-list"
+            ></div>
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
 </body>
 </html>
