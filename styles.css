@@ -435,6 +435,9 @@ button {
     padding: 100px 0;
     background: var(--black-soft);
     border-top: 1px solid var(--border);
+    /* Skip paint work for collections the visitor has not reached yet. */
+    content-visibility: auto;
+    contain-intrinsic-size: auto 1000px;
 }
 
 .alternate-section {
@@ -510,6 +513,30 @@ button {
     cursor: zoom-in;
     transition: 0.4s ease;
     background: #08080a;
+}
+
+.product-image-placeholder {
+    cursor: default;
+    color: var(--gray);
+    flex-direction: column;
+    gap: 10px;
+    font-size: 0.85rem;
+}
+
+.product-image-placeholder i {
+    color: var(--red);
+    font-size: 2rem;
+}
+
+.product-image-wrapper.image-unavailable::after {
+    content: "Image unavailable";
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: var(--gray);
+    background: #0a0a0c;
+    font-size: 0.85rem;
 }
 
 .product-card:hover .product-image {
