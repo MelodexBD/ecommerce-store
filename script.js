@@ -172,6 +172,11 @@ function isSafeImageUrl(value) {
         return false;
     }
 
+    // Base64 Data URL সমর্থন
+    if (value.startsWith("data:image/")) {
+        return true;
+    }
+
     try {
         const url = new URL(value, window.location.origin);
         return url.protocol === "https:" || url.protocol === "http:";
@@ -179,7 +184,6 @@ function isSafeImageUrl(value) {
         return false;
     }
 }
-
 function normalizeProduct(id, data) {
 
     const imageList = Array.isArray(data.images)
