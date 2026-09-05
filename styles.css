@@ -1951,3 +1951,68 @@ a:focus-visible,
   position: relative;
   z-index: 2;
 }
+/* =========================================
+   UNIVERSAL IMAGE LOADER & SPINNER
+   ========================================= */
+
+/* হোমপেজের কার্ড ও মোডাল উভয়ের র‍্যাপার */
+.product-image-wrapper,
+.product-detail-main-image-wrapper {
+  position: relative;
+  background-color: #111827 !important;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 250px;
+}
+
+/* লোডিং চলার সময় আধুনিক পালস শিমার */
+.product-image-wrapper.img-loading::before,
+.product-detail-main-image-wrapper.img-loading::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: linear-gradient(90deg, #111827 25%, #1f2937 50%, #111827 75%);
+  background-size: 200% 100%;
+  animation: melodexShimmer 1.5s infinite linear;
+  z-index: 1;
+}
+
+/* মাঝে ছোট একটি সুন্দর স্পিনার */
+.product-image-wrapper.img-loading::after,
+.product-detail-main-image-wrapper.img-loading::after {
+  content: "";
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(239, 68, 68, 0.2);
+  border-top-color: #ef4444;
+  border-radius: 50%;
+  animation: melodexSpin 0.8s infinite linear;
+  z-index: 2;
+}
+
+@keyframes melodexShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes melodexSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ছবি লোড হওয়ার আগ পর্যন্ত ব্রাউজারের কুৎসিত Alt Text লুকানো */
+.product-image,
+.product-detail-main-image {
+  opacity: 0 !important;
+  transition: opacity 0.4s ease-in-out !important;
+}
+
+/* ছবি সম্পূর্ণ প্রস্তুত হলে স্মুথলি ভেসে উঠবে */
+.product-image.img-ready,
+.product-detail-main-image.img-ready {
+  opacity: 1 !important;
+  position: relative;
+  z-index: 3;
+}
