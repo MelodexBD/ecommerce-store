@@ -352,7 +352,8 @@ function displayProductsByCategory() {
                         id="main-img-${escapeHTML(product.id)}"
                         loading="${isPriorityImage ? "eager" : "lazy"}"
                         decoding="async"
-                        fetchpriority="${isPriorityImage ? "high" : "low"}"
+                        onload="this.classList.add('img-ready'); this.parentElement.classList.remove('img-loading');"
+                        onerror="this.parentElement.classList.remove('img-loading');"
                     >
                 `
                 : `
@@ -364,7 +365,7 @@ function displayProductsByCategory() {
 
             productsHTML += `
                 <div class="product-card" data-product-card="${escapeHTML(product.id)}">
-                    <div class="product-image-wrapper">
+                    <div class="product-image-wrapper ${product.image ? 'img-loading' : ''}">
                         ${mainImageHTML}
                         <button class="image-zoom-btn" data-product-id="${escapeHTML(product.id)}" aria-label="View Image" type="button">
                             <i class="fas fa-expand"></i>
@@ -781,7 +782,7 @@ function openProductDetail(productId, updateUrl = true) {
     }
 
     // =====================================
-    // PRODUCT DATA & SHIMMER EFFECT
+    // PRODUCT DATA & PRELOAD EFFECT
     // =====================================
 
     const imageList = product.images && product.images.length > 0
@@ -791,23 +792,29 @@ function openProductDetail(productId, updateUrl = true) {
             : [];
 
     const imgWrapper = mainImage.closest('.product-detail-main-image-wrapper');
-    if (imgWrapper) imgWrapper.classList.add('loading');
-    mainImage.classList.remove('loaded');
+    if (imgWrapper) imgWrapper.classList.add('img-loading');
+    mainImage.classList.remove('img-ready');
 
     if (imageList[0]) {
-        mainImage.src = imageList[0];
-        mainImage.alt = product.name;
+        const tempImg = new Image();
+        tempImg.src = imageList[0];
 
-        mainImage.onload = () => {
-            mainImage.classList.add('loaded');
-            if (imgWrapper) imgWrapper.classList.remove('loading');
+        tempImg.onload = () => {
+            mainImage.src = imageList[0];
+            mainImage.alt = product.name;
+            mainImage.classList.add('img-ready');
+            if (imgWrapper) imgWrapper.classList.remove('img-loading');
         };
 
-        mainImage.onerror = () => {
-            if (imgWrapper) imgWrapper.classList.remove('loading');
+        tempImg.onerror = () => {
+            if (imgWrapper) imgWrapper.classList.remove('img-loading');
         };
+
+        if (tempImg.complete) {
+            tempImg.onload();
+        }
     } else {
-        if (imgWrapper) imgWrapper.classList.remove('loading');
+        if (imgWrapper) imgWrapper.classList.remove('img-loading');
     }
 
     category.textContent = getCategoryName(product.category);
@@ -829,9 +836,19 @@ function openProductDetail(productId, updateUrl = true) {
         thumb.dataset.image = imageUrl;
 
         thumb.addEventListener("click", () => {
-            if (imgWrapper) imgWrapper.classList.add('loading');
-            mainImage.classList.remove('loaded');
-            mainImage.src = imageUrl;
+            if (imgWrapper) imgWrapper.classList.add('img-loading');
+            mainImage.classList.remove('img-ready');
+
+            const tempThumbImg = new Image();
+            tempThumbImg.src = imageUrl;
+            tempThumbImg.onload = () => {
+                mainImage.src = imageUrl;
+                mainImage.classList.add('img-ready');
+                if (imgWrapper) imgWrapper.classList.remove('img-loading');
+            };
+            if (tempThumbImg.complete) {
+                tempThumbImg.onload();
+            }
 
             thumbnails.querySelectorAll(".detail-thumb").forEach(item => item.classList.remove("active"));
             thumb.classList.add("active");
