@@ -52,7 +52,6 @@ button {
     --container-width: 1240px;
 }
 
-
 /* =========================================
    NAVBAR
 ========================================= */
@@ -122,7 +121,6 @@ button {
     width: 100%;
 }
 
-
 /* =========================================
    CART ICON
 ========================================= */
@@ -156,7 +154,6 @@ button {
     font-size: 0.68rem;
     font-weight: 700;
 }
-
 
 /* =========================================
    HERO
@@ -266,7 +263,7 @@ button {
 }
 
 .whatsapp-hero-btn {
-    border: 1px solid #343438;
+    border: 1px solid #333338;
     color: var(--white);
 }
 
@@ -274,7 +271,6 @@ button {
     border-color: #25d366;
     color: #25d366;
 }
-
 
 /* =========================================
    HERO VISUAL
@@ -332,7 +328,6 @@ button {
     font-size: 10rem;
 }
 
-
 /* =========================================
    GENERAL
 ========================================= */
@@ -373,7 +368,6 @@ button {
 .section-heading p {
     color: var(--gray-light);
 }
-
 
 /* =========================================
    CATEGORIES
@@ -426,7 +420,6 @@ button {
     font-size: 0.82rem;
 }
 
-
 /* =========================================
    PRODUCT SECTIONS
 ========================================= */
@@ -435,7 +428,6 @@ button {
     padding: 100px 0;
     background: var(--black-soft);
     border-top: 1px solid var(--border);
-    /* Skip paint work for collections the visitor has not reached yet. */
     content-visibility: auto;
     contain-intrinsic-size: auto 1000px;
 }
@@ -470,7 +462,6 @@ button {
     gap: 24px;
 }
 
-
 /* =========================================
    PRODUCT CARD
 ========================================= */
@@ -488,7 +479,6 @@ button {
     border-color: rgba(229, 9, 20, 0.65);
 }
 
-
 /* =========================================
    PRODUCT IMAGE
 ========================================= */
@@ -498,7 +488,7 @@ button {
     width: 100%;
     aspect-ratio: 1 / 1;
     overflow: hidden;
-    background: #0a0a0c;
+    background: #0e121a;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -511,16 +501,20 @@ button {
     object-position: center;
     display: block;
     cursor: zoom-in;
-    transition: 0.4s ease;
-    background: #08080a;
+    transition: transform 0.4s ease;
 }
 
 .product-image-placeholder {
     cursor: default;
     color: var(--gray);
+    display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
     gap: 10px;
     font-size: 0.85rem;
+    width: 100%;
+    height: 100%;
 }
 
 .product-image-placeholder i {
@@ -565,7 +559,6 @@ button {
     background: var(--red);
     transform: scale(1.05);
 }
-
 
 /* =========================================
    PRODUCT THUMBNAILS
@@ -618,7 +611,6 @@ button {
     opacity: 1;
     transform: scale(1.06);
 }
-
 
 /* =========================================
    PRODUCT INFO
@@ -720,7 +712,6 @@ button {
     padding: 40px;
 }
 
-
 /* =========================================
    PRODUCT DETAIL MODAL
 ========================================= */
@@ -746,7 +737,6 @@ button {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
 }
-
 
 /* =========================================
    PRODUCT DETAIL BOX
@@ -787,7 +777,6 @@ button {
     background: var(--red);
 }
 
-
 /* =========================================
    PRODUCT DETAIL CLOSE
 ========================================= */
@@ -816,7 +805,6 @@ button {
     transform: rotate(90deg);
 }
 
-
 /* =========================================
    PRODUCT DETAIL CONTENT
 ========================================= */
@@ -828,9 +816,8 @@ button {
     padding: 35px;
 }
 
-
 /* =========================================
-   PRODUCT DETAIL GALLERY
+   PRODUCT DETAIL GALLERY & LOADER
 ========================================= */
 
 .product-detail-gallery {
@@ -843,11 +830,25 @@ button {
     aspect-ratio: 1 / 1;
     overflow: hidden;
     border-radius: 14px;
-    background: #08080a;
+    background: #0f172a;
     border: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: center;
+    min-height: 280px;
+}
+
+/* Spinner element */
+.product-detail-main-image-wrapper .image-loader-spinner {
+    display: none;
+    position: absolute;
+    color: #ef4444;
+    font-size: 32px;
+    z-index: 1;
+}
+
+.product-detail-main-image-wrapper.loading .image-loader-spinner {
+    display: block;
 }
 
 .product-detail-main-image {
@@ -857,15 +858,19 @@ button {
     object-position: center;
     display: block;
     cursor: zoom-in;
-    background: #08080a;
-    transition: transform 0.35s ease;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out, transform 0.35s ease;
 }
 
-.product-detail-main-image-wrapper:hover
-.product-detail-main-image {
+.product-detail-main-image.loaded {
+    opacity: 1;
+    position: relative;
+    z-index: 2;
+}
+
+.product-detail-main-image-wrapper:hover .product-detail-main-image.loaded {
     transform: scale(1.02);
 }
-
 
 /* =========================================
    PRODUCT DETAIL IMAGE ZOOM
@@ -886,14 +891,13 @@ button {
     align-items: center;
     justify-content: center;
     transition: 0.2s ease;
-    z-index: 2;
+    z-index: 5;
 }
 
 .product-detail-image-zoom:hover {
     background: var(--red);
     transform: scale(1.05);
 }
-
 
 /* =========================================
    PRODUCT DETAIL THUMBNAILS
@@ -926,11 +930,6 @@ button {
     background: var(--red);
 }
 
-
-/* IMPORTANT:
-   JavaScript uses .detail-thumb
-*/
-
 .detail-thumb {
     width: 65px;
     height: 65px;
@@ -952,7 +951,6 @@ button {
     opacity: 1;
     transform: scale(1.04);
 }
-
 
 /* =========================================
    PRODUCT DETAIL INFO
@@ -1014,7 +1012,6 @@ button {
     word-break: break-word;
 }
 
-
 /* =========================================
    PRODUCT DETAIL ACTIONS
 ========================================= */
@@ -1040,11 +1037,6 @@ button {
     transition: 0.2s ease;
 }
 
-
-/* =========================================
-   DETAIL ADD TO CART
-========================================= */
-
 .detail-cart-btn {
     border: none;
     background: var(--red);
@@ -1055,11 +1047,6 @@ button {
     background: var(--red-light);
     transform: translateY(-2px);
 }
-
-
-/* =========================================
-   DETAIL WHATSAPP
-========================================= */
 
 .detail-whatsapp-btn {
     border: 1px solid #333338;
@@ -1072,7 +1059,6 @@ button {
     color: #25d366;
     transform: translateY(-2px);
 }
-
 
 /* =========================================
    PRODUCT DETAIL SHARE
@@ -1114,7 +1100,6 @@ button {
     background: #1e1e22;
     transform: translateY(-2px);
 }
-
 
 /* =========================================
    ABOUT
@@ -1172,7 +1157,6 @@ button {
     color: var(--gray-light);
     font-size: 0.85rem;
 }
-
 
 /* =========================================
    CONTACT
@@ -1241,7 +1225,6 @@ button {
     background: #1877f2;
 }
 
-
 /* =========================================
    FOOTER
 ========================================= */
@@ -1291,7 +1274,6 @@ button {
     border-top: 1px solid var(--border);
     color: #666;
 }
-
 
 /* =========================================
    CART OVERLAY & SIDEBAR
@@ -1485,7 +1467,6 @@ button {
     transform: translateY(-2px);
 }
 
-
 /* =========================================
    IMAGE MODAL
 ========================================= */
@@ -1531,7 +1512,6 @@ button {
     background: var(--red);
 }
 
-
 /* =========================================
    NOTIFICATIONS
 ========================================= */
@@ -1551,24 +1531,15 @@ button {
     color: white;
     font-weight: 600;
     animation: notificationIn 0.3s ease;
-    box-shadow:
-        0 10px 30px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
 .notification.success {
-    background: linear-gradient(
-        135deg,
-        #25d366,
-        #1ea653
-    );
+    background: linear-gradient(135deg, #25d366, #1ea653);
 }
 
 .notification.error {
-    background: linear-gradient(
-        135deg,
-        var(--red),
-        #a8070f
-    );
+    background: linear-gradient(135deg, var(--red), #a8070f);
 }
 
 .notification.hide {
@@ -1576,35 +1547,28 @@ button {
 }
 
 @keyframes notificationIn {
-
     from {
         opacity: 0;
         transform: translateX(100px);
     }
-
     to {
         opacity: 1;
         transform: translateX(0);
     }
-
 }
 
 @keyframes notificationOut {
-
     to {
         opacity: 0;
         transform: translateX(100px);
     }
-
 }
-
 
 /* =========================================
    RESPONSIVE - 1000
 ========================================= */
 
 @media (max-width: 1000px) {
-
     .hero-container {
         grid-template-columns: 1fr;
         text-align: center;
@@ -1630,16 +1594,13 @@ button {
     .product-detail-content {
         gap: 25px;
     }
-
 }
-
 
 /* =========================================
    RESPONSIVE - 768
 ========================================= */
 
 @media (max-width: 768px) {
-
     .nav-container {
         padding: 18px 20px;
         flex-wrap: wrap;
@@ -1692,11 +1653,6 @@ button {
         padding: 75px 0;
     }
 
-
-    /* =====================================
-       PRODUCT DETAIL MOBILE
-    ===================================== */
-
     .product-detail-modal {
         padding: 12px;
         align-items: center;
@@ -1748,16 +1704,13 @@ button {
         flex: 1;
         min-width: 180px;
     }
-
 }
-
 
 /* =========================================
    RESPONSIVE - 480
 ========================================= */
 
 @media (max-width: 480px) {
-
     .logo {
         font-size: 1.45rem;
         letter-spacing: 4px;
@@ -1807,11 +1760,6 @@ button {
         min-width: auto;
         width: 100%;
     }
-
-
-    /* =====================================
-       PRODUCT DETAIL SMALL MOBILE
-    ===================================== */
 
     .product-detail-modal {
         padding: 7px;
@@ -1885,12 +1833,10 @@ button {
         right: 10px;
         bottom: 10px;
     }
-
 }
 
-
 /* =========================================
-   ACCESSIBILITY / FOCUS
+   ACCESSIBILITY & REDUCED MOTION
 ========================================= */
 
 button:focus-visible,
@@ -1900,13 +1846,7 @@ a:focus-visible,
     outline-offset: 3px;
 }
 
-
-/* =========================================
-   REDUCED MOTION
-========================================= */
-
 @media (prefers-reduced-motion: reduce) {
-
     *,
     *::before,
     *::after {
@@ -1915,104 +1855,4 @@ a:focus-visible,
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
     }
-
-}
-/* প্রফেশনাল ইমেজ লোডার ও স্কেলিটন ইফেক্ট */
-.product-detail-main-image-wrapper {
-  position: relative;
-  background-color: #1e293b;
-  overflow: hidden;
-}
-
-/* লোড হওয়ার আগ পর্যন্ত শিমার এনিমেশন */
-.product-detail-main-image-wrapper.loading::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  z-index: 1;
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-/* ইমেজ পুরোপুরি লোড না হওয়া পর্যন্ত ইনভিজিবল রাখা যাতে ব্রোকেন টেক্সট না দেখা যায় */
-.product-detail-main-image {
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
-}
-
-.product-detail-main-image.loaded {
-  opacity: 1;
-  position: relative;
-  z-index: 2;
-}
-/* =========================================
-   UNIVERSAL IMAGE LOADER & SPINNER
-   ========================================= */
-
-/* হোমপেজের কার্ড ও মোডাল উভয়ের র‍্যাপার */
-.product-image-wrapper,
-.product-detail-main-image-wrapper {
-  position: relative;
-  background-color: #111827 !important;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 250px;
-}
-
-/* লোডিং চলার সময় আধুনিক পালস শিমার */
-.product-image-wrapper.img-loading::before,
-.product-detail-main-image-wrapper.img-loading::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: linear-gradient(90deg, #111827 25%, #1f2937 50%, #111827 75%);
-  background-size: 200% 100%;
-  animation: melodexShimmer 1.5s infinite linear;
-  z-index: 1;
-}
-
-/* মাঝে ছোট একটি সুন্দর স্পিনার */
-.product-image-wrapper.img-loading::after,
-.product-detail-main-image-wrapper.img-loading::after {
-  content: "";
-  position: absolute;
-  width: 28px;
-  height: 28px;
-  border: 3px solid rgba(239, 68, 68, 0.2);
-  border-top-color: #ef4444;
-  border-radius: 50%;
-  animation: melodexSpin 0.8s infinite linear;
-  z-index: 2;
-}
-
-@keyframes melodexShimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-@keyframes melodexSpin {
-  to { transform: rotate(360deg); }
-}
-
-/* ছবি লোড হওয়ার আগ পর্যন্ত ব্রাউজারের কুৎসিত Alt Text লুকানো */
-.product-image,
-.product-detail-main-image {
-  opacity: 0 !important;
-  transition: opacity 0.4s ease-in-out !important;
-}
-
-/* ছবি সম্পূর্ণ প্রস্তুত হলে স্মুথলি ভেসে উঠবে */
-.product-image.img-ready,
-.product-detail-main-image.img-ready {
-  opacity: 1 !important;
-  position: relative;
-  z-index: 3;
 }
