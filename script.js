@@ -11,6 +11,7 @@ import {
     initializeFirestore,
     collection,
     getDocs,
+    getDocsFromCache,
     enableIndexedDbPersistence
 } from
 "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
@@ -38,7 +39,9 @@ const WHATSAPP_NUMBER = "8801310863206";
 const app = initializeApp(firebaseConfig);
 
 const db = initializeFirestore(app, {
-    experimentalForceLongPolling: true
+    // Long polling adds latency for ordinary browsers. The SDK selects the
+    // fastest supported transport and IndexedDB keeps a local Firestore cache.
+    cacheSizeBytes: 40 * 1024 * 1024
 });
 
 enableIndexedDbPersistence(db).catch(() => {
@@ -54,6 +57,16 @@ let cart = [];
 
 let currentDetailProduct = null;
 let productDetailModal = null;
+
+const PRODUCT_CACHE_KEY = "melodex-products-v2";
+const PRODUCT_CACHE_MAX_AGE = 24 * 60 * 60 * 1000;
+const PRODUCT_CATEGORIES = [
+    "guitars",
+    "pedals",
+    "pedalboards",
+    "stands",
+    "cables"
+];
 
 // =========================================
 // CATEGORY HELPERS
@@ -153,113 +166,124 @@ function getPublicProductUrl(productId) {
 // FETCH PRODUCTS FROM FIREBASE
 // =========================================
 
-async function fetchProducts() {
+function isSafeImageUrl(value) {
 
-    showProductLoading();
+    if (typeof value !== "string" || !value.trim()) {
+        return false;
+    }
 
     try {
+        const url = new URL(value, window.location.origin);
+        return url.protocol === "https:" || url.protocol === "http:";
+    } catch {
+        return false;
+    }
+}
 
-        const querySnapshot =
-            await getDocs(
-                collection(
-                    db,
-                    "products"
-                )
-            );
+function normalizeProduct(id, data) {
 
-        const fbProducts = [];
+    const imageList = Array.isArray(data.images)
+        ? data.images.filter(isSafeImageUrl)
+        : [];
 
-        querySnapshot.forEach(
-            docSnap => {
+    if (imageList.length === 0 && isSafeImageUrl(data.image)) {
+        imageList.push(data.image);
+    }
 
-                const data =
-                    docSnap.data();
+    return {
+        id: String(id),
+        name: String(data.name || "Unnamed Product").trim().slice(0, 160),
+        category: normalizeCategory(data.category),
+        price: Math.max(0, Number(data.price) || 0),
+        image: imageList[0] || "",
+        images: imageList,
+        description: String(data.description || "").trim().slice(0, 2000)
+    };
+}
 
-                let imageList = [];
+function productsFromSnapshot(querySnapshot) {
 
-                if (
-                    Array.isArray(
-                        data.images
-                    ) &&
-                    data.images.length > 0
-                ) {
+    return querySnapshot.docs
+        .map(docSnap => normalizeProduct(docSnap.id, docSnap.data()))
+        .sort((a, b) => a.name.localeCompare(b.name, "en"));
+}
 
-                    imageList =
-                        data.images.filter(
-                            img =>
-                                typeof img === "string" &&
-                                img.trim() !== ""
-                        );
-                }
+function readProductCache() {
 
-                if (
-                    imageList.length === 0 &&
-                    data.image
-                ) {
+    try {
+        const cached = JSON.parse(localStorage.getItem(PRODUCT_CACHE_KEY));
 
-                    imageList = [
-                        data.image
-                    ];
-                }
+        if (!cached || !Array.isArray(cached.products) ||
+            Date.now() - cached.savedAt > PRODUCT_CACHE_MAX_AGE) {
+            return [];
+        }
 
-                fbProducts.push({
+        return cached.products.map(product => normalizeProduct(product.id, product));
+    } catch {
+        return [];
+    }
+}
 
-                    id: docSnap.id,
+function writeProductCache(items) {
 
-                    name:
-                        data.name ||
-                        "Unnamed Product",
+    try {
+        localStorage.setItem(PRODUCT_CACHE_KEY, JSON.stringify({
+            savedAt: Date.now(),
+            products: items
+        }));
+    } catch {
+        // Storage can be unavailable in private browsing; Firestore still works.
+    }
+}
 
-                    category:
-                        normalizeCategory(
-                            data.category
-                        ),
+function renderProducts(items) {
 
-                    price:
-                        Number(data.price) ||
-                        0,
+    products = items;
+    updateProductCount();
+    displayProductsByCategory();
+    initializeProductDetailFromUrl();
+}
 
-                    image:
-                        imageList[0] || "",
+async function fetchProducts() {
 
-                    images:
-                        imageList,
+    const cachedProducts = readProductCache();
 
-                    description:
-                        data.description ||
-                        ""
-                });
+    if (cachedProducts.length > 0) {
+        // This path is synchronous and normally paints products in under a second.
+        renderProducts(cachedProducts);
+    } else {
+        showProductLoading();
+
+        // IndexedDB may be warm even when localStorage was cleared.
+        try {
+            const snapshot = await getDocsFromCache(collection(db, "products"));
+            const persistedProducts = productsFromSnapshot(snapshot);
+            if (persistedProducts.length > 0) {
+                renderProducts(persistedProducts);
             }
-        );
+        } catch {
+            // No Firestore cache exists yet; continue with the server request.
+        }
+    }
 
-        products = fbProducts;
+    try {
+        const querySnapshot = await getDocs(collection(db, "products"));
+        const freshProducts = productsFromSnapshot(querySnapshot);
 
-        updateProductCount();
+        writeProductCache(freshProducts);
 
-        displayProductsByCategory();
+        // Avoid an unnecessary DOM rebuild when the cache is already current.
+        if (JSON.stringify(freshProducts) !== JSON.stringify(products)) {
+            renderProducts(freshProducts);
+        }
 
-        /*
-            If URL contains:
-
-            ?product=FIRESTORE_DOCUMENT_ID
-
-            open that product automatically.
-        */
-
-        initializeProductDetailFromUrl();
-
-        console.log(
-            `Melodex: ${products.length} products loaded successfully.`
-        );
-
+        console.log(`Melodex: ${freshProducts.length} products synced.`);
     } catch (error) {
+        console.error("Firebase fetch error:", error);
 
-        console.error(
-            "Firebase fetch error:",
-            error
-        );
-
-        showProductLoadError();
+        if (products.length === 0) {
+            showProductLoadError();
+        }
     }
 }
 
@@ -497,10 +521,30 @@ function displayProductsByCategory() {
                         `;
                     }
 
-                    const imgLoading =
-                        productIndex < 4
-                            ? "eager"
-                            : "lazy";
+                    // Only the first visible cards may compete for bandwidth.
+                    // Loading every category eagerly delayed the page's first paint.
+                    const isPriorityImage =
+                        category === "guitars" &&
+                        productIndex < 2;
+
+                    const mainImageHTML = product.image
+                        ? `
+                            <img
+                                src="${escapeHTML(product.image)}"
+                                alt="${escapeHTML(product.name)}"
+                                class="product-image"
+                                id="main-img-${escapeHTML(product.id)}"
+                                loading="${isPriorityImage ? "eager" : "lazy"}"
+                                decoding="async"
+                                fetchpriority="${isPriorityImage ? "high" : "low"}"
+                            >
+                        `
+                        : `
+                            <div class="product-image product-image-placeholder" role="img" aria-label="No image available">
+                                <i class="fas fa-image" aria-hidden="true"></i>
+                                <span>Image coming soon</span>
+                            </div>
+                        `;
 
                     productsHTML += `
                         <div
@@ -510,13 +554,7 @@ function displayProductsByCategory() {
 
                             <div class="product-image-wrapper">
 
-                                <img
-                                    src="${escapeHTML(product.image)}"
-                                    alt="${escapeHTML(product.name)}"
-                                    class="product-image"
-                                    id="main-img-${escapeHTML(product.id)}"
-                                    loading="${imgLoading}"
-                                >
+                                ${mainImageHTML}
 
                                 <button
                                     class="image-zoom-btn"
@@ -601,6 +639,21 @@ function displayProductsByCategory() {
 // =========================================
 
 function initializeProductEvents() {
+
+    document.addEventListener(
+        "error",
+        event => {
+            if (!(event.target instanceof HTMLImageElement) ||
+                !event.target.matches(".product-image")) {
+                return;
+            }
+
+            event.target.alt = "Product image unavailable";
+            event.target.closest(".product-image-wrapper")
+                ?.classList.add("image-unavailable");
+        },
+        true
+    );
 
     document.addEventListener(
         "click",
@@ -697,7 +750,7 @@ function initializeProductEvents() {
                     ".product-image"
                 );
 
-            if (prodImg) {
+            if (prodImg instanceof HTMLImageElement) {
 
                 openImageModal(
                     prodImg.src,
