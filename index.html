@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 
 <head>
 
@@ -18,49 +18,9 @@
     >
 
 
-    <!-- =========================================================
-         AUTO-REDIRECT FROM FACEBOOK / MESSENGER IN-APP BROWSER
-         TO CHROME ON ANDROID
-         ========================================================= -->
-
-    <script>
-
-        (function () {
-
-            const ua =
-                navigator.userAgent ||
-                navigator.vendor ||
-                window.opera;
-
-
-            const isFB =
-                ua.indexOf("FBAN") > -1 ||
-                ua.indexOf("FBAV") > -1 ||
-                ua.indexOf("Messenger") > -1;
-
-
-            if (
-                isFB &&
-                /Android/i.test(ua)
-            ) {
-
-                const currentUrl =
-                    window.location.href.replace(
-                        /https?:\/\//,
-                        ""
-                    );
-
-
-                window.location.href =
-                    "intent://" +
-                    currentUrl +
-                    "#Intent;scheme=https;package=com.android.chrome;end";
-
-            }
-
-        })();
-
-    </script>
+    <meta name="theme-color" content="#080808">
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 
 
     <!-- =========================================================
@@ -69,7 +29,7 @@
 
     <link
         rel="stylesheet"
-        href="styles.css?v=3.0"
+        href="styles.css?v=4.0"
     >
 
 
@@ -575,14 +535,14 @@
 
 
                     <h2>
-                        Pedalboards & Power
+                        Pedalboards
                     </h2>
 
                 </div>
 
 
                 <p>
-                    Keep your pedals organized, powered and ready.
+                    Organize your pedals and build your perfect setup.
                 </p>
 
 
@@ -619,7 +579,7 @@
                 <div>
 
                     <span class="section-tag">
-                        KEEP IT SAFE
+                        PERFORMANCE ESSENTIALS
                     </span>
 
 
@@ -631,7 +591,7 @@
 
 
                 <p>
-                    Strong and reliable support for your instruments.
+                    Reliable support for your instruments and equipment.
                 </p>
 
 
@@ -680,7 +640,7 @@
 
 
                 <p>
-                    Essential accessories for a clean and reliable setup.
+                    Essential gear for every musician and creator.
                 </p>
 
 
@@ -691,6 +651,135 @@
                 class="products-grid"
                 id="cablesContainer"
             ></div>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =========================================================
+         WHY CHOOSE MELODEX
+         ========================================================= -->
+
+    <section class="features-section">
+
+        <div class="container">
+
+
+            <div class="section-heading">
+
+                <span class="section-tag">
+                    WHY CHOOSE US
+                </span>
+
+
+                <h2>
+                    Built for <span>musicians.</span>
+                </h2>
+
+
+                <p>
+                    Everything you need to build your sound in one place.
+                </p>
+
+
+            </div>
+
+
+
+            <div class="features-grid">
+
+
+                <div class="feature-card">
+
+                    <div class="feature-icon">
+
+                        <i class="fas fa-gem"></i>
+
+                    </div>
+
+
+                    <h3>
+                        Quality Products
+                    </h3>
+
+
+                    <p>
+                        Carefully selected musical gear and accessories.
+                    </p>
+
+                </div>
+
+
+
+                <div class="feature-card">
+
+                    <div class="feature-icon">
+
+                        <i class="fas fa-shield-alt"></i>
+
+                    </div>
+
+
+                    <h3>
+                        Trusted Service
+                    </h3>
+
+
+                    <p>
+                        Honest information and reliable customer support.
+                    </p>
+
+                </div>
+
+
+
+                <div class="feature-card">
+
+                    <div class="feature-icon">
+
+                        <i class="fab fa-whatsapp"></i>
+
+                    </div>
+
+
+                    <h3>
+                        Easy Ordering
+                    </h3>
+
+
+                    <p>
+                        Order your favorite products directly on WhatsApp.
+                    </p>
+
+                </div>
+
+
+
+                <div class="feature-card">
+
+                    <div class="feature-icon">
+
+                        <i class="fas fa-headset"></i>
+
+                    </div>
+
+
+                    <h3>
+                        Customer Support
+                    </h3>
+
+
+                    <p>
+                        Get help whenever you need it.
+                    </p>
+
+                </div>
+
+
+            </div>
 
 
         </div>
@@ -711,10 +800,10 @@
         <div class="container">
 
 
-            <div class="about-content">
+            <div class="about-container">
 
 
-                <div class="about-left">
+                <div class="about-content">
 
 
                     <span class="section-tag">
@@ -1250,7 +1339,7 @@
 
     <script
         type="module"
-        src="script.js?v=3.0"
+        src="script.js?v=4.0"
     ></script>
 
 
