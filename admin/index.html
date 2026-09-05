@@ -11,8 +11,12 @@
         rel="stylesheet"
     >
 
-    <style>
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    >
 
+    <style>
         * {
             box-sizing: border-box;
             font-family: "Poppins", sans-serif;
@@ -179,10 +183,28 @@
         .product-meta {
             font-size: 13px;
             color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .product-link {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            font-size: 11px;
+            color: #64748b;
+            word-break: break-all;
+            line-height: 1.5;
+        }
+
+        .product-link i {
+            color: #ef4444;
+            margin-top: 3px;
+            flex-shrink: 0;
         }
 
         .actions {
             display: flex;
+            flex-wrap: wrap;
             gap: 8px;
             flex-shrink: 0;
         }
@@ -206,6 +228,16 @@
 
         .delete-btn:hover {
             background: #b91c1c;
+        }
+
+        .copy-btn {
+            background: #2563eb;
+            padding: 8px 13px;
+            font-size: 13px;
+        }
+
+        .copy-btn:hover {
+            background: #1d4ed8;
         }
 
         .cancel-btn {
@@ -244,12 +276,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-        }
-
-        .status-text {
-            margin-top: 10px;
-            font-size: 13px;
-            color: #94a3b8;
+            aspect-ratio: 1 / 1;
         }
 
         @media (max-width: 700px) {
@@ -280,18 +307,1952 @@
                 max-width: 100%;
             }
 
+            .product-details {
+                width: 100%;
+            }
+
             .actions {
                 width: 100%;
             }
 
             .edit-btn,
-            .delete-btn {
+            .delete-btn,
+            .copy-btn {
                 flex: 1;
+            }
+        }
+    </style>
+
+
+    <script type="module">
+
+        // =========================================================
+        // OLD / WRONG ADMIN PRODUCT LINK REDIRECT
+        // =========================================================
+        // যদি কেউ পুরোনো:
+        // /admin/?product=PRODUCT_ID
+        // অথবা
+        // /admin/index.html?product=PRODUCT_ID
+        // খুলে, তাকে Public Product Page-এ পাঠাবে।
+        // =========================================================
+
+        (function redirectOldProductLink() {
+
+            const params =
+                new URLSearchParams(
+                    window.location.search
+                );
+
+            const productId =
+                params.get("product");
+
+            if (!productId) {
+                return;
+            }
+
+            const publicURL =
+                new URL(
+                    "../",
+                    window.location.href
+                );
+
+            publicURL.search = "";
+            publicURL.hash = "";
+
+            publicURL.searchParams.set(
+                "product",
+                productId
+            );
+
+            window.location.replace(
+                publicURL.href
+            );
+
+        })();
+
+
+        // =========================================================
+        // FIREBASE IMPORTS
+        // =========================================================
+
+        import {
+            initializeApp
+        } from
+        "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+
+
+        import {
+            getAuth,
+            signInWithEmailAndPassword,
+            onAuthStateChanged,
+            signOut
+        } from
+        "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+
+
+        import {
+            getFirestore,
+            collection,
+            addDoc,
+            getDocs,
+            deleteDoc,
+            doc,
+            updateDoc,
+            serverTimestamp
+        } from
+        "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+
+        // =========================================================
+        // FIREBASE CONFIG
+        // =========================================================
+
+        const firebaseConfig = {
+
+            apiKey:
+                "AIzaSyBTVoMKlJeRWsgIL5gCdWCHYdx3w8brWHQ",
+
+            authDomain:
+                "melodex-store.firebaseapp.com",
+
+            projectId:
+                "melodex-store",
+
+            storageBucket:
+                "melodex-store.firebasestorage.app",
+
+            messagingSenderId:
+                "563447283369",
+
+            appId:
+                "1:563447283369:web:a999e89adf7380ec4733b8",
+
+            measurementId:
+                "G-G133358KKB"
+
+        };
+
+
+        // =========================================================
+        // FIREBASE INITIALIZATION
+        // =========================================================
+
+        const app =
+            initializeApp(
+                firebaseConfig
+            );
+
+        const auth =
+            getAuth(app);
+
+        const db =
+            getFirestore(app);
+
+
+        // =========================================================
+        // VARIABLES
+        // =========================================================
+
+        let editDocId = null;
+
+        let cachedProducts = {};
+
+
+        // =========================================================
+        // DOM ELEMENTS
+        // =========================================================
+
+        const loginSection =
+            document.getElementById(
+                "login-section"
+            );
+
+
+        const adminPanel =
+            document.getElementById(
+                "admin-panel"
+            );
+
+
+        const loginBtn =
+            document.getElementById(
+                "login-btn"
+            );
+
+
+        const logoutBtn =
+            document.getElementById(
+                "logout-btn"
+            );
+
+
+        const saveProductBtn =
+            document.getElementById(
+                "save-product-btn"
+            );
+
+
+        const cancelEditBtn =
+            document.getElementById(
+                "cancel-edit-btn"
+            );
+
+
+        const productList =
+            document.getElementById(
+                "product-list"
+            );
+
+
+        const formTitle =
+            document.getElementById(
+                "form-title"
+            );
+
+
+        const imageInput =
+            document.getElementById(
+                "prod-imgs"
+            );
+
+
+        const imagePreview =
+            document.getElementById(
+                "image-preview"
+            );
+
+
+        // =========================================================
+        // PUBLIC WEBSITE URL
+        // =========================================================
+        // Admin URL:
+        // https://melodexbd.github.io/ecommerce-store/admin/
+        //
+        // Public URL:
+        // https://melodexbd.github.io/ecommerce-store/
+        // =========================================================
+
+        function getPublicWebsiteURL() {
+
+            const publicURL =
+                new URL(
+                    "../",
+                    window.location.href
+                );
+
+            publicURL.search = "";
+            publicURL.hash = "";
+
+            return publicURL.href;
+
+        }
+
+
+        // =========================================================
+        // PUBLIC PRODUCT URL
+        // =========================================================
+
+        function getPublicProductURL(productId) {
+
+            const productURL =
+                new URL(
+                    "../",
+                    window.location.href
+                );
+
+            productURL.search = "";
+            productURL.hash = "";
+
+            productURL.searchParams.set(
+                "product",
+                productId
+            );
+
+            return productURL.href;
+
+        }
+
+
+        // =========================================================
+        // COPY TEXT FALLBACK
+        // =========================================================
+
+        async function copyText(text) {
+
+            if (
+                navigator.clipboard &&
+                window.isSecureContext
+            ) {
+
+                await navigator.clipboard.writeText(
+                    text
+                );
+
+                return true;
+
+            }
+
+
+            const textarea =
+                document.createElement(
+                    "textarea"
+                );
+
+            textarea.value = text;
+
+            textarea.style.position =
+                "fixed";
+
+            textarea.style.left =
+                "-9999px";
+
+            textarea.style.top =
+                "0";
+
+            textarea.style.opacity =
+                "0";
+
+            document.body.appendChild(
+                textarea
+            );
+
+            textarea.focus();
+
+            textarea.select();
+
+            textarea.setSelectionRange(
+                0,
+                textarea.value.length
+            );
+
+
+            const copied =
+                document.execCommand(
+                    "copy"
+                );
+
+
+            document.body.removeChild(
+                textarea
+            );
+
+
+            return copied;
+
+        }
+
+
+        // =========================================================
+        // AUTH STATE
+        // =========================================================
+
+        onAuthStateChanged(
+            auth,
+            (user) => {
+
+                if (user) {
+
+                    loginSection.classList.add(
+                        "hidden"
+                    );
+
+                    adminPanel.classList.remove(
+                        "hidden"
+                    );
+
+                    loadProducts();
+
+                }
+
+                else {
+
+                    loginSection.classList.remove(
+                        "hidden"
+                    );
+
+                    adminPanel.classList.add(
+                        "hidden"
+                    );
+
+                }
+
+            }
+        );
+
+
+        // =========================================================
+        // LOGIN
+        // =========================================================
+
+        loginBtn.addEventListener(
+            "click",
+            async () => {
+
+                const email =
+                    document
+                        .getElementById(
+                            "login-email"
+                        )
+                        .value
+                        .trim();
+
+
+                const password =
+                    document
+                        .getElementById(
+                            "login-pass"
+                        )
+                        .value;
+
+
+                if (
+                    !email ||
+                    !password
+                ) {
+
+                    alert(
+                        "Email এবং Password দিন!"
+                    );
+
+                    return;
+
+                }
+
+
+                loginBtn.disabled =
+                    true;
+
+                loginBtn.innerText =
+                    "Logging in...";
+
+
+                try {
+
+                    await signInWithEmailAndPassword(
+                        auth,
+                        email,
+                        password
+                    );
+
+                }
+
+                catch (error) {
+
+                    console.error(
+                        error
+                    );
+
+                    alert(
+                        "লগইন ব্যর্থ হয়েছে:\n\n" +
+                        error.message
+                    );
+
+                }
+
+                finally {
+
+                    loginBtn.disabled =
+                        false;
+
+                    loginBtn.innerText =
+                        "Login";
+
+                }
+
+            }
+        );
+
+
+        // =========================================================
+        // ENTER KEY LOGIN
+        // =========================================================
+
+        document
+            .getElementById("login-pass")
+            .addEventListener(
+                "keydown",
+                (event) => {
+
+                    if (
+                        event.key === "Enter"
+                    ) {
+
+                        loginBtn.click();
+
+                    }
+
+                }
+            );
+
+
+        // =========================================================
+        // LOGOUT
+        // =========================================================
+
+        logoutBtn.addEventListener(
+            "click",
+            async () => {
+
+                try {
+
+                    await signOut(auth);
+
+                }
+
+                catch (error) {
+
+                    console.error(
+                        error
+                    );
+
+                    alert(
+                        "Logout করতে সমস্যা হয়েছে।"
+                    );
+
+                }
+
+            }
+        );
+
+
+        // =========================================================
+        // IMAGE PROCESSING
+        // 800 x 800 HD SQUARE
+        // =========================================================
+
+        function processImage(file) {
+
+            return new Promise(
+                (resolve, reject) => {
+
+                    const reader =
+                        new FileReader();
+
+
+                    reader.onload =
+                        (event) => {
+
+                            const img =
+                                new Image();
+
+
+                            img.onload =
+                                () => {
+
+                                    const finalSize =
+                                        800;
+
+
+                                    const canvas =
+                                        document.createElement(
+                                            "canvas"
+                                        );
+
+
+                                    canvas.width =
+                                        finalSize;
+
+                                    canvas.height =
+                                        finalSize;
+
+
+                                    const ctx =
+                                        canvas.getContext(
+                                            "2d"
+                                        );
+
+
+                                    ctx.imageSmoothingEnabled =
+                                        true;
+
+                                    ctx.imageSmoothingQuality =
+                                        "high";
+
+
+                                    const originalWidth =
+                                        img.width;
+
+
+                                    const originalHeight =
+                                        img.height;
+
+
+                                    const sourceSize =
+                                        Math.min(
+                                            originalWidth,
+                                            originalHeight
+                                        );
+
+
+                                    const sourceX =
+                                        Math.round(
+                                            (
+                                                originalWidth -
+                                                sourceSize
+                                            ) / 2
+                                        );
+
+
+                                    const sourceY =
+                                        Math.round(
+                                            (
+                                                originalHeight -
+                                                sourceSize
+                                            ) / 2
+                                        );
+
+
+                                    ctx.fillStyle =
+                                        "#ffffff";
+
+
+                                    ctx.fillRect(
+                                        0,
+                                        0,
+                                        finalSize,
+                                        finalSize
+                                    );
+
+
+                                    ctx.drawImage(
+
+                                        img,
+
+                                        sourceX,
+                                        sourceY,
+
+                                        sourceSize,
+                                        sourceSize,
+
+                                        0,
+                                        0,
+
+                                        finalSize,
+                                        finalSize
+
+                                    );
+
+
+                                    const compressedImage =
+                                        canvas.toDataURL(
+                                            "image/jpeg",
+                                            0.88
+                                        );
+
+
+                                    resolve(
+                                        compressedImage
+                                    );
+
+                                };
+
+
+                            img.onerror =
+                                (error) => {
+
+                                    reject(
+                                        error
+                                    );
+
+                                };
+
+
+                            img.src =
+                                event.target.result;
+
+                        };
+
+
+                    reader.onerror =
+                        (error) => {
+
+                            reject(
+                                error
+                            );
+
+                        };
+
+
+                    reader.readAsDataURL(
+                        file
+                    );
+
+                }
+            );
+
+        }
+
+
+        // =========================================================
+        // IMAGE PREVIEW
+        // =========================================================
+
+        imageInput.addEventListener(
+            "change",
+            async () => {
+
+                imagePreview.innerHTML =
+                    "";
+
+
+                const files =
+                    Array.from(
+                        imageInput.files
+                    );
+
+
+                if (
+                    files.length > 4
+                ) {
+
+                    alert(
+                        "সর্বোচ্চ ৪টি ছবি নির্বাচন করতে পারবেন!"
+                    );
+
+                    imageInput.value =
+                        "";
+
+                    return;
+
+                }
+
+
+                files.forEach(
+                    (file) => {
+
+                        const previewUrl =
+                            URL.createObjectURL(
+                                file
+                            );
+
+
+                        const previewBox =
+                            document.createElement(
+                                "div"
+                            );
+
+
+                        previewBox.className =
+                            "preview-box";
+
+
+                        const img =
+                            document.createElement(
+                                "img"
+                            );
+
+
+                        img.src =
+                            previewUrl;
+
+                        img.alt =
+                            "Preview";
+
+                        img.loading =
+                            "lazy";
+
+
+                        previewBox.appendChild(
+                            img
+                        );
+
+
+                        imagePreview.appendChild(
+                            previewBox
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+
+        // =========================================================
+        // SAVE PRODUCT
+        // =========================================================
+
+        saveProductBtn.addEventListener(
+            "click",
+            async () => {
+
+                const name =
+                    document
+                        .getElementById(
+                            "prod-name"
+                        )
+                        .value
+                        .trim();
+
+
+                const price =
+                    document
+                        .getElementById(
+                            "prod-price"
+                        )
+                        .value;
+
+
+                const category =
+                    document
+                        .getElementById(
+                            "prod-category"
+                        )
+                        .value;
+
+
+                const description =
+                    document
+                        .getElementById(
+                            "prod-desc"
+                        )
+                        .value
+                        .trim();
+
+
+                const files =
+                    Array.from(
+                        imageInput.files
+                    );
+
+
+                // -------------------------------------------------
+                // VALIDATION
+                // -------------------------------------------------
+
+                if (
+                    !name ||
+                    price === ""
+                ) {
+
+                    alert(
+                        "দয়া করে Product Name এবং Price দিন!"
+                    );
+
+                    return;
+
+                }
+
+
+                if (
+                    Number(price) < 0 ||
+                    !Number.isFinite(
+                        Number(price)
+                    )
+                ) {
+
+                    alert(
+                        "সঠিক Price দিন!"
+                    );
+
+                    return;
+
+                }
+
+
+                if (
+                    !editDocId &&
+                    files.length === 0
+                ) {
+
+                    alert(
+                        "নতুন প্রোডাক্টের জন্য অন্তত ১টি ছবি দিন!"
+                    );
+
+                    return;
+
+                }
+
+
+                if (
+                    files.length > 4
+                ) {
+
+                    alert(
+                        "সর্বোচ্চ ৪টি ছবি দিতে পারবেন!"
+                    );
+
+                    return;
+
+                }
+
+
+                saveProductBtn.disabled =
+                    true;
+
+
+                const isEditing =
+                    Boolean(
+                        editDocId
+                    );
+
+
+                try {
+
+                    let imageUrls =
+                        [];
+
+
+                    // -------------------------------------------------
+                    // PROCESS IMAGES
+                    // -------------------------------------------------
+
+                    if (
+                        files.length > 0
+                    ) {
+
+                        for (
+                            let i = 0;
+                            i < files.length;
+                            i++
+                        ) {
+
+                            saveProductBtn.innerText =
+                                `ছবি Processing হচ্ছে (${i + 1}/${files.length})...`;
+
+
+                            const processedImage =
+                                await processImage(
+                                    files[i]
+                                );
+
+
+                            imageUrls.push(
+                                processedImage
+                            );
+
+                        }
+
+                    }
+
+
+                    saveProductBtn.innerText =
+                        isEditing
+                            ? "Updating Product..."
+                            : "Saving Product...";
+
+
+                    // =================================================
+                    // UPDATE EXISTING PRODUCT
+                    // =================================================
+
+                    if (
+                        editDocId
+                    ) {
+
+                        const updateData = {
+
+                            name:
+                                name,
+
+                            price:
+                                Number(
+                                    price
+                                ),
+
+                            category:
+                                category,
+
+                            description:
+                                description,
+
+                            updatedAt:
+                                serverTimestamp()
+
+                        };
+
+
+                        // নতুন ছবি দিলে নতুন ছবিগুলো replace হবে
+                        // ছবি না দিলে আগের ছবিগুলো থাকবে
+
+                        if (
+                            imageUrls.length > 0
+                        ) {
+
+                            updateData.image =
+                                imageUrls[0];
+
+                            updateData.images =
+                                imageUrls;
+
+                        }
+
+
+                        await updateDoc(
+
+                            doc(
+                                db,
+                                "products",
+                                editDocId
+                            ),
+
+                            updateData
+
+                        );
+
+
+                        alert(
+                            "প্রোডাক্ট সফলভাবে আপডেট হয়েছে!"
+                        );
+
+
+                        resetForm();
+
+                    }
+
+
+                    // =================================================
+                    // ADD NEW PRODUCT
+                    // =================================================
+
+                    else {
+
+                        const newProduct =
+                            await addDoc(
+
+                                collection(
+                                    db,
+                                    "products"
+                                ),
+
+                                {
+
+                                    name:
+                                        name,
+
+                                    price:
+                                        Number(
+                                            price
+                                        ),
+
+                                    category:
+                                        category,
+
+                                    description:
+                                        description,
+
+                                    image:
+                                        imageUrls[0],
+
+                                    images:
+                                        imageUrls,
+
+                                    createdAt:
+                                        serverTimestamp(),
+
+                                    updatedAt:
+                                        serverTimestamp()
+
+                                }
+
+                            );
+
+
+                        // =================================================
+                        // CORRECT PUBLIC PRODUCT LINK
+                        // =================================================
+
+                        const productURL =
+                            getPublicProductURL(
+                                newProduct.id
+                            );
+
+
+                        alert(
+                            "প্রোডাক্ট সফলভাবে যোগ হয়েছে!\n\n" +
+                            "Public Product Link:\n\n" +
+                            productURL
+                        );
+
+
+                        resetForm();
+
+                    }
+
+
+                    await loadProducts();
+
+                }
+
+                catch (error) {
+
+                    console.error(
+                        "Save Product Error:",
+                        error
+                    );
+
+
+                    alert(
+                        "সমস্যা হয়েছে:\n\n" +
+                        error.message
+                    );
+
+                }
+
+                finally {
+
+                    saveProductBtn.disabled =
+                        false;
+
+
+                    saveProductBtn.innerText =
+                        editDocId
+                            ? "Update Product"
+                            : "Add Product";
+
+                }
+
+            }
+        );
+
+
+        // =========================================================
+        // RESET FORM
+        // =========================================================
+
+        function resetForm() {
+
+            editDocId =
+                null;
+
+
+            document
+                .getElementById(
+                    "prod-name"
+                )
+                .value =
+                "";
+
+
+            document
+                .getElementById(
+                    "prod-price"
+                )
+                .value =
+                "";
+
+
+            document
+                .getElementById(
+                    "prod-category"
+                )
+                .value =
+                "Guitars";
+
+
+            document
+                .getElementById(
+                    "prod-desc"
+                )
+                .value =
+                "";
+
+
+            imageInput.value =
+                "";
+
+
+            imagePreview.innerHTML =
+                "";
+
+
+            formTitle.innerText =
+                "Add New Product";
+
+
+            saveProductBtn.innerText =
+                "Add Product";
+
+
+            cancelEditBtn
+                .classList
+                .add(
+                    "hidden"
+                );
+
+        }
+
+
+        // =========================================================
+        // CANCEL EDIT
+        // =========================================================
+
+        cancelEditBtn.addEventListener(
+            "click",
+            resetForm
+        );
+
+
+        // =========================================================
+        // LOAD PRODUCTS
+        // =========================================================
+
+        async function loadProducts() {
+
+            productList.innerHTML =
+                `
+                <p style="color:#94a3b8;">
+                    Products loading...
+                </p>
+                `;
+
+
+            try {
+
+                const snapshot =
+                    await getDocs(
+                        collection(
+                            db,
+                            "products"
+                        )
+                    );
+
+
+                productList.innerHTML =
+                    "";
+
+
+                cachedProducts =
+                    {};
+
+
+                if (
+                    snapshot.empty
+                ) {
+
+                    productList.innerHTML =
+                        `
+                        <p style="color:#94a3b8;">
+                            এখনো কোনো প্রোডাক্ট যোগ করা হয়নি।
+                        </p>
+                        `;
+
+                    return;
+
+                }
+
+
+                snapshot.forEach(
+                    (item) => {
+
+                        const product =
+                            item.data();
+
+
+                        cachedProducts[
+                            item.id
+                        ] =
+                            product;
+
+
+                        // =================================================
+                        // IMAGES
+                        // =================================================
+
+                        const images =
+                            Array.isArray(
+                                product.images
+                            ) &&
+                            product.images.length > 0
+
+                                ? product.images
+
+                                : (
+                                    product.image
+                                        ? [
+                                            product.image
+                                        ]
+                                        : []
+                                );
+
+
+                        // =================================================
+                        // PRODUCT ITEM
+                        // =================================================
+
+                        const div =
+                            document.createElement(
+                                "div"
+                            );
+
+
+                        div.className =
+                            "product-item";
+
+
+                        // =================================================
+                        // IMAGE GROUP
+                        // =================================================
+
+                        const imageGroup =
+                            document.createElement(
+                                "div"
+                            );
+
+
+                        imageGroup.className =
+                            "product-img-group";
+
+
+                        images
+                            .slice(
+                                0,
+                                4
+                            )
+                            .forEach(
+                                (
+                                    imageUrl
+                                ) => {
+
+                                    const image =
+                                        document.createElement(
+                                            "img"
+                                        );
+
+
+                                    image.src =
+                                        imageUrl;
+
+
+                                    image.alt =
+                                        product.name ||
+                                        "Product";
+
+
+                                    image.loading =
+                                        "lazy";
+
+
+                                    image.onerror =
+                                        () => {
+
+                                            image.style.display =
+                                                "none";
+
+                                        };
+
+
+                                    imageGroup.appendChild(
+                                        image
+                                    );
+
+                                }
+                            );
+
+
+                        // =================================================
+                        // DETAILS
+                        // =================================================
+
+                        const details =
+                            document.createElement(
+                                "div"
+                            );
+
+
+                        details.className =
+                            "product-details";
+
+
+                        const title =
+                            document.createElement(
+                                "h4"
+                            );
+
+
+                        title.textContent =
+                            product.name ||
+                            "Unnamed Product";
+
+
+                        const meta =
+                            document.createElement(
+                                "p"
+                            );
+
+
+                        meta.className =
+                            "product-meta";
+
+
+                        meta.textContent =
+                            `৳${Number(
+                                product.price || 0
+                            ).toLocaleString(
+                                "en-BD"
+                            )} | ${
+                                product.category ||
+                                "No Category"
+                            } | ${
+                                images.length
+                            }টি ছবি`;
+
+
+                        // =================================================
+                        // CORRECT PUBLIC PRODUCT URL
+                        // =================================================
+
+                        const productURL =
+                            getPublicProductURL(
+                                item.id
+                            );
+
+
+                        const linkText =
+                            document.createElement(
+                                "div"
+                            );
+
+
+                        linkText.className =
+                            "product-link";
+
+
+                        const linkIcon =
+                            document.createElement(
+                                "i"
+                            );
+
+
+                        linkIcon.className =
+                            "fas fa-link";
+
+
+                        const linkValue =
+                            document.createElement(
+                                "span"
+                            );
+
+
+                        linkValue.textContent =
+                            productURL;
+
+
+                        linkText.appendChild(
+                            linkIcon
+                        );
+
+                        linkText.appendChild(
+                            linkValue
+                        );
+
+
+                        details.appendChild(
+                            title
+                        );
+
+
+                        details.appendChild(
+                            meta
+                        );
+
+
+                        details.appendChild(
+                            linkText
+                        );
+
+
+                        // =================================================
+                        // ACTIONS
+                        // =================================================
+
+                        const actions =
+                            document.createElement(
+                                "div"
+                            );
+
+
+                        actions.className =
+                            "actions";
+
+
+                        // =================================================
+                        // COPY LINK BUTTON
+                        // =================================================
+
+                        const copyButton =
+                            document.createElement(
+                                "button"
+                            );
+
+
+                        copyButton.className =
+                            "copy-btn";
+
+
+                        copyButton.innerText =
+                            "Copy Link";
+
+
+                        copyButton.addEventListener(
+                            "click",
+                            async () => {
+
+                                const oldText =
+                                    copyButton.innerText;
+
+
+                                copyButton.disabled =
+                                    true;
+
+
+                                try {
+
+                                    const copied =
+                                        await copyText(
+                                            productURL
+                                        );
+
+
+                                    if (
+                                        copied
+                                    ) {
+
+                                        copyButton.innerText =
+                                            "Copied ✓";
+
+
+                                        setTimeout(
+                                            () => {
+
+                                                copyButton.innerText =
+                                                    oldText;
+
+                                                copyButton.disabled =
+                                                    false;
+
+                                            },
+                                            1500
+                                        );
+
+                                    }
+
+                                    else {
+
+                                        copyButton.disabled =
+                                            false;
+
+                                        prompt(
+                                            "এই Public Product Link Copy করুন:",
+                                            productURL
+                                        );
+
+                                    }
+
+                                }
+
+                                catch (error) {
+
+                                    console.error(
+                                        error
+                                    );
+
+
+                                    copyButton.disabled =
+                                        false;
+
+
+                                    prompt(
+                                        "এই Public Product Link Copy করুন:",
+                                        productURL
+                                    );
+
+                                }
+
+                            }
+                        );
+
+
+                        // =================================================
+                        // EDIT BUTTON
+                        // =================================================
+
+                        const editButton =
+                            document.createElement(
+                                "button"
+                            );
+
+
+                        editButton.className =
+                            "edit-btn";
+
+
+                        editButton.textContent =
+                            "Edit";
+
+
+                        editButton.addEventListener(
+                            "click",
+                            () => {
+
+                                startEdit(
+                                    item.id
+                                );
+
+                            }
+                        );
+
+
+                        // =================================================
+                        // DELETE BUTTON
+                        // =================================================
+
+                        const deleteButton =
+                            document.createElement(
+                                "button"
+                            );
+
+
+                        deleteButton.className =
+                            "delete-btn";
+
+
+                        deleteButton.textContent =
+                            "Delete";
+
+
+                        deleteButton.addEventListener(
+                            "click",
+                            () => {
+
+                                deleteProduct(
+                                    item.id
+                                );
+
+                            }
+                        );
+
+
+                        // =================================================
+                        // APPEND ACTIONS
+                        // =================================================
+
+                        actions.appendChild(
+                            copyButton
+                        );
+
+
+                        actions.appendChild(
+                            editButton
+                        );
+
+
+                        actions.appendChild(
+                            deleteButton
+                        );
+
+
+                        // =================================================
+                        // APPEND PRODUCT ITEM
+                        // =================================================
+
+                        div.appendChild(
+                            imageGroup
+                        );
+
+
+                        div.appendChild(
+                            details
+                        );
+
+
+                        div.appendChild(
+                            actions
+                        );
+
+
+                        productList.appendChild(
+                            div
+                        );
+
+                    }
+                );
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Load Products Error:",
+                    error
+                );
+
+
+                productList.innerHTML =
+                    `
+                    <p style="color:#ef4444;">
+                        প্রোডাক্ট লোড করতে সমস্যা হয়েছে।
+                        <br><br>
+                        ${error.message}
+                    </p>
+                    `;
+
             }
 
         }
 
-    </style>
+
+        // =========================================================
+        // START EDIT
+        // =========================================================
+
+        function startEdit(id) {
+
+            const product =
+                cachedProducts[
+                    id
+                ];
+
+
+            if (!product) {
+
+                alert(
+                    "Product পাওয়া যায়নি।"
+                );
+
+                return;
+
+            }
+
+
+            editDocId =
+                id;
+
+
+            document
+                .getElementById(
+                    "prod-name"
+                )
+                .value =
+                product.name ||
+                "";
+
+
+            document
+                .getElementById(
+                    "prod-price"
+                )
+                .value =
+                product.price ||
+                "";
+
+
+            document
+                .getElementById(
+                    "prod-category"
+                )
+                .value =
+                product.category ||
+                "Guitars";
+
+
+            document
+                .getElementById(
+                    "prod-desc"
+                )
+                .value =
+                product.description ||
+                "";
+
+
+            // নতুন ছবি না দিলে আগের ছবি থাকবে
+
+            imageInput.value =
+                "";
+
+
+            imagePreview.innerHTML =
+                "";
+
+
+            // =================================================
+            // SHOW CURRENT IMAGES
+            // =================================================
+
+            const existingImages =
+                Array.isArray(
+                    product.images
+                ) &&
+                product.images.length > 0
+
+                    ? product.images
+
+                    : (
+                        product.image
+                            ? [
+                                product.image
+                            ]
+                            : []
+                    );
+
+
+            existingImages
+                .slice(
+                    0,
+                    4
+                )
+                .forEach(
+                    (imageUrl) => {
+
+                        const previewBox =
+                            document.createElement(
+                                "div"
+                            );
+
+
+                        previewBox.className =
+                            "preview-box";
+
+
+                        const img =
+                            document.createElement(
+                                "img"
+                            );
+
+
+                        img.src =
+                            imageUrl;
+
+
+                        img.alt =
+                            "Existing Product Image";
+
+
+                        previewBox.appendChild(
+                            img
+                        );
+
+
+                        imagePreview.appendChild(
+                            previewBox
+                        );
+
+                    }
+                );
+
+
+            formTitle.innerText =
+                "Edit Product: " +
+                (
+                    product.name ||
+                    ""
+                );
+
+
+            saveProductBtn.innerText =
+                "Update Product";
+
+
+            cancelEditBtn
+                .classList
+                .remove(
+                    "hidden"
+                );
+
+
+            window.scrollTo({
+
+                top: 0,
+
+                behavior: "smooth"
+
+            });
+
+        }
+
+
+        // =========================================================
+        // DELETE PRODUCT
+        // =========================================================
+
+        async function deleteProduct(id) {
+
+            const product =
+                cachedProducts[
+                    id
+                ];
+
+
+            const productName =
+                product &&
+                product.name
+                    ? product.name
+                    : "এই প্রোডাক্ট";
+
+
+            const confirmed =
+                confirm(
+                    `"${productName}"\n\nএই প্রোডাক্টটি Delete করতে চান?`
+                );
+
+
+            if (
+                !confirmed
+            ) {
+
+                return;
+
+            }
+
+
+            try {
+
+                await deleteDoc(
+
+                    doc(
+                        db,
+                        "products",
+                        id
+                    )
+
+                );
+
+
+                await loadProducts();
+
+
+                alert(
+                    "প্রোডাক্ট Delete হয়েছে!"
+                );
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Delete Product Error:",
+                    error
+                );
+
+
+                alert(
+                    "Delete করতে সমস্যা হয়েছে:\n\n" +
+                    error.message
+                );
+
+            }
+
+        }
+
+
+        // =========================================================
+        // GLOBAL ERROR HANDLING
+        // =========================================================
+
+        window.addEventListener(
+            "unhandledrejection",
+            (event) => {
+
+                console.error(
+                    "Unhandled Promise Error:",
+                    event.reason
+                );
+
+            }
+        );
+
+    </script>
+
 </head>
 
 
@@ -299,15 +2260,26 @@
 
 <div class="container">
 
-    <!-- LOGIN -->
 
-    <div id="login-section" class="card">
+    <!-- =======================================================
+         LOGIN SECTION
+         ======================================================= -->
 
-        <h2>Melodex Admin Login</h2>
+    <div
+        id="login-section"
+        class="card"
+    >
+
+        <h2>
+            Melodex Admin Login
+        </h2>
+
 
         <div class="form-group">
 
-            <label>Email</label>
+            <label>
+                Email
+            </label>
 
             <input
                 type="email"
@@ -321,7 +2293,9 @@
 
         <div class="form-group">
 
-            <label>Password</label>
+            <label>
+                Password
+            </label>
 
             <input
                 type="password"
@@ -333,66 +2307,90 @@
         </div>
 
 
-        <button id="login-btn" class="w-full">
-
+        <button
+            id="login-btn"
+            class="w-full"
+        >
             Login
-
         </button>
 
     </div>
 
 
 
-    <!-- ADMIN PANEL -->
+    <!-- =======================================================
+         ADMIN PANEL
+         ======================================================= -->
 
-    <div id="admin-panel" class="hidden">
+    <div
+        id="admin-panel"
+        class="hidden"
+    >
 
+
+        <!-- HEADER -->
 
         <div class="header-bar">
 
-            <h2>Melodex Admin Dashboard</h2>
+            <h2>
+                Melodex Admin Dashboard
+            </h2>
 
-            <button id="logout-btn" class="logout-btn">
 
+            <button
+                id="logout-btn"
+                class="logout-btn"
+            >
                 Logout
-
             </button>
 
         </div>
 
 
 
-        <!-- ADD / EDIT PRODUCT -->
+        <!-- ===================================================
+             ADD / EDIT PRODUCT
+             =================================================== -->
 
         <div class="card">
 
             <h2 id="form-title">
-
                 Add New Product
-
             </h2>
 
 
+            <!-- PRODUCT NAME -->
 
             <div class="form-group">
 
-                <label>Product Name</label>
+                <label>
+                    Product Name
+                </label>
+
 
                 <input
                     type="text"
                     id="prod-name"
                     placeholder="যেমন: Boss DS-1 Distortion"
+                    autocomplete="off"
                 >
 
             </div>
 
 
 
+            <!-- CATEGORY -->
+
             <div class="form-group">
 
-                <label>Category</label>
+                <label>
+                    Category
+                </label>
 
-                <select id="prod-category">
+
+                <select
+                    id="prod-category"
+                >
 
                     <option value="Guitars">
                         Guitars
@@ -420,24 +2418,35 @@
 
 
 
+            <!-- PRICE -->
+
             <div class="form-group">
 
-                <label>Price (BDT)</label>
+                <label>
+                    Price (BDT)
+                </label>
+
 
                 <input
                     type="number"
                     id="prod-price"
                     placeholder="যেমন: 8500"
                     min="0"
+                    step="1"
                 >
 
             </div>
 
 
 
+            <!-- DESCRIPTION -->
+
             <div class="form-group">
 
-                <label>Description</label>
+                <label>
+                    Description
+                </label>
+
 
                 <textarea
                     id="prod-desc"
@@ -449,12 +2458,12 @@
 
 
 
+            <!-- PRODUCT IMAGES -->
+
             <div class="form-group">
 
                 <label>
-
                     Product Images (১ থেকে ৪টি)
-
                 </label>
 
 
@@ -468,21 +2477,17 @@
 
                 <span class="hint">
 
-                    সব ছবি Automatically 800 × 800px এবং 1:1 Square হবে।
+                    সব ছবি Automatically
+                    800 × 800px এবং
+                    1:1 Square হবে।
 
                 </span>
 
 
                 <span class="hint">
 
-                    ছবি Firebase Storage-এ নিরাপদভাবে Upload হবে।
-
-                </span>
-
-
-                <span class="hint">
-
-                    Edit করার সময় নতুন ছবি না দিলে আগের ছবিগুলো থাকবে।
+                    Edit করার সময় নতুন ছবি
+                    না দিলে আগের ছবিগুলোই থাকবে।
 
                 </span>
 
@@ -496,1703 +2501,51 @@
 
 
 
+            <!-- SAVE -->
+
             <button
                 id="save-product-btn"
                 class="w-full"
             >
-
                 Add Product
-
             </button>
 
+
+
+            <!-- CANCEL EDIT -->
 
             <button
                 id="cancel-edit-btn"
                 class="w-full cancel-btn hidden"
             >
-
                 Cancel Edit
-
             </button>
 
         </div>
 
 
 
-        <!-- PRODUCT LIST -->
+        <!-- ===================================================
+             PRODUCT LIST
+             =================================================== -->
 
         <div class="card">
 
             <h2>
-
                 Uploaded Products
-
             </h2>
 
 
-            <div id="product-list"></div>
+            <div
+                id="product-list"
+            ></div>
 
         </div>
+
 
     </div>
 
 </div>
-
-
-
-<!-- =========================================
-     JAVASCRIPT
-========================================= -->
-
-<script type="module">
-
-import {
-    initializeApp
-} from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-
-
-import {
-    getAuth,
-    signInWithEmailAndPassword,
-    onAuthStateChanged,
-    signOut
-} from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
-
-
-import {
-    getFirestore,
-    collection,
-    addDoc,
-    getDocs,
-    deleteDoc,
-    doc,
-    updateDoc,
-    serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
-
-
-import {
-    getStorage,
-    ref,
-    uploadString,
-    getDownloadURL,
-    deleteObject
-} from "https://www.gstatic.com/firebasejs/10.9.0/firebase-storage.js";
-
-
-
-/* =========================================
-   FIREBASE CONFIG
-========================================= */
-
-const firebaseConfig = {
-
-    apiKey:
-        "AIzaSyBTVoMKlJeRWsgIL5gCdWCHYdx3w8brWHQ",
-
-    authDomain:
-        "melodex-store.firebaseapp.com",
-
-    projectId:
-        "melodex-store",
-
-    storageBucket:
-        "melodex-store.firebasestorage.app",
-
-    messagingSenderId:
-        "563447283369",
-
-    appId:
-        "1:563447283369:web:a999e89adf7380ec4733b8",
-
-    measurementId:
-        "G-G133358KKB"
-
-};
-
-
-
-/* =========================================
-   FIREBASE INIT
-========================================= */
-
-const app = initializeApp(firebaseConfig);
-
-const auth = getAuth(app);
-
-const db = getFirestore(app);
-
-const storage = getStorage(app);
-
-
-
-/* =========================================
-   ADMIN UID
-========================================= */
-
-const ADMIN_UID =
-    "MIzEH8xdp3QzGA6uRWgRr377sBy2";
-
-
-
-/* =========================================
-   VARIABLES
-========================================= */
-
-let editDocId = null;
-
-let cachedProducts = {};
-
-
-
-/* =========================================
-   DOM
-========================================= */
-
-const loginSection =
-    document.getElementById("login-section");
-
-const adminPanel =
-    document.getElementById("admin-panel");
-
-const loginBtn =
-    document.getElementById("login-btn");
-
-const logoutBtn =
-    document.getElementById("logout-btn");
-
-const saveProductBtn =
-    document.getElementById("save-product-btn");
-
-const cancelEditBtn =
-    document.getElementById("cancel-edit-btn");
-
-const productList =
-    document.getElementById("product-list");
-
-const formTitle =
-    document.getElementById("form-title");
-
-const imageInput =
-    document.getElementById("prod-imgs");
-
-const imagePreview =
-    document.getElementById("image-preview");
-
-
-
-/* =========================================
-   AUTH STATE
-========================================= */
-
-onAuthStateChanged(auth, (user) => {
-
-    if (user && user.uid === ADMIN_UID) {
-
-        loginSection.classList.add("hidden");
-
-        adminPanel.classList.remove("hidden");
-
-        loadProducts();
-
-    } else {
-
-        loginSection.classList.remove("hidden");
-
-        adminPanel.classList.add("hidden");
-
-        if (user) {
-
-            signOut(auth);
-
-            alert("এই Account Admin Account নয়!");
-
-        }
-
-    }
-
-});
-
-
-
-/* =========================================
-   LOGIN
-========================================= */
-
-loginBtn.addEventListener(
-    "click",
-    async () => {
-
-        const email =
-            document
-                .getElementById("login-email")
-                .value
-                .trim();
-
-        const password =
-            document
-                .getElementById("login-pass")
-                .value;
-
-
-        if (!email || !password) {
-
-            alert(
-                "Email এবং Password দিন!"
-            );
-
-            return;
-
-        }
-
-
-        loginBtn.disabled = true;
-
-        loginBtn.innerText =
-            "Logging in...";
-
-
-        try {
-
-            await signInWithEmailAndPassword(
-                auth,
-                email,
-                password
-            );
-
-        } catch (error) {
-
-            console.error(error);
-
-            alert(
-                "লগইন ব্যর্থ হয়েছে: "
-                + error.message
-            );
-
-        } finally {
-
-            loginBtn.disabled = false;
-
-            loginBtn.innerText =
-                "Login";
-
-        }
-
-    }
-);
-
-
-
-/* =========================================
-   LOGOUT
-========================================= */
-
-logoutBtn.addEventListener(
-    "click",
-    async () => {
-
-        await signOut(auth);
-
-    }
-);
-
-
-
-/* =========================================
-   IMAGE PROCESSING
-   800 x 800
-========================================= */
-
-function processImage(file) {
-
-    return new Promise(
-        (resolve, reject) => {
-
-            const reader =
-                new FileReader();
-
-
-            reader.readAsDataURL(file);
-
-
-            reader.onload =
-                (event) => {
-
-                    const img =
-                        new Image();
-
-
-                    img.src =
-                        event.target.result;
-
-
-                    img.onload =
-                        () => {
-
-                            const finalSize =
-                                800;
-
-
-                            const canvas =
-                                document.createElement(
-                                    "canvas"
-                                );
-
-
-                            canvas.width =
-                                finalSize;
-
-                            canvas.height =
-                                finalSize;
-
-
-                            const ctx =
-                                canvas.getContext(
-                                    "2d"
-                                );
-
-
-                            ctx.imageSmoothingEnabled =
-                                true;
-
-
-                            ctx.imageSmoothingQuality =
-                                "high";
-
-
-                            const originalWidth =
-                                img.width;
-
-
-                            const originalHeight =
-                                img.height;
-
-
-                            const sourceSize =
-                                Math.min(
-                                    originalWidth,
-                                    originalHeight
-                                );
-
-
-                            const sourceX =
-                                Math.round(
-                                    (
-                                        originalWidth
-                                        -
-                                        sourceSize
-                                    )
-                                    / 2
-                                );
-
-
-                            const sourceY =
-                                Math.round(
-                                    (
-                                        originalHeight
-                                        -
-                                        sourceSize
-                                    )
-                                    / 2
-                                );
-
-
-                            ctx.fillStyle =
-                                "#ffffff";
-
-
-                            ctx.fillRect(
-                                0,
-                                0,
-                                finalSize,
-                                finalSize
-                            );
-
-
-                            ctx.drawImage(
-
-                                img,
-
-                                sourceX,
-
-                                sourceY,
-
-                                sourceSize,
-
-                                sourceSize,
-
-                                0,
-
-                                0,
-
-                                finalSize,
-
-                                finalSize
-
-                            );
-
-
-                            const compressedImage =
-                                canvas.toDataURL(
-
-                                    "image/jpeg",
-
-                                    0.88
-
-                                );
-
-
-                            resolve(
-                                compressedImage
-                            );
-
-                        };
-
-
-                    img.onerror =
-                        reject;
-
-                };
-
-
-            reader.onerror =
-                reject;
-
-        }
-
-    );
-
-}
-
-
-
-/* =========================================
-   IMAGE PREVIEW
-========================================= */
-
-imageInput.addEventListener(
-    "change",
-    () => {
-
-        imagePreview.innerHTML =
-            "";
-
-
-        const files =
-            Array.from(
-                imageInput.files
-            );
-
-
-        if (
-            files.length > 4
-        ) {
-
-            alert(
-                "সর্বোচ্চ ৪টি ছবি নির্বাচন করতে পারবেন!"
-            );
-
-
-            imageInput.value =
-                "";
-
-
-            return;
-
-        }
-
-
-        files.forEach(
-            (file) => {
-
-                const previewUrl =
-                    URL.createObjectURL(
-                        file
-                    );
-
-
-                const previewBox =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                previewBox.className =
-                    "preview-box";
-
-
-                previewBox.innerHTML =
-                    `<img src="${previewUrl}" alt="Preview">`;
-
-
-                imagePreview.appendChild(
-                    previewBox
-                );
-
-            }
-
-        );
-
-    }
-);
-
-
-
-/* =========================================
-   UPLOAD IMAGE TO FIREBASE STORAGE
-========================================= */
-
-async function uploadProductImages(
-    productId,
-    files
-) {
-
-    const uploadedUrls =
-        [];
-
-
-    for (
-        let i = 0;
-        i < files.length;
-        i++
-    ) {
-
-        saveProductBtn.innerText =
-            `ছবি Processing হচ্ছে (${i + 1}/${files.length})...`;
-
-
-        const processedImage =
-            await processImage(
-                files[i]
-            );
-
-
-        saveProductBtn.innerText =
-            `Firebase Storage-এ Upload হচ্ছে (${i + 1}/${files.length})...`;
-
-
-        const imageRef =
-            ref(
-
-                storage,
-
-                `products/${productId}/image-${i + 1}-${Date.now()}.jpg`
-
-            );
-
-
-        await uploadString(
-
-            imageRef,
-
-            processedImage,
-
-            "data_url"
-
-        );
-
-
-        const downloadURL =
-            await getDownloadURL(
-                imageRef
-            );
-
-
-        uploadedUrls.push(
-            downloadURL
-        );
-
-    }
-
-
-    return uploadedUrls;
-
-}
-
-
-
-/* =========================================
-   DELETE STORAGE IMAGE
-========================================= */
-
-async function deleteStorageImage(
-    imageUrl
-) {
-
-    try {
-
-        if (
-            !imageUrl ||
-            imageUrl.startsWith(
-                "data:"
-            )
-        ) {
-
-            return;
-
-        }
-
-
-        const decodedUrl =
-            decodeURIComponent(
-                imageUrl
-            );
-
-
-        const match =
-            decodedUrl.match(
-                /\/o\/(.+?)\?/
-            );
-
-
-        if (!match) {
-
-            return;
-
-        }
-
-
-        const storagePath =
-            match[1];
-
-
-        const imageRef =
-            ref(
-                storage,
-                storagePath
-            );
-
-
-        await deleteObject(
-            imageRef
-        );
-
-    } catch (error) {
-
-        console.warn(
-            "পুরোনো Storage Image delete হয়নি:",
-            error
-        );
-
-    }
-
-}
-
-
-
-/* =========================================
-   DELETE MULTIPLE STORAGE IMAGES
-========================================= */
-
-async function deleteStorageImages(
-    images
-) {
-
-    if (
-        !Array.isArray(images)
-    ) return;
-
-
-    for (
-        const imageUrl
-        of images
-    ) {
-
-        await deleteStorageImage(
-            imageUrl
-        );
-
-    }
-
-}
-
-
-
-/* =========================================
-   SAVE PRODUCT
-========================================= */
-
-saveProductBtn.addEventListener(
-    "click",
-    async () => {
-
-        const name =
-            document
-                .getElementById(
-                    "prod-name"
-                )
-                .value
-                .trim();
-
-
-        const price =
-            document
-                .getElementById(
-                    "prod-price"
-                )
-                .value;
-
-
-        const category =
-            document
-                .getElementById(
-                    "prod-category"
-                )
-                .value;
-
-
-        const description =
-            document
-                .getElementById(
-                    "prod-desc"
-                )
-                .value
-                .trim();
-
-
-        const files =
-            Array.from(
-                imageInput.files
-            );
-
-
-        if (
-            !name ||
-            price === ""
-        ) {
-
-            alert(
-                "দয়া করে Product Name এবং Price দিন!"
-            );
-
-            return;
-
-        }
-
-
-        if (
-            Number(price) < 0
-        ) {
-
-            alert(
-                "সঠিক Price দিন!"
-            );
-
-            return;
-
-        }
-
-
-        if (
-            !editDocId
-            &&
-            files.length === 0
-        ) {
-
-            alert(
-                "নতুন প্রোডাক্টের জন্য অন্তত ১টি ছবি দিন!"
-            );
-
-            return;
-
-        }
-
-
-        if (
-            files.length > 4
-        ) {
-
-            alert(
-                "সর্বোচ্চ ৪টি ছবি দিতে পারবেন!"
-            );
-
-            return;
-
-        }
-
-
-        saveProductBtn.disabled =
-            true;
-
-
-        try {
-
-            /* =================================
-               NEW PRODUCT
-            ================================= */
-
-            if (
-                !editDocId
-            ) {
-
-                saveProductBtn.innerText =
-                    "Creating Product...";
-
-
-                const newDoc =
-                    await addDoc(
-
-                        collection(
-                            db,
-                            "products"
-                        ),
-
-                        {
-
-                            name:
-                                name,
-
-                            price:
-                                Number(
-                                    price
-                                ),
-
-                            category:
-                                category,
-
-                            description:
-                                description,
-
-                            image:
-                                "",
-
-                            images:
-                                [],
-
-                            createdAt:
-                                serverTimestamp(),
-
-                            updatedAt:
-                                serverTimestamp()
-
-                        }
-
-                    );
-
-
-                const imageUrls =
-                    await uploadProductImages(
-
-                        newDoc.id,
-
-                        files
-
-                    );
-
-
-                await updateDoc(
-
-                    doc(
-                        db,
-                        "products",
-                        newDoc.id
-                    ),
-
-                    {
-
-                        image:
-                            imageUrls[0],
-
-                        images:
-                            imageUrls,
-
-                        updatedAt:
-                            serverTimestamp()
-
-                    }
-
-                );
-
-
-                alert(
-                    "প্রোডাক্ট সফলভাবে যোগ হয়েছে!"
-                );
-
-
-                resetForm();
-
-
-            }
-
-            /* =================================
-               EDIT PRODUCT
-            ================================= */
-
-            else {
-
-                let imageUrls =
-                    null;
-
-
-                if (
-                    files.length > 0
-                ) {
-
-                    imageUrls =
-                        await uploadProductImages(
-
-                            editDocId,
-
-                            files
-
-                        );
-
-                }
-
-
-                saveProductBtn.innerText =
-                    "Updating Product...";
-
-
-                const updateData =
-                    {
-
-                        name:
-                            name,
-
-                        price:
-                            Number(
-                                price
-                            ),
-
-                        category:
-                            category,
-
-                        description:
-                            description,
-
-                        updatedAt:
-                            serverTimestamp()
-
-                    };
-
-
-                if (
-                    imageUrls
-                    &&
-                    imageUrls.length > 0
-                ) {
-
-                    updateData.image =
-                        imageUrls[0];
-
-
-                    updateData.images =
-                        imageUrls;
-
-
-                }
-
-
-                await updateDoc(
-
-                    doc(
-                        db,
-                        "products",
-                        editDocId
-                    ),
-
-                    updateData
-
-                );
-
-
-                if (
-                    imageUrls
-                    &&
-                    imageUrls.length > 0
-                ) {
-
-                    const oldProduct =
-                        cachedProducts[
-                            editDocId
-                        ];
-
-
-                    if (
-                        oldProduct
-                    ) {
-
-                        const oldImages =
-                            Array.isArray(
-                                oldProduct.images
-                            )
-
-                            ?
-
-                            oldProduct.images
-
-                            :
-
-                            oldProduct.image
-
-                            ?
-
-                            [
-                                oldProduct.image
-                            ]
-
-                            :
-
-                            [];
-
-
-                        await deleteStorageImages(
-                            oldImages
-                        );
-
-                    }
-
-                }
-
-
-                alert(
-                    "প্রোডাক্ট সফলভাবে আপডেট হয়েছে!"
-                );
-
-
-                resetForm();
-
-            }
-
-
-            await loadProducts();
-
-
-        } catch (
-            error
-        ) {
-
-            console.error(
-                error
-            );
-
-
-            alert(
-                "সমস্যা হয়েছে: "
-                +
-                error.message
-            );
-
-
-        } finally {
-
-            saveProductBtn.disabled =
-                false;
-
-
-            saveProductBtn.innerText =
-                editDocId
-
-                ?
-
-                "Update Product"
-
-                :
-
-                "Add Product";
-
-        }
-
-    }
-);
-
-
-
-/* =========================================
-   RESET FORM
-========================================= */
-
-function resetForm() {
-
-    editDocId =
-        null;
-
-
-    document
-        .getElementById(
-            "prod-name"
-        )
-        .value =
-        "";
-
-
-    document
-        .getElementById(
-            "prod-price"
-        )
-        .value =
-        "";
-
-
-    document
-        .getElementById(
-            "prod-category"
-        )
-        .value =
-        "Guitars";
-
-
-    document
-        .getElementById(
-            "prod-desc"
-        )
-        .value =
-        "";
-
-
-    imageInput.value =
-        "";
-
-
-    imagePreview.innerHTML =
-        "";
-
-
-    formTitle.innerText =
-        "Add New Product";
-
-
-    saveProductBtn.innerText =
-        "Add Product";
-
-
-    cancelEditBtn.classList.add(
-        "hidden"
-    );
-
-}
-
-
-
-/* =========================================
-   CANCEL EDIT
-========================================= */
-
-cancelEditBtn.addEventListener(
-    "click",
-    resetForm
-);
-
-
-
-/* =========================================
-   LOAD PRODUCTS
-========================================= */
-
-async function loadProducts() {
-
-    productList.innerHTML =
-        `<p style="color:#94a3b8;">
-            Products loading...
-        </p>`;
-
-
-    try {
-
-        const snapshot =
-            await getDocs(
-
-                collection(
-                    db,
-                    "products"
-                )
-
-            );
-
-
-        productList.innerHTML =
-            "";
-
-
-        cachedProducts =
-            {};
-
-
-        if (
-            snapshot.empty
-        ) {
-
-            productList.innerHTML =
-                `<p style="color:#94a3b8;">
-                    এখনো কোনো প্রোডাক্ট যোগ করা হয়নি।
-                </p>`;
-
-
-            return;
-
-        }
-
-
-        snapshot.forEach(
-            (item) => {
-
-                const product =
-                    item.data();
-
-
-                cachedProducts[
-                    item.id
-                ] =
-                    product;
-
-
-                const images =
-                    Array.isArray(
-                        product.images
-                    )
-
-                    &&
-
-                    product.images.length > 0
-
-                    ?
-
-                    product.images
-
-                    :
-
-                    product.image
-
-                    ?
-
-                    [
-                        product.image
-                    ]
-
-                    :
-
-                    [];
-
-
-                const div =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                div.className =
-                    "product-item";
-
-
-                const imageGroup =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                imageGroup.className =
-                    "product-img-group";
-
-
-                images
-                    .slice(
-                        0,
-                        4
-                    )
-                    .forEach(
-                        (
-                            imageUrl
-                        ) => {
-
-                            const image =
-                                document.createElement(
-                                    "img"
-                                );
-
-
-                            image.src =
-                                imageUrl;
-
-
-                            image.alt =
-                                product.name;
-
-
-                            image.loading =
-                                "lazy";
-
-
-                            imageGroup.appendChild(
-                                image
-                            );
-
-                        }
-
-                    );
-
-
-                const details =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                details.className =
-                    "product-details";
-
-
-                const title =
-                    document.createElement(
-                        "h4"
-                    );
-
-
-                title.textContent =
-                    product.name
-                    ||
-                    "Unnamed Product";
-
-
-                const meta =
-                    document.createElement(
-                        "p"
-                    );
-
-
-                meta.className =
-                    "product-meta";
-
-
-                meta.textContent =
-                    `৳${Number(
-                        product.price || 0
-                    ).toLocaleString(
-                        "en-BD"
-                    )} | ${
-                        product.category
-                        ||
-                        "No Category"
-                    } | ${
-                        images.length
-                    }টি ছবি`;
-
-
-                details.appendChild(
-                    title
-                );
-
-
-                details.appendChild(
-                    meta
-                );
-
-
-                const actions =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                actions.className =
-                    "actions";
-
-
-                const editButton =
-                    document.createElement(
-                        "button"
-                    );
-
-
-                editButton.className =
-                    "edit-btn";
-
-
-                editButton.textContent =
-                    "Edit";
-
-
-                editButton.addEventListener(
-                    "click",
-                    () =>
-                        startEdit(
-                            item.id
-                        )
-                );
-
-
-                const deleteButton =
-                    document.createElement(
-                        "button"
-                    );
-
-
-                deleteButton.className =
-                    "delete-btn";
-
-
-                deleteButton.textContent =
-                    "Delete";
-
-
-                deleteButton.addEventListener(
-                    "click",
-                    () =>
-                        deleteProduct(
-                            item.id
-                        )
-                );
-
-
-                actions.appendChild(
-                    editButton
-                );
-
-
-                actions.appendChild(
-                    deleteButton
-                );
-
-
-                div.appendChild(
-                    imageGroup
-                );
-
-
-                div.appendChild(
-                    details
-                );
-
-
-                div.appendChild(
-                    actions
-                );
-
-
-                productList.appendChild(
-                    div
-                );
-
-            }
-
-        );
-
-
-    } catch (
-        error
-    ) {
-
-        console.error(
-            error
-        );
-
-
-        productList.innerHTML =
-            `<p style="color:#ef4444;">
-                প্রোডাক্ট লোড করতে সমস্যা হয়েছে।
-            </p>`;
-
-    }
-
-}
-
-
-
-/* =========================================
-   START EDIT
-========================================= */
-
-function startEdit(
-    id
-) {
-
-    const product =
-        cachedProducts[
-            id
-        ];
-
-
-    if (
-        !product
-    ) return;
-
-
-    editDocId =
-        id;
-
-
-    document
-        .getElementById(
-            "prod-name"
-        )
-        .value =
-        product.name
-        ||
-        "";
-
-
-    document
-        .getElementById(
-            "prod-price"
-        )
-        .value =
-        product.price
-        ||
-        "";
-
-
-    document
-        .getElementById(
-            "prod-category"
-        )
-        .value =
-        product.category
-        ||
-        "Guitars";
-
-
-    document
-        .getElementById(
-            "prod-desc"
-        )
-        .value =
-        product.description
-        ||
-        "";
-
-
-    imageInput.value =
-        "";
-
-
-    imagePreview.innerHTML =
-        "";
-
-
-    formTitle.innerText =
-        "Edit Product: "
-        +
-        (
-            product.name
-            ||
-            ""
-        );
-
-
-    saveProductBtn.innerText =
-        "Update Product";
-
-
-    cancelEditBtn.classList.remove(
-        "hidden"
-    );
-
-
-    window.scrollTo({
-
-        top:
-            0,
-
-        behavior:
-            "smooth"
-
-    });
-
-}
-
-
-
-/* =========================================
-   DELETE PRODUCT
-========================================= */
-
-async function deleteProduct(
-    id
-) {
-
-    const confirmed =
-        confirm(
-            "আপনি কি নিশ্চিত যে এই প্রোডাক্টটি Delete করতে চান?"
-        );
-
-
-    if (
-        !confirmed
-    ) return;
-
-
-    try {
-
-        const product =
-            cachedProducts[
-                id
-            ];
-
-
-        if (
-            product
-        ) {
-
-            const images =
-                Array.isArray(
-                    product.images
-                )
-
-                ?
-
-                product.images
-
-                :
-
-                product.image
-
-                ?
-
-                [
-                    product.image
-                ]
-
-                :
-
-                [];
-
-
-            await deleteStorageImages(
-                images
-            );
-
-        }
-
-
-        await deleteDoc(
-
-            doc(
-                db,
-                "products",
-                id
-            )
-
-        );
-
-
-        await loadProducts();
-
-
-        alert(
-            "প্রোডাক্ট Delete হয়েছে!"
-        );
-
-
-    } catch (
-        error
-    ) {
-
-        console.error(
-            error
-        );
-
-
-        alert(
-            "Delete করতে সমস্যা হয়েছে: "
-            +
-            error.message
-        );
-
-    }
-
-}
-
-</script>
 
 </body>
 </html>
