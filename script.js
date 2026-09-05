@@ -40,9 +40,7 @@ const db = initializeFirestore(app, {
     cacheSizeBytes: 40 * 1024 * 1024
 });
 
-enableIndexedDbPersistence(db).catch(() => {
-    // Multiple tabs / unsupported browser fallback
-});
+enableIndexedDbPersistence(db).catch(() => {});
 
 // =========================================
 // GLOBAL VARIABLES
@@ -70,15 +68,12 @@ const PRODUCT_CATEGORIES = [
 
 function normalizeCategory(category) {
     if (!category) return "guitars";
-
     const cat = String(category).toLowerCase().trim();
-
     if (cat.includes("guitar")) return "guitars";
     if (cat.includes("pedalboard")) return "pedalboards";
     if (cat.includes("pedal")) return "pedals";
     if (cat.includes("stand")) return "stands";
     if (cat.includes("cable") || cat.includes("accessori")) return "cables";
-
     return "guitars";
 }
 
@@ -90,7 +85,6 @@ function getCategoryName(category) {
         stands: "Stands",
         cables: "Cables & Accessories"
     };
-
     return names[category] || category;
 }
 
@@ -100,12 +94,10 @@ function getCategoryName(category) {
 
 function getPublicProductUrl(productId) {
     if (!productId) return window.location.href;
-
     const productUrl = new URL("./", window.location.href);
     productUrl.search = "";
     productUrl.hash = "";
     productUrl.searchParams.set("product", productId);
-
     return productUrl.href;
 }
 
@@ -114,15 +106,8 @@ function getPublicProductUrl(productId) {
 // =========================================
 
 function isSafeImageUrl(value) {
-    if (typeof value !== "string" || !value.trim()) {
-        return false;
-    }
-
-    // Base64 Data URL সমর্থন
-    if (value.startsWith("data:image/")) {
-        return true;
-    }
-
+    if (typeof value !== "string" || !value.trim()) return false;
+    if (value.startsWith("data:image/")) return true;
     try {
         const url = new URL(value, window.location.origin);
         return url.protocol === "https:" || url.protocol === "http:";
@@ -132,10 +117,10 @@ function isSafeImageUrl(value) {
 }
 
 function normalizeProduct(id, data) {
-    const imageList = Array.isArray(data.images)
-        ? data.images.filter(isSafeImageUrl)
-        : [];
-
+    let imageList = [];
+    if (Array.isArray(data.images)) {
+        imageList = data.images.filter(isSafeImageUrl);
+    }
     if (imageList.length === 0 && isSafeImageUrl(data.image)) {
         imageList.push(data.image);
     }
@@ -175,9 +160,7 @@ function writeProductCache(items) {
             savedAt: Date.now(),
             products: items
         }));
-    } catch {
-        // Storage can be unavailable in private browsing
-    }
+    } catch {}
 }
 
 function renderProducts(items) {
@@ -200,9 +183,7 @@ async function fetchProducts() {
             if (persistedProducts.length > 0) {
                 renderProducts(persistedProducts);
             }
-        } catch {
-            // Firestore cache empty
-        }
+        } catch {}
     }
 
     try {
@@ -257,10 +238,6 @@ function showProductLoading() {
         }
     });
 }
-
-// =========================================
-// PRODUCT LOAD ERROR
-// =========================================
 
 function showProductLoadError() {
     PRODUCT_CATEGORIES.forEach(category => {
@@ -474,9 +451,7 @@ function loadCart() {
 function saveCart() {
     try {
         localStorage.setItem("melodexCart", JSON.stringify(cart));
-    } catch (error) {
-        console.warn("Cart save failed:", error);
-    }
+    } catch (error) {}
 }
 
 function addToCart(productId) {
@@ -511,7 +486,6 @@ function updateCart() {
 function updateCartCount() {
     const cartCount = document.querySelector(".cart-count");
     if (!cartCount) return;
-
     const totalQuantity = cart.reduce((total, item) => total + Number(item.quantity || 0), 0);
     cartCount.textContent = totalQuantity;
 }
@@ -704,7 +678,6 @@ function createProductDetailModal() {
             <div class="product-detail-content">
                 <div class="product-detail-gallery">
                     <div class="product-detail-main-image-wrapper loading">
-                        <div class="image-loader-spinner"><i class="fas fa-circle-notch fa-spin"></i></div>
                         <img id="detailMainImage" class="product-detail-main-image" src="" alt="">
                         <button type="button" class="product-detail-image-zoom" id="detailImageZoom" aria-label="Zoom Image">
                             <i class="fas fa-expand"></i>
@@ -740,6 +713,35 @@ function createProductDetailModal() {
 
     document.body.appendChild(modal);
     productDetailModal = modal;
+}
+
+// =========================================
+// HELPER TO LOAD IMAGE SMOOTHLY
+// =========================================
+
+function setImageWithLoader(imgElement, wrapperElement, src, alt) {
+    if (!imgElement || !wrapperElement) return;
+
+    wrapperElement.classList.add("loading");
+    imgElement.classList.remove("loaded");
+
+    if (!src) {
+        wrapperElement.classList.remove("loading");
+        imgElement.src = "";
+        return;
+    }
+
+    const tempImg = new Image();
+    tempImg.onload = () => {
+        imgElement.src = src;
+        imgElement.alt = alt || "";
+        imgElement.classList.add("loaded");
+        wrapperElement.classList.remove("loading");
+    };
+    tempImg.onerror = () => {
+        wrapperElement.classList.remove("loading");
+    };
+    tempImg.src = src;
 }
 
 // =========================================
@@ -780,24 +782,7 @@ function openProductDetail(productId, updateUrl = true) {
             : [];
 
     const imgWrapper = mainImage.closest(".product-detail-main-image-wrapper");
-    if (imgWrapper) imgWrapper.classList.add("loading");
-    mainImage.classList.remove("loaded");
-
-    if (imageList[0]) {
-        mainImage.onload = () => {
-            mainImage.classList.add("loaded");
-            if (imgWrapper) imgWrapper.classList.remove("loading");
-        };
-        mainImage.onerror = () => {
-            if (imgWrapper) imgWrapper.classList.remove("loading");
-        };
-        mainImage.src = imageList[0];
-        mainImage.alt = product.name;
-    } else {
-        if (imgWrapper) imgWrapper.classList.remove("loading");
-        mainImage.src = "";
-        mainImage.alt = product.name;
-    }
+    setImageWithLoader(mainImage, imgWrapper, imageList[0], product.name);
 
     category.textContent = getCategoryName(product.category);
     name.textContent = product.name;
@@ -814,19 +799,7 @@ function openProductDetail(productId, updateUrl = true) {
         thumb.dataset.image = imageUrl;
 
         thumb.addEventListener("click", () => {
-            if (imgWrapper) imgWrapper.classList.add("loading");
-            mainImage.classList.remove("loaded");
-
-            mainImage.onload = () => {
-                mainImage.classList.add("loaded");
-                if (imgWrapper) imgWrapper.classList.remove("loading");
-            };
-            mainImage.onerror = () => {
-                if (imgWrapper) imgWrapper.classList.remove("loading");
-            };
-
-            mainImage.src = imageUrl;
-
+            setImageWithLoader(mainImage, imgWrapper, imageUrl, product.name);
             thumbnails.querySelectorAll(".detail-thumb").forEach(item => item.classList.remove("active"));
             thumb.classList.add("active");
         });
@@ -938,7 +911,6 @@ function initializeProductDetailEvents() {
 
 async function copyCurrentProductLink() {
     if (!currentDetailProduct) return;
-
     const url = getPublicProductUrl(currentDetailProduct.id);
 
     try {
@@ -958,7 +930,6 @@ async function copyCurrentProductLink() {
         }
         showNotification("Product link copied!", "success");
     } catch (error) {
-        console.error("Copy link failed:", error);
         showNotification("Link copy করা যায়নি।", "error");
     }
 }
