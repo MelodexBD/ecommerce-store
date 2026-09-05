@@ -183,3 +183,28 @@ For issues or feature requests:
 **Happy Selling!** 🎸🎹🎹
 
 *Melodex - Your Musical Journey Starts Here*
+
+## Performance and security update (v4)
+
+- Product data is saved in `localStorage` for 24 hours. Returning visitors see
+  the complete cached catalogue immediately, while Firebase refreshes it in the
+  background.
+- Firestore's IndexedDB cache is used as a second offline fallback.
+- Only the first two visible product images are given high download priority;
+  the rest load as they enter the viewport. Images decode asynchronously, which
+  keeps scrolling and button clicks responsive.
+- The forced Facebook/Messenger-to-Chrome redirect was removed. It could break
+  checkout links and make the store feel unreliable for mobile visitors.
+- `firestore.rules` prevents unauthenticated product edits. Deploy it with
+  `firebase deploy --only firestore:rules` after assigning the Firebase Auth
+  custom claim `admin: true` to each dashboard administrator. Do not deploy
+  these rules until that claim has been set, otherwise the current admin panel
+  will correctly lose write access.
+
+### Important hosting note
+
+The first visit still needs to download catalogue data from Firebase, so no
+static website can guarantee a 0–1 second result on every mobile network.
+The cache makes repeat visits fast. For a guaranteed fast *first* visit, export
+the product catalogue to a small static JSON file during publishing (or serve it
+from a CDN) and use Firebase only to refresh it.
