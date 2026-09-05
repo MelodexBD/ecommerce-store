@@ -69,27 +69,15 @@ const PRODUCT_CATEGORIES = [
 // =========================================
 
 function normalizeCategory(category) {
-    if (!category) {
-        return "guitars";
-    }
+    if (!category) return "guitars";
 
     const cat = String(category).toLowerCase().trim();
 
-    if (cat.includes("guitar")) {
-        return "guitars";
-    }
-    if (cat.includes("pedalboard")) {
-        return "pedalboards";
-    }
-    if (cat.includes("pedal")) {
-        return "pedals";
-    }
-    if (cat.includes("stand")) {
-        return "stands";
-    }
-    if (cat.includes("cable") || cat.includes("accessori")) {
-        return "cables";
-    }
+    if (cat.includes("guitar")) return "guitars";
+    if (cat.includes("pedalboard")) return "pedalboards";
+    if (cat.includes("pedal")) return "pedals";
+    if (cat.includes("stand")) return "stands";
+    if (cat.includes("cable") || cat.includes("accessori")) return "cables";
 
     return "guitars";
 }
@@ -111,9 +99,7 @@ function getCategoryName(category) {
 // =========================================
 
 function getPublicProductUrl(productId) {
-    if (!productId) {
-        return window.location.href;
-    }
+    if (!productId) return window.location.href;
 
     const productUrl = new URL("./", window.location.href);
     productUrl.search = "";
@@ -174,12 +160,9 @@ function productsFromSnapshot(querySnapshot) {
 function readProductCache() {
     try {
         const cached = JSON.parse(localStorage.getItem(PRODUCT_CACHE_KEY));
-
-        if (!cached || !Array.isArray(cached.products) ||
-            Date.now() - cached.savedAt > PRODUCT_CACHE_MAX_AGE) {
+        if (!cached || !Array.isArray(cached.products) || Date.now() - cached.savedAt > PRODUCT_CACHE_MAX_AGE) {
             return [];
         }
-
         return cached.products.map(product => normalizeProduct(product.id, product));
     } catch {
         return [];
@@ -193,7 +176,7 @@ function writeProductCache(items) {
             products: items
         }));
     } catch {
-        // Storage fallback
+        // Storage can be unavailable in private browsing
     }
 }
 
@@ -218,7 +201,7 @@ async function fetchProducts() {
                 renderProducts(persistedProducts);
             }
         } catch {
-            // No cache
+            // Firestore cache empty
         }
     }
 
@@ -235,7 +218,6 @@ async function fetchProducts() {
         console.log(`Melodex: ${freshProducts.length} products synced.`);
     } catch (error) {
         console.error("Firebase fetch error:", error);
-
         if (products.length === 0) {
             showProductLoadError();
         }
@@ -263,9 +245,7 @@ function updateProductCount() {
 // =========================================
 
 function showProductLoading() {
-    const categories = ["guitars", "pedals", "pedalboards", "stands", "cables"];
-
-    categories.forEach(category => {
+    PRODUCT_CATEGORIES.forEach(category => {
         const container = document.getElementById(`${category}Container`);
         if (container && products.length === 0) {
             container.innerHTML = `
@@ -283,9 +263,7 @@ function showProductLoading() {
 // =========================================
 
 function showProductLoadError() {
-    const categories = ["guitars", "pedals", "pedalboards", "stands", "cables"];
-
-    categories.forEach(category => {
+    PRODUCT_CATEGORIES.forEach(category => {
         const container = document.getElementById(`${category}Container`);
         if (container && products.length === 0) {
             container.innerHTML = `
@@ -302,9 +280,7 @@ function showProductLoadError() {
 // =========================================
 
 function displayProductsByCategory() {
-    const categories = ["guitars", "pedals", "pedalboards", "stands", "cables"];
-
-    categories.forEach(category => {
+    PRODUCT_CATEGORIES.forEach(category => {
         const container = document.getElementById(`${category}Container`);
         if (!container) return;
 
@@ -352,8 +328,7 @@ function displayProductsByCategory() {
                         id="main-img-${escapeHTML(product.id)}"
                         loading="${isPriorityImage ? "eager" : "lazy"}"
                         decoding="async"
-                        onload="this.classList.add('img-ready'); this.parentElement.classList.remove('img-loading');"
-                        onerror="this.parentElement.classList.remove('img-loading');"
+                        fetchpriority="${isPriorityImage ? "high" : "low"}"
                     >
                 `
                 : `
@@ -365,20 +340,32 @@ function displayProductsByCategory() {
 
             productsHTML += `
                 <div class="product-card" data-product-card="${escapeHTML(product.id)}">
-                    <div class="product-image-wrapper ${product.image ? 'img-loading' : ''}">
+                    <div class="product-image-wrapper">
                         ${mainImageHTML}
                         <button class="image-zoom-btn" data-product-id="${escapeHTML(product.id)}" aria-label="View Image" type="button">
                             <i class="fas fa-expand"></i>
                         </button>
                     </div>
+
                     ${thumbnailsHTML}
+
                     <div class="product-info">
-                        <span class="product-category">${escapeHTML(getCategoryName(product.category))}</span>
+                        <span class="product-category">
+                            ${escapeHTML(getCategoryName(product.category))}
+                        </span>
+
                         <h3 class="product-name product-detail-link" data-product-detail="${escapeHTML(product.id)}" title="View Product Details" tabindex="0" role="button">
                             ${escapeHTML(product.name)}
                         </h3>
-                        <p class="product-description">${escapeHTML(product.description)}</p>
-                        <div class="product-price">৳ ${formatPrice(product.price)}</div>
+
+                        <p class="product-description">
+                            ${escapeHTML(product.description)}
+                        </p>
+
+                        <div class="product-price">
+                            ৳ ${formatPrice(product.price)}
+                        </div>
+
                         <div class="product-actions">
                             <button class="btn-add-cart" data-product-id="${escapeHTML(product.id)}" type="button">
                                 <i class="fas fa-shopping-cart"></i> Add to Cart
@@ -448,6 +435,7 @@ function initializeProductEvents() {
             const productId = thumb.dataset.productId;
             const imgURL = thumb.dataset.image;
             const mainImg = document.getElementById(`main-img-${productId}`);
+
             if (mainImg) {
                 mainImg.src = imgURL;
             }
@@ -491,15 +479,12 @@ function saveCart() {
     }
 }
 
-// =========================================
-// CART ACTIONS
-// =========================================
-
 function addToCart(productId) {
     const product = products.find(p => String(p.id) === String(productId));
     if (!product) return;
 
     const existing = cart.find(item => String(item.id) === String(productId));
+
     if (existing) {
         existing.quantity += 1;
     } else {
@@ -604,8 +589,9 @@ function changeCartQuantity(productId, action) {
     const item = cart.find(i => String(i.id) === String(productId));
     if (!item) return;
 
-    if (action === "increase") item.quantity += 1;
-    if (action === "decrease") {
+    if (action === "increase") {
+        item.quantity += 1;
+    } else if (action === "decrease") {
         item.quantity -= 1;
         if (item.quantity <= 0) {
             cart = cart.filter(i => String(i.id) !== String(productId));
@@ -626,6 +612,7 @@ function removeCartItem(productId) {
 function openCart() {
     const sidebar = document.getElementById("cartSidebar");
     const overlay = document.getElementById("cartOverlay");
+
     if (sidebar && overlay) {
         sidebar.classList.add("active");
         overlay.classList.add("active");
@@ -636,6 +623,7 @@ function openCart() {
 function closeCart() {
     const sidebar = document.getElementById("cartSidebar");
     const overlay = document.getElementById("cartOverlay");
+
     if (sidebar) sidebar.classList.remove("active");
     if (overlay) overlay.classList.remove("active");
     updateBodyScrollLock();
@@ -677,6 +665,7 @@ function checkoutCart() {
 function openImageModal(imgURL, altText) {
     const modal = document.getElementById("imageModal");
     const modalImg = document.getElementById("modalImage");
+
     if (!modal || !modalImg) return;
 
     modalImg.src = imgURL;
@@ -705,6 +694,7 @@ function createProductDetailModal() {
     const modal = document.createElement("div");
     modal.id = "productDetailModal";
     modal.className = "product-detail-modal";
+
     modal.innerHTML = `
         <div class="product-detail-overlay" data-detail-close="true"></div>
         <div class="product-detail-box" role="dialog" aria-modal="true" aria-labelledby="detailProductName">
@@ -713,7 +703,8 @@ function createProductDetailModal() {
             </button>
             <div class="product-detail-content">
                 <div class="product-detail-gallery">
-                    <div class="product-detail-main-image-wrapper">
+                    <div class="product-detail-main-image-wrapper loading">
+                        <div class="image-loader-spinner"><i class="fas fa-circle-notch fa-spin"></i></div>
                         <img id="detailMainImage" class="product-detail-main-image" src="" alt="">
                         <button type="button" class="product-detail-image-zoom" id="detailImageZoom" aria-label="Zoom Image">
                             <i class="fas fa-expand"></i>
@@ -767,6 +758,7 @@ function openProductDetail(productId, updateUrl = true) {
     }
 
     createProductDetailModal();
+
     currentDetailProduct = product;
 
     const modal = productDetailModal;
@@ -781,50 +773,36 @@ function openProductDetail(productId, updateUrl = true) {
         return;
     }
 
-    // =====================================
-    // PRODUCT DATA & PRELOAD EFFECT
-    // =====================================
-
     const imageList = product.images && product.images.length > 0
         ? product.images
         : product.image
             ? [product.image]
             : [];
 
-    const imgWrapper = mainImage.closest('.product-detail-main-image-wrapper');
-    if (imgWrapper) imgWrapper.classList.add('img-loading');
-    mainImage.classList.remove('img-ready');
+    const imgWrapper = mainImage.closest(".product-detail-main-image-wrapper");
+    if (imgWrapper) imgWrapper.classList.add("loading");
+    mainImage.classList.remove("loaded");
 
     if (imageList[0]) {
-        const tempImg = new Image();
-        tempImg.src = imageList[0];
-
-        tempImg.onload = () => {
-            mainImage.src = imageList[0];
-            mainImage.alt = product.name;
-            mainImage.classList.add('img-ready');
-            if (imgWrapper) imgWrapper.classList.remove('img-loading');
+        mainImage.onload = () => {
+            mainImage.classList.add("loaded");
+            if (imgWrapper) imgWrapper.classList.remove("loading");
         };
-
-        tempImg.onerror = () => {
-            if (imgWrapper) imgWrapper.classList.remove('img-loading');
+        mainImage.onerror = () => {
+            if (imgWrapper) imgWrapper.classList.remove("loading");
         };
-
-        if (tempImg.complete) {
-            tempImg.onload();
-        }
+        mainImage.src = imageList[0];
+        mainImage.alt = product.name;
     } else {
-        if (imgWrapper) imgWrapper.classList.remove('img-loading');
+        if (imgWrapper) imgWrapper.classList.remove("loading");
+        mainImage.src = "";
+        mainImage.alt = product.name;
     }
 
     category.textContent = getCategoryName(product.category);
     name.textContent = product.name;
     price.textContent = `৳ ${formatPrice(product.price)}`;
     description.textContent = product.description || "No product description available.";
-
-    // =====================================
-    // THUMBNAILS
-    // =====================================
 
     thumbnails.innerHTML = "";
 
@@ -836,19 +814,18 @@ function openProductDetail(productId, updateUrl = true) {
         thumb.dataset.image = imageUrl;
 
         thumb.addEventListener("click", () => {
-            if (imgWrapper) imgWrapper.classList.add('img-loading');
-            mainImage.classList.remove('img-ready');
+            if (imgWrapper) imgWrapper.classList.add("loading");
+            mainImage.classList.remove("loaded");
 
-            const tempThumbImg = new Image();
-            tempThumbImg.src = imageUrl;
-            tempThumbImg.onload = () => {
-                mainImage.src = imageUrl;
-                mainImage.classList.add('img-ready');
-                if (imgWrapper) imgWrapper.classList.remove('img-loading');
+            mainImage.onload = () => {
+                mainImage.classList.add("loaded");
+                if (imgWrapper) imgWrapper.classList.remove("loading");
             };
-            if (tempThumbImg.complete) {
-                tempThumbImg.onload();
-            }
+            mainImage.onerror = () => {
+                if (imgWrapper) imgWrapper.classList.remove("loading");
+            };
+
+            mainImage.src = imageUrl;
 
             thumbnails.querySelectorAll(".detail-thumb").forEach(item => item.classList.remove("active"));
             thumb.classList.add("active");
@@ -961,6 +938,7 @@ function initializeProductDetailEvents() {
 
 async function copyCurrentProductLink() {
     if (!currentDetailProduct) return;
+
     const url = getPublicProductUrl(currentDetailProduct.id);
 
     try {
@@ -985,12 +963,18 @@ async function copyCurrentProductLink() {
     }
 }
 
+// =========================================
+// OPEN PRODUCT FROM URL
+// =========================================
+
 function initializeProductDetailFromUrl() {
     const params = new URLSearchParams(window.location.search);
     const productId = params.get("product");
+
     if (!productId) return;
 
     const product = products.find(p => String(p.id) === String(productId));
+
     if (product) {
         openProductDetail(product.id, false);
     } else {
@@ -1037,7 +1021,7 @@ function showNotification(message, type = "success") {
 }
 
 // =========================================
-// UTILITIES
+// FORMAT PRICE & ESCAPE HTML
 // =========================================
 
 function formatPrice(price) {
@@ -1070,8 +1054,8 @@ function initializeEvents() {
     if (closeCartButton) closeCartButton.addEventListener("click", closeCart);
     if (cartOverlay) cartOverlay.addEventListener("click", closeCart);
     if (checkoutButton) checkoutButton.addEventListener("click", checkoutCart);
-
     if (imageModalClose) imageModalClose.addEventListener("click", closeImageModal);
+
     if (imageModal) {
         imageModal.addEventListener("click", event => {
             if (event.target === imageModal) closeImageModal();
@@ -1087,8 +1071,8 @@ function initializeEvents() {
             return;
         }
 
-        const imageModal = document.getElementById("imageModal");
-        if (imageModal && imageModal.classList.contains("active")) {
+        const imgModal = document.getElementById("imageModal");
+        if (imgModal && imgModal.classList.contains("active")) {
             closeImageModal();
             return;
         }
@@ -1129,10 +1113,7 @@ function initializeEvents() {
             const target = document.querySelector(href);
             if (target) {
                 event.preventDefault();
-                target.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start"
-                });
+                target.scrollIntoView({ behavior: "smooth", block: "start" });
             }
         });
     });
@@ -1152,10 +1133,6 @@ async function initApp() {
 
     await fetchProducts();
 }
-
-// =========================================
-// START APP
-// =========================================
 
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initApp);
