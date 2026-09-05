@@ -1917,3 +1917,37 @@ a:focus-visible,
     }
 
 }
+/* প্রফেশনাল ইমেজ লোডার ও স্কেলিটন ইফেক্ট */
+.product-detail-main-image-wrapper {
+  position: relative;
+  background-color: #1e293b;
+  overflow: hidden;
+}
+
+/* লোড হওয়ার আগ পর্যন্ত শিমার এনিমেশন */
+.product-detail-main-image-wrapper.loading::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  z-index: 1;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ইমেজ পুরোপুরি লোড না হওয়া পর্যন্ত ইনভিজিবল রাখা যাতে ব্রোকেন টেক্সট না দেখা যায় */
+.product-detail-main-image {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.product-detail-main-image.loaded {
+  opacity: 1;
+  position: relative;
+  z-index: 2;
+}
