@@ -1007,7 +1007,7 @@ button {
 .product-detail-description {
     color: var(--gray-light);
     line-height: 1.8;
-    white-space: pre-line;
+    white-space: normal;
     margin-bottom: 28px;
     word-break: break-word;
 }
