@@ -1,1348 +1,743 @@
 <!DOCTYPE html>
 <html lang="bn">
-
 <head>
-
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>Melodex | Musical Instruments & Accessories</title>
-
-    <meta
-        name="description"
-        content="Premium musical instruments and accessories for musicians, creators and performers."
-    >
-
-
-    <meta name="theme-color" content="#080808">
-    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-
-
-    <!-- =========================================================
-         CSS
-         ========================================================= -->
-
-    <link
-        rel="stylesheet"
-        href="styles.css?v=4.0"
-    >
-
-
-    <!-- =========================================================
-         FONT AWESOME
-         ========================================================= -->
-
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    >
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IELTS Cambridge Prep & Vocabulary Master</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome 6 Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'Hind Siliguri', 'sans-serif'],
+          },
+          colors: {
+            forest: {
+              50: '#f2f7f4',
+              100: '#e1ede6',
+              200: '#c5dcd0',
+              500: '#3c7558',
+              600: '#2d5a43', // আপনার পছন্দের ডিপ ফরেস্ট গ্রিন
+              700: '#234935',
+              800: '#1c392b',
+              900: '#14291f',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .view-screen { transition: opacity 0.2s ease-in-out; }
+    .progress-ring-circle {
+      transition: stroke-dashoffset 0.8s ease-in-out;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+    }
+  </style>
 </head>
+<body class="bg-[#f4f7f5] text-slate-800 min-h-screen flex flex-col font-sans antialiased selection:bg-forest-600 selection:text-white">
 
+  <!-- ================= TOP HEADER WITH PROFILE DROPDOWN ================= -->
+  <header class="bg-white border-b border-slate-200/80 sticky top-0 z-40 px-4 md:px-8 py-3 shadow-sm flex items-center justify-between">
+    
+    <!-- User Profile & Dropdown Area -->
+    <div class="relative">
+      <button onclick="toggleProfileDropdown(event)" class="flex items-center gap-3 p-1 rounded-2xl hover:bg-slate-50 transition-colors focus:outline-none">
+        <div class="relative">
+          <div class="w-10 h-10 md:w-11 md:h-11 rounded-full bg-gradient-to-tr from-forest-700 to-forest-500 text-white font-extrabold flex items-center justify-center text-sm shadow-md ring-2 ring-forest-500/20">
+            TA
+          </div>
+          <span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
+        </div>
+        <div class="text-left">
+          <div class="flex items-center gap-1.5">
+            <h2 class="text-sm md:text-base font-extrabold text-slate-900 leading-tight">Tanbir Ahmed</h2>
+            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+          </div>
+          <p class="text-xs font-semibold text-forest-600">Target Band: 8.0</p>
+        </div>
+      </button>
 
-<body>
-
-
-    <!-- =========================================================
-         NAVIGATION
-         ========================================================= -->
-
-    <nav class="navbar">
-
-        <div class="nav-container">
-
-
-            <a
-                href="#home"
-                class="logo"
-            >
-
-                <span class="logo-white">MELO</span><span class="logo-red">DEX</span>
-
-            </a>
-
-
-            <div class="nav-menu">
-
-                <a
-                    href="#guitars"
-                    class="nav-link"
-                >
-                    Shop
-                </a>
-
-
-                <a
-                    href="#categories"
-                    class="nav-link"
-                >
-                    Categories
-                </a>
-
-
-                <a
-                    href="#about"
-                    class="nav-link"
-                >
-                    About
-                </a>
-
-
-                <a
-                    href="#contact"
-                    class="nav-link"
-                >
-                    Contact
-                </a>
-
-            </div>
-
-
-            <button
-                class="cart-icon"
-                id="cartButton"
-                title="Shopping Cart"
-                type="button"
-            >
-
-                <i class="fas fa-shopping-cart"></i>
-
-                <span class="cart-count">0</span>
-
-            </button>
-
-
+      <!-- Profile Dropdown Menu -->
+      <div id="profileDropdown" class="hidden absolute left-0 mt-2 w-64 bg-white border border-slate-200/90 rounded-2xl shadow-xl z-50 p-2 space-y-1">
+        <div class="px-3 py-2 border-b border-slate-100">
+          <p class="text-xs text-slate-400 font-bold uppercase">ইউজার অ্যাকাউন্ট</p>
+          <p class="text-sm font-black text-slate-800">tanbir.ahmed@example.com</p>
         </div>
 
-    </nav>
-
-
-
-    <!-- =========================================================
-         HERO SECTION
-         ========================================================= -->
-
-    <section
-        id="home"
-        class="hero"
-    >
-
-        <div class="hero-glow"></div>
-
-
-        <div class="hero-container">
-
-
-            <div class="hero-content">
-
-
-                <div class="hero-tag">
-                    MUSICAL INSTRUMENTS & ACCESSORIES
-                </div>
-
-
-                <h1>
-
-                    <span class="title-white">
-                        Play better.
-                    </span>
-
-                    <span class="title-red">
-                        Sound greater.
-                    </span>
-
-                </h1>
-
-
-                <p class="hero-description">
-
-                    Premium musical gear, carefully selected for musicians,
-                    creators and performers. Quality products, genuine imports
-                    and service you can count on.
-
-                </p>
-
-
-                <div class="hero-buttons">
-
-
-                    <a
-                        href="#guitars"
-                        class="btn explore-btn"
-                    >
-
-                        Explore Products
-
-                        <i class="fas fa-arrow-right"></i>
-
-                    </a>
-
-
-                    <a
-                        href="https://wa.me/8801310863206"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="btn whatsapp-hero-btn"
-                    >
-
-                        <i class="fab fa-whatsapp"></i>
-
-                        WhatsApp Us
-
-                    </a>
-
-
-                </div>
-
-
-            </div>
-
-
-
-            <div class="hero-visual">
-
-
-                <div class="visual-card">
-
-
-                    <div class="visual-logo">
-
-                        <span class="visual-white">MELO</span><span class="visual-red">DEX</span>
-
-                    </div>
-
-
-                    <div class="visual-subtitle">
-                        GEAR FOR CREATORS
-                    </div>
-
-
-                    <div class="music-symbol">
-
-                        <i class="fas fa-music"></i>
-
-                    </div>
-
-
-                    <div class="card-line line-one"></div>
-
-                    <div class="card-line line-two"></div>
-
-
-                </div>
-
-
-            </div>
-
-
-        </div>
-
-    </section>
-
-
-
-    <!-- =========================================================
-         CATEGORIES
-         ========================================================= -->
-
-    <section
-        id="categories"
-        class="categories-section"
-    >
-
-        <div class="container">
-
-
-            <div class="section-heading">
-
-                <span class="section-tag">
-                    EXPLORE OUR COLLECTION
-                </span>
-
-
-                <h2>
-                    Shop by <span>Category</span>
-                </h2>
-
-
-                <p>
-                    Find the gear that helps you create your perfect sound.
-                </p>
-
-            </div>
-
-
-
-            <div class="categories-grid">
-
-
-                <a
-                    href="#guitars"
-                    class="category-card"
-                >
-
-                    <div class="category-icon">
-
-                        <i class="fas fa-guitar"></i>
-
-                    </div>
-
-
-                    <h3>
-                        Guitars
-                    </h3>
-
-
-                    <p>
-                        Electric & Acoustic
-                    </p>
-
-                </a>
-
-
-
-                <a
-                    href="#pedals"
-                    class="category-card"
-                >
-
-                    <div class="category-icon">
-
-                        <i class="fas fa-sliders"></i>
-
-                    </div>
-
-
-                    <h3>
-                        Pedals
-                    </h3>
-
-
-                    <p>
-                        Effects & Sound
-                    </p>
-
-                </a>
-
-
-
-                <a
-                    href="#pedalboards"
-                    class="category-card"
-                >
-
-                    <div class="category-icon">
-
-                        <i class="fas fa-plug"></i>
-
-                    </div>
-
-
-                    <h3>
-                        Pedalboards
-                    </h3>
-
-
-                    <p>
-                        Boards & Power
-                    </p>
-
-                </a>
-
-
-
-                <a
-                    href="#stands"
-                    class="category-card"
-                >
-
-                    <div class="category-icon">
-
-                        <i class="fas fa-music"></i>
-
-                    </div>
-
-
-                    <h3>
-                        Stands
-                    </h3>
-
-
-                    <p>
-                        Stable & Reliable
-                    </p>
-
-                </a>
-
-
-
-                <a
-                    href="#cables"
-                    class="category-card"
-                >
-
-                    <div class="category-icon">
-
-                        <i class="fas fa-headphones"></i>
-
-                    </div>
-
-
-                    <h3>
-                        Accessories
-                    </h3>
-
-
-                    <p>
-                        Cables & More
-                    </p>
-
-                </a>
-
-
-            </div>
-
-
-        </div>
-
-    </section>
-
-
-
-    <!-- =========================================================
-         GUITARS
-         ========================================================= -->
-
-    <section
-        id="guitars"
-        class="products-section"
-    >
-
-        <div class="container">
-
-
-            <div class="product-section-header">
-
-
-                <div>
-
-                    <span class="section-tag">
-                        SHOP COLLECTION
-                    </span>
-
-
-                    <h2>
-                        Guitars
-                    </h2>
-
-                </div>
-
-
-                <p>
-                    Discover instruments designed to inspire your next sound.
-                </p>
-
-
-            </div>
-
-
-            <div
-                class="products-grid"
-                id="guitarsContainer"
-            ></div>
-
-
-        </div>
-
-    </section>
-
-
-
-    <!-- =========================================================
-         PEDALS
-         ========================================================= -->
-
-    <section
-        id="pedals"
-        class="products-section alternate-section"
-    >
-
-        <div class="container">
-
-
-            <div class="product-section-header">
-
-
-                <div>
-
-                    <span class="section-tag">
-                        SHAPE YOUR SOUND
-                    </span>
-
-
-                    <h2>
-                        Pedals & Effects
-                    </h2>
-
-                </div>
-
-
-                <p>
-                    Take control of your tone and creativity.
-                </p>
-
-
-            </div>
-
-
-            <div
-                class="products-grid"
-                id="pedalsContainer"
-            ></div>
-
-
-        </div>
-
-    </section>
-
-
-
-    <!-- =========================================================
-         PEDALBOARDS
-         ========================================================= -->
-
-    <section
-        id="pedalboards"
-        class="products-section"
-    >
-
-        <div class="container">
-
-
-            <div class="product-section-header">
-
-
-                <div>
-
-                    <span class="section-tag">
-                        BUILD YOUR RIG
-                    </span>
-
-
-                    <h2>
-                        Pedalboards
-                    </h2>
-
-                </div>
-
-
-                <p>
-                    Organize your pedals and build your perfect setup.
-                </p>
-
-
-            </div>
-
-
-            <div
-                class="products-grid"
-                id="pedalboardsContainer"
-            ></div>
-
-
-        </div>
-
-    </section>
-
-
-
-    <!-- =========================================================
-         STANDS
-         ========================================================= -->
-
-    <section
-        id="stands"
-        class="products-section alternate-section"
-    >
-
-        <div class="container">
-
-
-            <div class="product-section-header">
-
-
-                <div>
-
-                    <span class="section-tag">
-                        PERFORMANCE ESSENTIALS
-                    </span>
-
-
-                    <h2>
-                        Stands
-                    </h2>
-
-                </div>
-
-
-                <p>
-                    Reliable support for your instruments and equipment.
-                </p>
-
-
-            </div>
-
-
-            <div
-                class="products-grid"
-                id="standsContainer"
-            ></div>
-
-
-        </div>
-
-    </section>
-
-
-
-    <!-- =========================================================
-         CABLES & ACCESSORIES
-         ========================================================= -->
-
-    <section
-        id="cables"
-        class="products-section"
-    >
-
-        <div class="container">
-
-
-            <div class="product-section-header">
-
-
-                <div>
-
-                    <span class="section-tag">
-                        COMPLETE YOUR SETUP
-                    </span>
-
-
-                    <h2>
-                        Cables & Accessories
-                    </h2>
-
-                </div>
-
-
-                <p>
-                    Essential gear for every musician and creator.
-                </p>
-
-
-            </div>
-
-
-            <div
-                class="products-grid"
-                id="cablesContainer"
-            ></div>
-
-
-        </div>
-
-    </section>
-
-
-
-    <!-- =========================================================
-         WHY CHOOSE MELODEX
-         ========================================================= -->
-
-    <section class="features-section">
-
-        <div class="container">
-
-
-            <div class="section-heading">
-
-                <span class="section-tag">
-                    WHY CHOOSE US
-                </span>
-
-
-                <h2>
-                    Built for <span>musicians.</span>
-                </h2>
-
-
-                <p>
-                    Everything you need to build your sound in one place.
-                </p>
-
-
-            </div>
-
-
-
-            <div class="features-grid">
-
-
-                <div class="feature-card">
-
-                    <div class="feature-icon">
-
-                        <i class="fas fa-gem"></i>
-
-                    </div>
-
-
-                    <h3>
-                        Quality Products
-                    </h3>
-
-
-                    <p>
-                        Carefully selected musical gear and accessories.
-                    </p>
-
-                </div>
-
-
-
-                <div class="feature-card">
-
-                    <div class="feature-icon">
-
-                        <i class="fas fa-shield-alt"></i>
-
-                    </div>
-
-
-                    <h3>
-                        Trusted Service
-                    </h3>
-
-
-                    <p>
-                        Honest information and reliable customer support.
-                    </p>
-
-                </div>
-
-
-
-                <div class="feature-card">
-
-                    <div class="feature-icon">
-
-                        <i class="fab fa-whatsapp"></i>
-
-                    </div>
-
-
-                    <h3>
-                        Easy Ordering
-                    </h3>
-
-
-                    <p>
-                        Order your favorite products directly on WhatsApp.
-                    </p>
-
-                </div>
-
-
-
-                <div class="feature-card">
-
-                    <div class="feature-icon">
-
-                        <i class="fas fa-headset"></i>
-
-                    </div>
-
-
-                    <h3>
-                        Customer Support
-                    </h3>
-
-
-                    <p>
-                        Get help whenever you need it.
-                    </p>
-
-                </div>
-
-
-            </div>
-
-
-        </div>
-
-    </section>
-
-
-
-    <!-- =========================================================
-         ABOUT
-         ========================================================= -->
-
-    <section
-        id="about"
-        class="about-section"
-    >
-
-        <div class="container">
-
-
-            <div class="about-container">
-
-
-                <div class="about-content">
-
-
-                    <span class="section-tag">
-                        ABOUT MELODEX
-                    </span>
-
-
-                    <h2>
-                        Gear for <span>creators.</span>
-                    </h2>
-
-
-                    <p>
-
-                        Melodex is focused on bringing quality musical
-                        instruments and accessories to musicians, creators
-                        and performers.
-
-                    </p>
-
-
-                    <p>
-
-                        From guitars and pedals to cables, stands and essential
-                        accessories, we carefully select products that help you
-                        build your perfect setup.
-
-                    </p>
-
-
-                    <a
-                        href="#contact"
-                        class="about-button"
-                    >
-
-                        Contact Melodex
-
-                        <i class="fas fa-arrow-right"></i>
-
-                    </a>
-
-
-                </div>
-
-
-
-                <div class="about-stats">
-
-
-                    <div class="stat-card">
-
-                        <strong>
-                            5+
-                        </strong>
-
-                        <span>
-                            Product Categories
-                        </span>
-
-                    </div>
-
-
-
-                    <div class="stat-card">
-
-                        <strong id="total-products-count">
-                            0
-                        </strong>
-
-                        <span>
-                            Products Available
-                        </span>
-
-                    </div>
-
-
-
-                    <div class="stat-card">
-
-                        <strong>
-                            BD
-                        </strong>
-
-                        <span>
-                            Based Business
-                        </span>
-
-                    </div>
-
-
-
-                    <div class="stat-card">
-
-                        <strong>
-                            24/7
-                        </strong>
-
-                        <span>
-                            WhatsApp Orders
-                        </span>
-
-                    </div>
-
-
-                </div>
-
-
-            </div>
-
-
-        </div>
-
-    </section>
-
-
-
-    <!-- =========================================================
-         CONTACT
-         ========================================================= -->
-
-    <section
-        id="contact"
-        class="contact"
-    >
-
-        <div class="container">
-
-
-            <div class="section-heading">
-
-
-                <span class="section-tag">
-                    GET IN TOUCH
-                </span>
-
-
-                <h2>
-                    Let's make <span>music.</span>
-                </h2>
-
-
-                <p>
-                    Contact us for product information, orders and support.
-                </p>
-
-
-            </div>
-
-
-
-            <div class="contact-info">
-
-
-                <!-- WHATSAPP -->
-
-                <div class="contact-item">
-
-
-                    <div class="contact-icon">
-
-                        <i class="fab fa-whatsapp"></i>
-
-                    </div>
-
-
-                    <h3>
-                        WhatsApp
-                    </h3>
-
-
-                    <p>
-
-                        <a
-                            href="https://wa.me/8801310863206"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            +88 01310863206
-                        </a>
-
-                    </p>
-
-
-                    <a
-                        href="https://wa.me/8801310863206"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="social-btn whatsapp-social"
-                    >
-
-                        <i class="fab fa-whatsapp"></i>
-
-                        Message on WhatsApp
-
-                    </a>
-
-
-                </div>
-
-
-
-                <!-- EMAIL -->
-
-                <div class="contact-item">
-
-
-                    <div class="contact-icon">
-
-                        <i class="fas fa-envelope"></i>
-
-                    </div>
-
-
-                    <h3>
-                        Email Support
-                    </h3>
-
-
-                    <p>
-
-                        <a
-                            href="mailto:melodex5656@gmail.com"
-                        >
-                            melodex5656@gmail.com
-                        </a>
-
-                    </p>
-
-
-                    <a
-                        href="mailto:melodex5656@gmail.com"
-                        class="social-btn email-social"
-                    >
-
-                        <i class="fas fa-envelope"></i>
-
-                        Send Email
-
-                    </a>
-
-
-                </div>
-
-
-
-                <!-- FACEBOOK -->
-
-                <div class="contact-item">
-
-
-                    <div class="contact-icon">
-
-                        <i class="fab fa-facebook-f"></i>
-
-                    </div>
-
-
-                    <h3>
-                        Facebook
-                    </h3>
-
-
-                    <p>
-
-                        <a
-                            href="https://web.facebook.com/profile.php?id=100085225722623"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            Visit Our Facebook
-                        </a>
-
-                    </p>
-
-
-                    <a
-                        href="https://web.facebook.com/profile.php?id=100085225722623"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="social-btn facebook-social"
-                    >
-
-                        <i class="fab fa-facebook-f"></i>
-
-                        Visit Facebook
-
-                    </a>
-
-
-                </div>
-
-
-            </div>
-
-
-        </div>
-
-    </section>
-
-
-
-    <!-- =========================================================
-         FOOTER
-         ========================================================= -->
-
-    <footer class="footer">
-
-
-        <div class="footer-content">
-
-
-            <div class="footer-logo">
-
-                <span>MELO</span><span>DEX</span>
-
-            </div>
-
-
-            <p class="footer-text">
-
-                Premium musical instruments & accessories for creators.
-
-            </p>
-
-
-            <div class="footer-links">
-
-
-                <a href="#home">
-                    Home
-                </a>
-
-
-                <a href="#categories">
-                    Categories
-                </a>
-
-
-                <a href="#about">
-                    About
-                </a>
-
-
-                <a href="#contact">
-                    Contact
-                </a>
-
-
-            </div>
-
-
-            <div class="footer-bottom">
-
-                <p>
-                    © 2026 Melodex. All rights reserved.
-                </p>
-
-            </div>
-
-
-        </div>
-
-
-    </footer>
-
-
-
-    <!-- =========================================================
-         CART OVERLAY
-         ========================================================= -->
-
-    <div
-        class="cart-overlay"
-        id="cartOverlay"
-    ></div>
-
-
-
-    <!-- =========================================================
-         CART SIDEBAR
-         ========================================================= -->
-
-    <aside
-        class="cart-sidebar"
-        id="cartSidebar"
-    >
-
-
-        <div class="cart-header">
-
-
-            <h2>
-
-                <i class="fas fa-shopping-cart"></i>
-
-                Your Cart
-
-            </h2>
-
-
-            <button
-                class="close-cart"
-                id="closeCart"
-                aria-label="Close Cart"
-                type="button"
-            >
-
-                <i class="fas fa-times"></i>
-
-            </button>
-
-
-        </div>
-
-
-
-        <div
-            class="cart-items"
-            id="cartItems"
-        ></div>
-
-
-
-        <div
-            class="cart-empty"
-            id="cartEmpty"
-        >
-
-            <i class="fas fa-shopping-bag"></i>
-
-
-            <h3>
-                Your cart is empty
-            </h3>
-
-
-            <p>
-                Add your favorite products to start shopping.
-            </p>
-
-
-        </div>
-
-
-
-        <div
-            class="cart-footer"
-            id="cartFooter"
-        >
-
-
-            <div class="cart-total">
-
-                <span>
-                    Total
-                </span>
-
-
-                <strong id="cartTotal">
-                    ৳ 0
-                </strong>
-
-            </div>
-
-
-            <button
-                class="checkout-btn"
-                id="checkoutButton"
-                type="button"
-            >
-
-                <i class="fab fa-whatsapp"></i>
-
-                Order All on WhatsApp
-
-            </button>
-
-
-        </div>
-
-
-    </aside>
-
-
-
-    <!-- =========================================================
-         IMAGE MODAL
-         ========================================================= -->
-
-    <div
-        class="image-modal"
-        id="imageModal"
-    >
-
-
-        <button
-            class="image-modal-close"
-            id="imageModalClose"
-            aria-label="Close Image"
-            type="button"
-        >
-
-            <i class="fas fa-times"></i>
-
+        <button onclick="showView('viewHome'); toggleProfileDropdown();" class="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-forest-50 hover:text-forest-700 rounded-xl transition-all text-left">
+          <i class="fa-solid fa-gauge-high text-forest-600 text-sm"></i>
+          <span>ড্যাশবোর্ড ভিউ</span>
         </button>
 
+        <button onclick="showToast('প্রোফাইল সেটিংস লোড হচ্ছে...'); toggleProfileDropdown();" class="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-forest-50 hover:text-forest-700 rounded-xl transition-all text-left">
+          <i class="fa-solid fa-sliders text-forest-600 text-sm"></i>
+          <span>টার্গেট ও অ্যাকাউন্ট সেটিংস</span>
+        </button>
 
-        <img
-            id="modalImage"
-            src=""
-            alt="Product Image"
-        >
+        <button onclick="showToast('ব্যান্ড স্কোর ও রিপোর্ট কার্ড'); toggleProfileDropdown();" class="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-forest-50 hover:text-forest-700 rounded-xl transition-all text-left">
+          <i class="fa-solid fa-award text-forest-600 text-sm"></i>
+          <span>পারফরম্যান্স রিপোর্ট</span>
+        </button>
 
-
+        <div class="pt-1 border-t border-slate-100">
+          <button onclick="handleLogout()" class="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl transition-all text-left">
+            <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
+            <span>লগআউট করুন</span>
+          </button>
+        </div>
+      </div>
     </div>
 
+    <!-- Desktop Global Brand Display -->
+    <div class="hidden md:flex items-center gap-2">
+      <span class="text-lg font-black tracking-tight text-slate-800">IELTS <span class="text-forest-600">VocabMaster</span></span>
+      <span class="text-[11px] bg-forest-100 text-forest-800 font-bold px-2 py-0.5 rounded-md">Cambridge 10-19</span>
+    </div>
 
+    <!-- Right Header Actions -->
+    <div class="flex items-center gap-2.5">
+      <button onclick="openPostModal()" class="hidden md:inline-flex items-center gap-2 px-4 py-2 bg-forest-600 hover:bg-forest-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-forest-900/20 active:scale-95">
+        <i class="fa-solid fa-plus"></i> নতুন শব্দ পোস্ট
+      </button>
+      <button onclick="showToast('কোনো নতুন নোটিফিকেশন নেই')" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors relative">
+        <i class="fa-regular fa-bell text-base"></i>
+        <span class="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full"></span>
+      </button>
+    </div>
+  </header>
 
-    <!-- =========================================================
-         NOTIFICATION
-         ========================================================= -->
+  <!-- ================= MAIN LAYOUT WRAPPER ================= -->
+  <div class="flex-1 flex max-w-7xl w-full mx-auto md:px-6 md:py-6 gap-6">
 
-    <div
-        id="notificationContainer"
-    ></div>
+    <!-- DESKTOP SIDEBAR -->
+    <aside class="hidden md:flex flex-col w-64 bg-white border border-slate-200/80 rounded-3xl p-5 shadow-sm shrink-0 h-fit sticky top-24 space-y-2">
+      <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-1">নেভিগেশন মেনু</span>
+      
+      <button onclick="showView('viewHome')" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm text-forest-700 bg-forest-50 border border-forest-100 transition-all text-left">
+        <i class="fa-solid fa-house text-base"></i>
+        <span>হোম ড্যাশবোর্ড</span>
+      </button>
 
+      <button onclick="openCambridgeList('Reading')" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm text-slate-600 hover:text-forest-700 hover:bg-forest-50/60 transition-all text-left">
+        <i class="fa-solid fa-book-open-reader text-base text-slate-400"></i>
+        <span>Reading Vault</span>
+      </button>
 
+      <button onclick="openCambridgeList('Listening')" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm text-slate-600 hover:text-forest-700 hover:bg-forest-50/60 transition-all text-left">
+        <i class="fa-solid fa-headphones text-base text-slate-400"></i>
+        <span>Listening Audio</span>
+      </button>
 
-    <!-- =========================================================
-         JAVASCRIPT
-         VERSION 3.0
-         ========================================================= -->
+      <button onclick="openCambridgeList('Writing')" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm text-slate-600 hover:text-forest-700 hover:bg-forest-50/60 transition-all text-left">
+        <i class="fa-solid fa-pen-to-square text-base text-slate-400"></i>
+        <span>Writing Tasks</span>
+      </button>
 
-    <script
-        type="module"
-        src="script.js?v=4.0"
-    ></script>
+      <button onclick="openCambridgeList('Speaking')" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm text-slate-600 hover:text-forest-700 hover:bg-forest-50/60 transition-all text-left">
+        <i class="fa-solid fa-microphone-lines text-base text-slate-400"></i>
+        <span>Speaking Cue Cards</span>
+      </button>
 
+      <!-- Sidebar Progress Mini Card -->
+      <div class="pt-4 border-t border-slate-100">
+        <div class="bg-forest-50/80 border border-forest-100 p-4 rounded-2xl flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-forest-600 text-white flex items-center justify-center font-bold text-xs">
+            <span id="sidePercentText">65%</span>
+          </div>
+          <div>
+            <p class="text-xs font-extrabold text-forest-800">সামগ্রিক অগ্রগতি</p>
+            <p class="text-[10px] font-semibold text-forest-600">২৬/৪০ টেস্ট সম্পন্ন</p>
+          </div>
+        </div>
+      </div>
+    </aside>
 
+    <!-- CONTENT DISPLAY VIEWPORT -->
+    <main class="flex-1 w-full flex flex-col min-w-0">
+
+      <!-- ================= 1. HOME VIEW ================= -->
+      <div id="viewHome" class="view-screen w-full flex flex-col space-y-6 p-4 md:p-0 pb-28 md:pb-6">
+        
+        <!-- Deep Forest Green Banner -->
+        <section class="relative rounded-3xl overflow-hidden bg-gradient-to-br from-forest-800 via-forest-600 to-emerald-700 text-white p-5 md:p-12 shadow-xl shadow-forest-900/15 md:min-h-[290px] flex flex-col justify-between">
+          <div class="relative z-10 space-y-2 md:space-y-4 max-w-2xl">
+            <span class="inline-block px-3 py-0.5 md:px-3.5 md:py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] md:text-xs font-extrabold tracking-wider uppercase">
+              IELTS Masterclass
+            </span>
+            <h1 class="text-xl md:text-4xl lg:text-5xl font-black leading-tight tracking-tight">
+              ক্যামব্রিজ ১০–১৯ ভোকাভিউ ও সলিউশন
+            </h1>
+            <p class="text-xs md:text-base text-forest-100/90 font-medium leading-relaxed max-w-xl">
+              Cambridge 10 থেকে 19 এর প্রতিটি টেস্টের শব্দভাণ্ডার, রিডিং ও লিসেনিং উত্তর ব্যাখ্যা এবং স্পিকিং ও রাইটিং প্র্যাকটিস দিয়ে আপনার লক্ষ্য অর্জন করুন।
+            </p>
+          </div>
+
+          <div class="relative z-10 pt-3 md:pt-6 mt-3 border-t border-white/15 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] md:text-xs text-forest-100 font-semibold">
+            <div class="flex items-center gap-1">
+              <i class="fa-solid fa-circle-check text-emerald-300 text-[10px]"></i>
+              <span>১০টি অফিশিয়াল বই</span>
+            </div>
+            <span class="text-white/30 hidden sm:inline">•</span>
+            <div class="flex items-center gap-1">
+              <i class="fa-solid fa-circle-check text-emerald-300 text-[10px]"></i>
+              <span>৪০টি ফুল টেস্ট</span>
+            </div>
+            <span class="text-white/30 hidden sm:inline">•</span>
+            <div class="flex items-center gap-1">
+              <i class="fa-solid fa-circle-check text-emerald-300 text-[10px]"></i>
+              <span>সিনোনিম ও অ্যান্টনিম</span>
+            </div>
+          </div>
+
+          <div class="absolute -right-3 -bottom-5 md:-right-6 md:-bottom-8 text-white/[0.06] text-[95px] md:text-[180px] font-black select-none pointer-events-none leading-none">
+            IELTS
+          </div>
+        </section>
+
+        <!-- ================= CIRCULAR PROGRESS RING SECTION ================= -->
+        <section class="bg-white border border-slate-200/80 rounded-3xl p-5 md:p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+          <div class="flex items-center gap-5 w-full md:w-auto">
+            <!-- Circular SVG Ring Widget -->
+            <div class="relative w-24 h-24 md:w-28 md:h-28 shrink-0 flex items-center justify-center">
+              <svg class="w-full h-full" viewBox="0 0 100 100">
+                <!-- Background Circle -->
+                <circle class="text-slate-100" stroke-width="9" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50"/>
+                <!-- Filled Forest Green Ring -->
+                <circle id="progressRing" class="progress-ring-circle text-forest-600" stroke-width="9" stroke-dasharray="251.2" stroke-dashoffset="87.9" stroke-linecap="round" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50"/>
+              </svg>
+              <!-- Center Text Percentage -->
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <span id="progressPercentDisplay" class="text-xl md:text-2xl font-black text-slate-800">65%</span>
+                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tight">সম্পন্ন</span>
+              </div>
+            </div>
+
+            <div class="space-y-1">
+              <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-forest-100 text-forest-700 text-[11px] font-bold">
+                <i class="fa-solid fa-chart-line"></i> লার্নিং ট্র্যাকার
+              </div>
+              <h3 class="text-base md:text-lg font-black text-slate-800">ক্যামব্রিজ টেস্ট প্রস্তুতি অগ্রগতি</h3>
+              <p class="text-xs text-slate-400 font-medium">৪০টি টেস্টের মধ্যে ২৬টি প্র্যাকটিস শেষ করেছেন। লক্ষ্য ব্যান্ড ৮.০ অর্জনে এগিয়ে থাকুন!</p>
+            </div>
+          </div>
+
+          <!-- Quick Stat Badges -->
+          <div class="grid grid-cols-3 gap-3 w-full md:w-auto border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6">
+            <div class="text-center p-2 rounded-xl bg-slate-50">
+              <p class="text-xs text-slate-400 font-bold">ভোকাব</p>
+              <p class="text-base font-black text-forest-700">১২০+</p>
+            </div>
+            <div class="text-center p-2 rounded-xl bg-slate-50">
+              <p class="text-xs text-slate-400 font-bold">টেস্ট</p>
+              <p class="text-base font-black text-forest-700">২৬ টি</p>
+            </div>
+            <div class="text-center p-2 rounded-xl bg-slate-50">
+              <p class="text-xs text-slate-400 font-bold">অ্যাকুরেসি</p>
+              <p class="text-base font-black text-emerald-600">৮৪%</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4 Core Modules (Mobile e 2 Column, Desktop e 4 Column) -->
+        <section class="space-y-3.5">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-wider">প্রধান মডিউলসমূহ</h3>
+            <span class="text-xs text-slate-400 font-semibold hidden md:inline">মডিউল ক্লিক করে বই নির্বাচন করুন</span>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3.5 md:gap-5">
+            <!-- Reading Card -->
+            <button onclick="openCambridgeList('Reading')" class="p-4 md:p-6 bg-white rounded-2xl md:rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-xl hover:border-forest-500 transition-all text-left flex flex-col justify-between h-36 md:h-48 active:scale-95 group">
+              <div class="w-11 h-11 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-forest-50 text-forest-600 flex items-center justify-center text-xl md:text-2xl group-hover:bg-forest-600 group-hover:text-white transition-all shadow-sm">
+                <i class="fa-solid fa-book-open-reader"></i>
+              </div>
+              <div>
+                <h4 class="font-extrabold text-slate-800 text-base md:text-lg">Reading</h4>
+                <p class="text-xs md:text-sm text-slate-400 font-medium">Cambridge 10-19</p>
+              </div>
+            </button>
+
+            <!-- Listening Card -->
+            <button onclick="openCambridgeList('Listening')" class="p-4 md:p-6 bg-white rounded-2xl md:rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-xl hover:border-forest-500 transition-all text-left flex flex-col justify-between h-36 md:h-48 active:scale-95 group">
+              <div class="w-11 h-11 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-forest-50 text-forest-600 flex items-center justify-center text-xl md:text-2xl group-hover:bg-forest-600 group-hover:text-white transition-all shadow-sm">
+                <i class="fa-solid fa-headphones"></i>
+              </div>
+              <div>
+                <h4 class="font-extrabold text-slate-800 text-base md:text-lg">Listening</h4>
+                <p class="text-xs md:text-sm text-slate-400 font-medium">Cambridge 10-19</p>
+              </div>
+            </button>
+
+            <!-- Writing Card -->
+            <button onclick="openCambridgeList('Writing')" class="p-4 md:p-6 bg-white rounded-2xl md:rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-xl hover:border-forest-500 transition-all text-left flex flex-col justify-between h-36 md:h-48 active:scale-95 group">
+              <div class="w-11 h-11 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-forest-50 text-forest-600 flex items-center justify-center text-xl md:text-2xl group-hover:bg-forest-600 group-hover:text-white transition-all shadow-sm">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </div>
+              <div>
+                <h4 class="font-extrabold text-slate-800 text-base md:text-lg">Writing</h4>
+                <p class="text-xs md:text-sm text-slate-400 font-medium">Task 1 & Task 2</p>
+              </div>
+            </button>
+
+            <!-- Speaking Card -->
+            <button onclick="openCambridgeList('Speaking')" class="p-4 md:p-6 bg-white rounded-2xl md:rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-xl hover:border-forest-500 transition-all text-left flex flex-col justify-between h-36 md:h-48 active:scale-95 group">
+              <div class="w-11 h-11 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-forest-50 text-forest-600 flex items-center justify-center text-xl md:text-2xl group-hover:bg-forest-600 group-hover:text-white transition-all shadow-sm">
+                <i class="fa-solid fa-microphone-lines"></i>
+              </div>
+              <div>
+                <h4 class="font-extrabold text-slate-800 text-base md:text-lg">Speaking</h4>
+                <p class="text-xs md:text-sm text-slate-400 font-medium">Cue Cards & Q/A</p>
+              </div>
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <!-- ================= 2. CAMBRIDGE BOOKS GRID VIEW ================= -->
+      <div id="viewCambridgeList" class="view-screen w-full hidden flex-col space-y-5 p-4 md:p-0 pb-28 md:pb-6">
+        <div class="bg-white border border-slate-200/80 p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <button onclick="showView('viewHome')" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors">
+              <i class="fa-solid fa-chevron-left text-sm"></i>
+            </button>
+            <div>
+              <h2 id="moduleTitleHeader" class="text-base md:text-xl font-extrabold text-slate-800">Reading Module</h2>
+              <p class="text-xs text-slate-400 font-medium">Cambridge Books 10 to 19</p>
+            </div>
+          </div>
+          <button onclick="showView('viewHome')" class="text-xs font-bold text-forest-600 hover:underline hidden md:inline-block">← ড্যাশবোর্ডে ফিরে যান</button>
+        </div>
+
+        <div class="space-y-3">
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">বই নির্বাচন করুন</p>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3.5 md:gap-4">
+            <script>
+              for(let i=10; i<=19; i++) {
+                document.write(`
+                  <button onclick="openBookDetails('Cambridge ${i}')" class="bg-white hover:bg-forest-50/60 p-5 rounded-2xl md:rounded-3xl border border-slate-200/90 hover:border-forest-500 shadow-sm hover:shadow-lg transition-all text-center flex flex-col items-center justify-center h-28 md:h-36 group active:scale-95">
+                    <span class="text-[11px] md:text-xs font-bold text-slate-400 group-hover:text-forest-600 uppercase tracking-wider">Cambridge</span>
+                    <span class="text-2xl md:text-3xl font-black text-slate-800 group-hover:text-forest-600 mt-1">${i}</span>
+                  </button>
+                `);
+              }
+            </script>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 3. WORDS & DETAILS VIEW ================= -->
+      <div id="viewBookDetails" class="view-screen w-full hidden flex-col space-y-4 p-4 md:p-0 pb-36 md:pb-6">
+        <div class="bg-white border border-slate-200/80 p-4 md:p-5 rounded-2xl md:rounded-3xl shadow-sm flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <button onclick="showView('viewCambridgeList')" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors">
+              <i class="fa-solid fa-chevron-left text-sm"></i>
+            </button>
+            <h2 id="selectedBookHeader" class="text-base md:text-xl font-black text-slate-800">Cambridge 10</h2>
+          </div>
+
+          <!-- T1-T4 Desktop Selector Bar -->
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-400 hidden md:inline mr-2">টেস্ট সিলেক্ট করুন:</span>
+            <div class="inline-flex bg-slate-100 p-1 rounded-xl">
+              <button onclick="selectTest('T1')" id="deskBtnT1" class="px-3 py-1.5 text-xs font-bold rounded-lg border border-forest-600 bg-forest-600 text-white transition-all">T1</button>
+              <button onclick="selectTest('T2')" id="deskBtnT2" class="px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:bg-slate-200 transition-all">T2</button>
+              <button onclick="selectTest('T3')" id="deskBtnT3" class="px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:bg-slate-200 transition-all">T3</button>
+              <button onclick="selectTest('T4')" id="deskBtnT4" class="px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:bg-slate-200 transition-all">T4</button>
+            </div>
+            <span id="activeTestBadge" class="px-2.5 py-1 bg-forest-100 text-forest-700 font-bold text-xs rounded-lg md:hidden">Test 1</span>
+          </div>
+        </div>
+
+        <!-- Word Cards Grid -->
+        <div id="wordsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Mobile Only Sticky Bottom T1-T4 Bar -->
+        <div class="md:hidden fixed bottom-[62px] inset-x-0 bg-white/95 backdrop-blur-md border-t border-slate-200 p-2.5 z-20 shadow-lg">
+          <div class="grid grid-cols-4 gap-2 max-w-sm mx-auto">
+            <button onclick="selectTest('T1')" id="btnT1" class="test-btn py-2 text-xs font-bold rounded-xl border border-forest-600 bg-forest-600 text-white transition-all shadow-sm">T1</button>
+            <button onclick="selectTest('T2')" id="btnT2" class="test-btn py-2 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 text-slate-600 transition-all">T2</button>
+            <button onclick="selectTest('T3')" id="btnT3" class="test-btn py-2 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 text-slate-600 transition-all">T3</button>
+            <button onclick="selectTest('T4')" id="btnT4" class="test-btn py-2 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 text-slate-600 transition-all">T4</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ================= MOBILE BOTTOM NAVBAR ================= -->
+  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 px-2 py-1.5 z-30 select-none shadow-lg">
+    <div class="grid grid-cols-5 items-center justify-items-center w-full max-w-md mx-auto">
+      <button onclick="showView('viewHome')" class="nav-btn flex flex-col items-center justify-center w-full py-1 text-forest-600 transition-all">
+        <i class="fa-solid fa-house text-lg"></i>
+        <span class="text-[10px] font-bold mt-0.5">হোম</span>
+      </button>
+
+      <button onclick="showToast('খুঁজতে শব্দ বা টেস্টের নাম লিখুন')" class="nav-btn flex flex-col items-center justify-center w-full py-1 text-slate-400 hover:text-slate-600 transition-all">
+        <i class="fa-solid fa-magnifying-glass text-lg"></i>
+        <span class="text-[10px] font-medium mt-0.5">সার্চ</span>
+      </button>
+
+      <!-- Center Plus Button -->
+      <button onclick="openPostModal()" class="flex flex-col items-center justify-center w-full group focus:outline-none">
+        <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-forest-800 to-forest-600 text-white flex items-center justify-center text-xl shadow-lg shadow-forest-900/40 border-2 border-white -mt-6 transition-transform group-hover:scale-105 active:scale-95">
+          <i class="fa-solid fa-plus"></i>
+        </div>
+        <span class="text-[10px] font-semibold mt-0.5 text-slate-600">পোস্ট</span>
+      </button>
+
+      <button onclick="showToast('প্রোগ্রেস অ্যানালিটিক্স লোড হচ্ছে...')" class="nav-btn flex flex-col items-center justify-center w-full py-1 text-slate-400 hover:text-slate-600 transition-all">
+        <i class="fa-solid fa-chart-column text-lg"></i>
+        <span class="text-[10px] font-medium mt-0.5">প্রোগ্রেস</span>
+      </button>
+
+      <button onclick="toggleProfileDropdown(event)" class="nav-btn flex flex-col items-center justify-center w-full py-1 text-slate-400 hover:text-slate-600 transition-all">
+        <i class="fa-solid fa-user text-lg"></i>
+        <span class="text-[10px] font-medium mt-0.5">প্রোফাইল</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ================= ADD NEW WORD MODAL ================= -->
+  <div id="postModal" class="hidden fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white rounded-t-3xl sm:rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto no-scrollbar">
+      <div class="flex items-center justify-between border-b pb-3 border-slate-100">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-forest-100 text-forest-700 flex items-center justify-center text-sm font-bold">
+            <i class="fa-solid fa-pen"></i>
+          </div>
+          <h3 class="text-base font-extrabold text-slate-800">নতুন শব্দ পোস্ট করুন</h3>
+        </div>
+        <button onclick="closePostModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handlePostSubmit(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Word (ইংরেজি শব্দ)</label>
+          <input type="text" id="inputWord" required placeholder="e.g. Cautiously" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-forest-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Bangla Meaning (বাংলা অর্থ)</label>
+          <input type="text" id="inputMeaning" required placeholder="e.g. সতর্কতার সাথে" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-forest-500 outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Cambridge Book</label>
+            <select id="inputBook" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-forest-500 outline-none bg-white">
+              <option>Cambridge 10</option>
+              <option>Cambridge 11</option>
+              <option>Cambridge 12</option>
+              <option>Cambridge 13</option>
+              <option>Cambridge 14</option>
+              <option>Cambridge 15</option>
+              <option>Cambridge 16</option>
+              <option>Cambridge 17</option>
+              <option>Cambridge 18</option>
+              <option>Cambridge 19</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Test Number</label>
+            <select id="inputTest" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-forest-500 outline-none bg-white">
+              <option value="T1">Test 1 (T1)</option>
+              <option value="T2">Test 2 (T2)</option>
+              <option value="T3">Test 3 (T3)</option>
+              <option value="T4">Test 4 (T4)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Synonyms (কমা দিয়ে লিখুন)</label>
+          <input type="text" id="inputSynonyms" placeholder="Carefully + সাবধানতার সাথে, Prudently" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-forest-500 outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Antonyms (কমা দিয়ে লিখুন)</label>
+          <input type="text" id="inputAntonyms" placeholder="Carelessly + অসাবধানতাবশত, Rashly" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-forest-500 outline-none">
+        </div>
+
+        <div class="pt-2 flex gap-2">
+          <button type="button" onclick="closePostModal()" class="flex-1 py-2.5 bg-slate-100 text-slate-700 font-bold text-xs rounded-xl hover:bg-slate-200">
+            বাতিল
+          </button>
+          <button type="submit" class="flex-1 py-2.5 bg-forest-600 text-white font-bold text-xs rounded-xl hover:bg-forest-700 shadow-md shadow-forest-900/20">
+            পোস্ট করুন
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="hidden fixed top-12 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-xl z-50">
+    বিজ্ঞপ্তি
+  </div>
+
+  <script>
+    let currentModule = 'Reading';
+    let currentBook = 'Cambridge 10';
+    let currentTest = 'T1';
+
+    // Profile Dropdown Toggle
+    function toggleProfileDropdown(e) {
+      if (e) e.stopPropagation();
+      const dropdown = document.getElementById('profileDropdown');
+      dropdown.classList.toggle('hidden');
+    }
+
+    // Close Dropdown when clicked outside
+    window.addEventListener('click', function(e) {
+      const dropdown = document.getElementById('profileDropdown');
+      if (dropdown && !dropdown.classList.contains('hidden')) {
+        dropdown.classList.add('hidden');
+      }
+    });
+
+    // Logout Functionality
+    function handleLogout() {
+      if (confirm("আপনি কি নিশ্চিতভাবে লগআউট করতে চান?")) {
+        localStorage.removeItem('user_auth_token');
+        showToast("সফলভাবে লগআউট হয়েছে!");
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      }
+    }
+
+    // Set Radial Progress
+    function setProgress(percent) {
+      const circle = document.getElementById('progressRing');
+      const radius = circle.r.baseVal.value;
+      const circumference = 2 * Math.PI * radius; // 251.2
+      const offset = circumference - (percent / 100 * circumference);
+      circle.style.strokeDashoffset = offset;
+      document.getElementById('progressPercentDisplay').innerText = percent + '%';
+      const sideText = document.getElementById('sidePercentText');
+      if (sideText) sideText.innerText = percent + '%';
+    }
+
+    // Sample Vocabulary DB
+    const initialVocabulary = [
+      {
+        book: "Cambridge 10",
+        test: "T1",
+        word: "Cautiously",
+        meaning: "সতর্কতার সাথে / সাবধানতার সাথে",
+        synonyms: [
+          "Carefully + সাবধানতার সাথে",
+          "Prudently + বিচক্ষণতার সাথে",
+          "Warily + সতর্কভাবে"
+        ],
+        antonyms: [
+          "Carelessly + অসাবধানতাবশত",
+          "Recklessly + বেপরোয়াভাবে",
+          "Rashly + হুড়মুড় করে"
+        ]
+      },
+      {
+        book: "Cambridge 10",
+        test: "T1",
+        word: "Prevailed",
+        meaning: "জয়ী হওয়া / বিদ্যমান থাকা",
+        synonyms: [
+          "Triumphed + জয়লাভ করেছিল",
+          "Succeeded + সফল হয়েছিল",
+          "Predominated + আধিপত্য বিস্তার করেছিল"
+        ],
+        antonyms: [
+          "Failed + ব্যর্থ হয়েছিল",
+          "Surrendered + আত্মসমর্পণ করেছিল",
+          "Yielded + নতি স্বীকার করেছিল"
+        ]
+      },
+      {
+        book: "Cambridge 10",
+        test: "T2",
+        word: "Reluctant",
+        meaning: "অনিচ্ছুক / দ্বিধাগ্রস্ত",
+        synonyms: [
+          "Unwilling + অনিচ্ছুক",
+          "Hesitant + দ্বিধাগ্রস্ত",
+          "Disinclined + অপছন্দকারী"
+        ],
+        antonyms: [
+          "Eager + আগ্রহী",
+          "Willing + ইচ্ছুক",
+          "Enthusiastic + উৎফুল্ল"
+        ]
+      }
+    ];
+
+    let vocabularyDB = JSON.parse(localStorage.getItem('user_vocab_db')) || initialVocabulary;
+
+    function showView(viewId) {
+      document.getElementById('viewHome').classList.add('hidden');
+      document.getElementById('viewCambridgeList').classList.add('hidden');
+      document.getElementById('viewBookDetails').classList.add('hidden');
+
+      const target = document.getElementById(viewId);
+      target.classList.remove('hidden');
+      target.classList.add('flex');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openCambridgeList(moduleName) {
+      currentModule = moduleName;
+      document.getElementById('moduleTitleHeader').innerText = moduleName + " Module";
+      showView('viewCambridgeList');
+    }
+
+    function openBookDetails(bookName) {
+      currentBook = bookName;
+      document.getElementById('selectedBookHeader').innerText = bookName;
+      renderWords();
+      showView('viewBookDetails');
+    }
+
+    function selectTest(testId) {
+      currentTest = testId;
+      document.getElementById('activeTestBadge').innerText = "Test " + testId.replace('T', '');
+      
+      ['T1', 'T2', 'T3', 'T4'].forEach(t => {
+        const btn = document.getElementById('btn' + t);
+        if (btn) {
+          if (t === testId) {
+            btn.className = "test-btn py-2 text-xs font-bold rounded-xl border border-forest-600 bg-forest-600 text-white transition-all shadow-sm";
+          } else {
+            btn.className = "test-btn py-2 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 text-slate-600 transition-all";
+          }
+        }
+      });
+
+      ['T1', 'T2', 'T3', 'T4'].forEach(t => {
+        const deskBtn = document.getElementById('deskBtn' + t);
+        if (deskBtn) {
+          if (t === testId) {
+            deskBtn.className = "px-3 py-1.5 text-xs font-bold rounded-lg border border-forest-600 bg-forest-600 text-white transition-all";
+          } else {
+            deskBtn.className = "px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:bg-slate-200 transition-all";
+          }
+        }
+      });
+
+      renderWords();
+    }
+
+    function renderWords() {
+      const container = document.getElementById('wordsContainer');
+      container.innerHTML = '';
+
+      const filtered = vocabularyDB.filter(item => item.book === currentBook && item.test === currentTest);
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full bg-white rounded-2xl md:rounded-3xl p-8 md:p-12 text-center space-y-2 border border-slate-200 my-4 shadow-sm">
+            <i class="fa-solid fa-folder-open text-4xl text-slate-300"></i>
+            <p class="text-sm font-bold text-slate-700">${currentBook} (${currentTest}) এর জন্য কোনো শব্দ পাওয়া যায়নি</p>
+            <p class="text-xs text-slate-400">নতুন শব্দ পোস্ট করতে '+' বাটনে ক্লিক করুন।</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(data => {
+        const card = document.createElement('div');
+        card.className = "bg-white rounded-2xl md:rounded-3xl border border-slate-200/90 p-5 shadow-sm space-y-3.5 hover:shadow-md transition-shadow";
+
+        const synHTML = data.synonyms.map(s => `<li class="text-xs text-slate-600 font-medium leading-relaxed">${s}</li>`).join('');
+        const antHTML = data.antonyms.map(a => `<li class="text-xs text-slate-600 font-medium leading-relaxed">${a}</li>`).join('');
+
+        card.innerHTML = `
+          <div class="border-b border-slate-100 pb-3 flex justify-between items-center">
+            <h3 class="text-base font-extrabold text-slate-800">
+              Word: <span class="text-forest-600 font-black">${data.word}</span> — <span class="text-emerald-700 font-bold">${data.meaning}</span>
+            </h3>
+          </div>
+          <div class="grid grid-cols-2 gap-3 pt-0.5">
+            <div class="bg-forest-50/50 p-3 rounded-xl border border-forest-100">
+              <h4 class="text-xs font-bold text-forest-700 uppercase tracking-wider mb-2 border-b border-forest-200 pb-1">Synonym:</h4>
+              <ul class="space-y-1 list-disc list-inside text-slate-700">
+                ${synHTML || '<li class="text-[11px] text-slate-400">নেই</li>'}
+              </ul>
+            </div>
+            <div class="bg-slate-50/80 p-3 rounded-xl border border-slate-100">
+              <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 border-b border-slate-200 pb-1">Antonym:</h4>
+              <ul class="space-y-1 list-disc list-inside text-slate-700">
+                ${antHTML || '<li class="text-[11px] text-slate-400">নেই</li>'}
+              </ul>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function openPostModal() {
+      document.getElementById('postModal').classList.remove('hidden');
+    }
+
+    function closePostModal() {
+      document.getElementById('postModal').classList.add('hidden');
+    }
+
+    function handlePostSubmit(e) {
+      e.preventDefault();
+      const word = document.getElementById('inputWord').value.trim();
+      const meaning = document.getElementById('inputMeaning').value.trim();
+      const book = document.getElementById('inputBook').value;
+      const test = document.getElementById('inputTest').value;
+      const synonymsInput = document.getElementById('inputSynonyms').value.trim();
+      const antonymsInput = document.getElementById('inputAntonyms').value.trim();
+
+      const synonyms = synonymsInput ? synonymsInput.split(',').map(s => s.trim()) : [];
+      const antonyms = antonymsInput ? antonymsInput.split(',').map(a => a.trim()) : [];
+
+      vocabularyDB.unshift({ book, test, word, meaning, synonyms, antonyms });
+      localStorage.setItem('user_vocab_db', JSON.stringify(vocabularyDB));
+
+      closePostModal();
+      showToast('নতুন শব্দ সফলভাবে পোস্ট করা হয়েছে!');
+
+      if (currentBook === book && currentTest === test) {
+        renderWords();
+      } else {
+        openBookDetails(book);
+        selectTest(test);
+      }
+      e.target.reset();
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.classList.remove('hidden');
+      setTimeout(() => { toast.classList.add('hidden'); }, 2200);
+    }
+
+    window.onload = function() {
+      selectTest('T1');
+      setProgress(65); // ডিফল্টভাবে ৬৫% অগ্রগতি সেট করা থাকবে
+    };
+  </script>
 </body>
-
 </html>
